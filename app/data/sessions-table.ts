@@ -1,0 +1,93 @@
+export const sessions = [
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cody Fisher',
+      image: '/doc-1.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Paid',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Kristin Watson',
+      image: '/doc-2.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Pay Now',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cameron Williamson',
+      image: '/doc-3.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Cancelled',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Theresa Webb',
+      image: '/doc-4.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Paid',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cody Fisher',
+      image: '/doc-1.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Pay Now',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Kristin Watson',
+      image: '/doc-2.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Paid',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cameron Williamson',
+      image: '/doc-3.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Cancelled',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Theresa Webb',
+      image: '/doc-4.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Pay Now',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cody Fisher',
+      image: '/doc-1.svg',
+    },
+    service: 'Open ear',
+    dateTime: 'Dec 30, 2019 07:52',
+    paymentStatus: 'Paid',
+  },
+];
+

@@ -1,0 +1,111 @@
+export const ratings = [
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cody Fisher',
+      image: '/doc-1.svg',
+    },
+    service: 'Skin Care',
+    session: 'For My Self',
+    rating: 5.0,
+    reviewText: 'Lorem ipsum dolor sit amet consectetur adipiscing elit Ut et massa mi. Aliquam in hendrerit urna. Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris. Maecenas vitae mattis tellus. Nullam quis imperdiet augue. Vestibulum auctor ornare leo, non suscipit.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Kristin Watson',
+      image: '/doc-2.svg',
+    },
+    service: 'Mental Appt.',
+    session: 'For Child',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cameron Williamson',
+      image: '/doc-3.svg',
+    },
+    service: 'Physical Appt.',
+    session: 'For My Self',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Theresa Webb',
+      image: '/doc-4.svg',
+    },
+    service: 'Body Movement',
+    session: 'For Child',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cody Fisher',
+      image: '/doc-1.svg',
+    },
+    service: 'Skin Care',
+    session: 'For My Self',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Kristin Watson',
+      image: '/doc-2.svg',
+    },
+    service: 'Mental Appt.',
+    session: 'For Child',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cameron Williamson',
+      image: '/doc-3.svg',
+    },
+    service: 'Physical Appt.',
+    session: 'For My Self',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Theresa Webb',
+      image: '/doc-4.svg',
+    },
+    service: 'Body Movement',
+    session: 'For Child',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+  {
+    id: '51655',
+    specialist: {
+      name: 'Cody Fisher',
+      image: '/doc-1.svg',
+    },
+    service: 'Skin Care',
+    session: 'For My Self',
+    rating: 4.5,
+    reviewText: 'Great service and professional staff. Very satisfied with the treatment.',
+    submittedOn: 'Dec 30, 2019 07:52',
+  },
+];
+
