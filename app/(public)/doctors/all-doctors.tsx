@@ -4,11 +4,11 @@ import { ChevronDown, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import { Typography } from '@/components/ui/typography';
 import { doctors } from '@/app/data/doctors';
 
-export default function AllDoctors() {
+function AllDoctorsContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('search') ?? '';
   const [searchTerm, setSearchTerm] = useState(initialQuery);
@@ -141,5 +141,21 @@ export default function AllDoctors() {
 
       </div>
     </section>
+  );
+}
+
+export default function AllDoctors() {
+  return (
+    <Suspense fallback={
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-4">
+          <div className="text-center">
+            <Typography variant="p" className="text-foreground">Loading...</Typography>
+          </div>
+        </div>
+      </section>
+    }>
+      <AllDoctorsContent />
+    </Suspense>
   );
 }

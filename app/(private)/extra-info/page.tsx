@@ -5,7 +5,7 @@ import { Calendar1 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ const patientInfoSchema = z.object({
 
 type PatientInfoFormData = z.infer<typeof patientInfoSchema>;
 
-export default function PatientInfoPage() {
+function PatientInfoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const role = searchParams.get('role') || 'patient'; // Default to patient if no role
@@ -217,6 +217,22 @@ export default function PatientInfoPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PatientInfoPage() {
+  return (
+    <Suspense fallback={
+      <div className="relative flex flex-col min-h-screen">
+        <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+          <div className="text-center">
+            <Typography variant="p" className="text-foreground">Loading...</Typography>
+          </div>
+        </div>
+      </div>
+    }>
+      <PatientInfoContent />
+    </Suspense>
   );
 }
 
