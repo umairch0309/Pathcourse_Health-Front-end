@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 
 export function Reviews() {
   return (
-    <Card className=" w-full lg:h-[350px] bg-background px-6">
+    <Card className=" w-full bg-background px-6">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-foreground text-base font-medium">

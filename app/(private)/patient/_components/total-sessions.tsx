@@ -15,7 +15,7 @@ import {
 
 export function TotalSessions() {
   return (
-    <Card className=" w-full lg:h-[350px] bg-background space-y-2 px-6">
+    <Card className=" w-full bg-background space-y-2 px-6">
       <CardHeader>
         <CardTitle className="text-foreground mb-3 font-medium">Sessions</CardTitle>
         <CardDescription className="text-muted-foreground -mb-6">

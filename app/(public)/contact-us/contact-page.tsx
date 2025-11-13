@@ -24,11 +24,11 @@ export default function ContactSection() {
   return (
     <section className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-30 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 lg:gap-20 items-start">
+        <div className="grid lg:grid-cols-2 items-start">
           {/* Contact Information */}
-          <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 md:p-8 xl:p-10">
+          <div className="space-y-6 sm:space-y-8 px-6 lg:py-0 py-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl lg:mb-6 font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
                 Get in touch
               </h1>
               <p className="text-sm sm:text-base md:text-md text-[#525252] leading-relaxed">
@@ -87,7 +87,7 @@ export default function ContactSection() {
           </div>
 
           {/* Contact Form */}
-          <div className="bg-[#F4F4F4] rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10">
+          <div className="bg-muted rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10">
             <FormModified
               schema={contactSchema}
               onSubmit={async (values) => {

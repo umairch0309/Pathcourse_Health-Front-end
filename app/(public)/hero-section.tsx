@@ -7,17 +7,17 @@ import { Typography } from '@/components/ui/typography';
 export default function HeroSection() {
   const router = useRouter();
   return (
-    <section className="relative min-h-[70vh] sm:min-h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[60vh] sm:min-h-[80vh] lg:min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
         <Image
           src="/banner.png"
           alt="Medical background"
           fill
-          className="w-full object-cover"
+          className="w-full object-cover object-[60%_bottom] sm:object-[center_center] lg:object-center"
           sizes="(max-width: 1024px) 100vw, 100vw"
           priority
         />
-        <div className="absolute inset-0 bg-black/50 sm:bg-black/40 lg:bg-black/30" />
+        <div className="absolute inset-0 bg-black/40 sm:bg-black/40 lg:bg-black/30" />
       </div>
 
       {/* Content */}

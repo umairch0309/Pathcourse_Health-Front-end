@@ -10,7 +10,7 @@ export default function InfoSection() {
   return (
     <section className="bg-muted py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center` }>
+        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-start` }>
           {/* Left side - Images */}
           <div className="space-y-4 sm:space-y-6">
             {/* Top image - Medical professional with mask */}
@@ -49,7 +49,7 @@ export default function InfoSection() {
           </div>
 
           {/* Right side - Content */}
-          <div className={`space-y-6` }>
+          <div className={`space-y-6 pt-0` }>
             <Typography as="h1" variant="h1" className={`text-balance text-3xl lg:text-5xl text-foreground`}>
             We Are Always <br /> Ensure Best Therapy Treatment
             </Typography>

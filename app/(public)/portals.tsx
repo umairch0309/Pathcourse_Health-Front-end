@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation';
 export default function PortalsSection() {
   const router = useRouter();
   return (
-    <section className="bg-background py-12 md:py-10 px-4 md:px-8 lg:px-40">
-      <div>
-        <div className="grid lg:grid-cols-2 items-start lg:gap-0 gap-10">
+    <section className="bg-background py-12 md:py-10 px-4 md:px-8 lg:px-40 xl:px-40">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 xl:grid-cols-2 items-start lg:gap-0 xl:gap-0 gap-10">
           {/* LEFT: Patient Portal */}
           <div className="order-1">
           <Typography as="h2" variant="h2" className="text-center md:text-left font-bold text-foreground mb-8">
@@ -53,10 +53,10 @@ export default function PortalsSection() {
           <div className="order-2">
             <div className="bg-primary rounded-3xl py-4 sm:py-6 shadow-2xl w-full">
               {/* Portal Title */}
-              <Typography as="h3" variant="h3" className="text-xl sm:text-2xl font-bold text-background mb-4 sm:mb-6 lg:ml-6"> Specialist Portal</Typography>
+              <Typography as="h3" variant="h3" className="text-xl sm:text-2xl font-bold text-background mb-4 sm:mb-6 lg:ml-6 xl:ml-6"> Specialist Portal</Typography>
 
               {/* Portal Interface */}
-              <div className="bg-background rounded-2xl overflow-hidden lg:ml-6">
+              <div className="bg-background rounded-2xl overflow-hidden lg:ml-6 xl:ml-6">
                 <Image
                   src="/doctor-portal.png"
                   alt="Doctor Portal Interface"

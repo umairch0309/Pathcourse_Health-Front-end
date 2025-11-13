@@ -19,32 +19,34 @@ export default function Header() {
 
   return (
     <header className="fixed bg-background w-full z-50">
-      <div className="container mx-auto lg:px-8 px-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="flex items-center justify-between h-14 sm:h-16 lg:h-20">
           {/* Logo */}
           <div className="flex items-center flex-shrink-0">
             <Link href="/" className="cursor-pointer">
-              <Image src="/logo.svg" alt="Logo" width={100} height={30} className="w-20 sm:w-24 lg:w-[80px] h-auto" />
+              <Image src="/logo.svg" alt="Logo" width={100} height={30} className="w-20 sm:w-24 lg:w-[100px] h-auto" />
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            <Link href="/about" className="text-foreground hover:text-foreground/90  transition-colors text-sm xl:text-base">
-              About
-            </Link>
-            <Link href="/service" className="text-foreground hover:text-foreground/90  transition-colors text-sm xl:text-base">
-              Services
-            </Link>
-            <Link href="/contact-us" className="text-foreground hover:text-foreground/90   transition-colors text-sm xl:text-base">
-              Contact Us
-            </Link>
-            <Link href="/doctors" className="text-foreground hover:text-foreground/90  transition-colors text-sm xl:text-base">
-              Specialists 
-            </Link>
+          {/* Desktop Navigation and Search */}
+          <div className="hidden lg:flex items-center flex-1 justify-center gap-6 xl:gap-8">
+            <nav className="flex items-center space-x-6 xl:space-x-8">
+              <Link href="/about" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
+                About
+              </Link>
+              <Link href="/service" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
+                Services
+              </Link>
+              <Link href="/contact-us" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
+                Contact Us
+              </Link>
+              <Link href="/doctors" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
+                Specialists 
+              </Link>
+            </nav>
 
             {/* Desktop Search */}
-            <div className="hidden xl:flex items-center">
+            <div className="hidden xl:flex items-center ml-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground w-4 h-4" />
                 <Input
@@ -56,10 +58,10 @@ export default function Header() {
                 />
               </div>
             </div>
-          </nav>
+          </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
             {/* Tablet Search (hidden on mobile and desktop) */}
             <div className="hidden md:flex lg:hidden xl:hidden items-center">
               <div className="relative">

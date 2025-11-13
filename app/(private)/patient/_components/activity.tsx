@@ -24,7 +24,7 @@ const chartConfig = {
 
 export function ActivityChart() {
   return (
-    <Card className="w-full lg:h-[350px] bg-background space-y-2 px-6">
+    <Card className="w-full bg-background space-y-2 px-6">
       <CardHeader>
         <CardTitle className="text-base text-foreground font-normal">
           Activity

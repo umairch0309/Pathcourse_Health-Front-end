@@ -68,12 +68,12 @@ function ChatPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="px-4 pt-4">
+      <div className="px-4 xl:px-6 pt-4">
         <Typography variant="p" className="font-bold text-foreground">
           In Call Chat
         </Typography>
       </div>
-      <div className="mt-2 flex-1 px-4">
+      <div className="mt-2 flex-1 px-4 xl:px-6">
         <ScrollArea className={`${scrollHeightClass} pr-2`}>
           <div className="space-y-6 py-2">
             {sentMessages.map(m => (
@@ -83,7 +83,7 @@ function ChatPanel({
           </div>
         </ScrollArea>
       </div>
-      <div className=" p-3">
+      <div className="p-3 xl:px-6">
         <p className="text-xs text-muted-foreground mb-2">Patient can only view the chat or attachments</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" className="h-10 w-10 bg-transparent">
@@ -145,19 +145,19 @@ export default function CallPage() {
 
   return (
     <main className="min-h-screen rounded-md bg-background shadow-md">
-      <div className="mx-auto max-w-7xl space-y-4 px-4 py-6 md:py-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+      <div className="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8 xl:px-12 py-6 md:py-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px]">
           <section className="space-y-4">
             <Card className="overflow-hidden border-none bg-background p-0">
               <CardContent className="p-0">
                 <div className="relative">
-                  <div className="absolute left-4 top-3 z-10 text-sm font-bold text-foreground">Therapist Name</div>
+                  <div className="absolute left-4 xl:left-6 top-3 z-10 text-sm font-bold text-foreground">Therapist Name</div>
                   <Image
                     src="/video-call-doc.jpg"
                     alt="Therapist"
                     width={1280}
                     height={720}
-                    className="h-[260px] w-full object-cover sm:h-[300px] md:h-[320px] lg:h-[300px]"
+                    className="h-[260px] w-full object-cover sm:h-[300px] md:h-[320px] lg:h-[300px] xl:h-[340px]"
                   />
                 </div>
               </CardContent>
@@ -166,7 +166,7 @@ export default function CallPage() {
             <Card className="overflow-hidden border-none bg-background p-0">
               <CardContent className="p-0">
                 <div className="relative">
-                  <div className="absolute left-4 top-3 z-10 text-sm font-bold text-foreground">
+                  <div className="absolute left-4 xl:left-6 top-3 z-10 text-sm font-bold text-foreground">
                     You (Emelie Cooper)
                   </div>
                   <Image
@@ -174,7 +174,7 @@ export default function CallPage() {
                     alt="You"
                     width={1280}
                     height={720}
-                    className="h-[260px] w-full object-cover sm:h-[300px] md:h-[340px] lg:h-[320px]"
+                    className="h-[260px] w-full object-cover sm:h-[300px] md:h-[340px] lg:h-[320px] xl:h-[360px]"
                   />
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
                     <div className="flex items-center gap-3">
