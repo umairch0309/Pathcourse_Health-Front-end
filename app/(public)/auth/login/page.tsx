@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -11,6 +11,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import FormModified from '@/components/ui/form-modified';
 import { Separator } from '@/components/ui/separator';
 import { Typography } from '@/components/ui/typography';
+import { Loader } from '@/components/loader';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import auth from '@/lib/auth';
+import useToast from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -22,11 +26,46 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toastError } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (data: LoginFormData) => {
-    console.log('Login data:', data);
-    router.push('/auth/login/verify-email');
+  const handleSubmit = async (data: LoginFormData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await auth.signIn.email(
+        {
+          email: data.email,
+          password: data.password,
+        },
+        {
+          onSuccess(context) {
+            router.refresh();
+            console.log('Login successful:', context);
+            // Redirect to a protected route - the layout will handle role-based redirects
+            // Using window.location for full page reload to ensure session is loaded
+            window.location.href = '/admin';
+          },
+        }
+      );
+      console.log('Login result:', result);
+      
+      // Check if result has an error
+      if (result?.error) {
+        const errorMessage = result.error.message || 'An error occurred during login';
+        setError(errorMessage);
+        toastError(errorMessage);
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage = error?.message || error?.response?.data?.message || 'Invalid email or password.';
+      setError(errorMessage);
+      toastError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
@@ -81,9 +120,17 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {error && (
+            <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive/50">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-destructive">{error}</AlertDescription>
+            </Alert>
+          )}
+
           <FormModified
             schema={loginSchema}
             onSubmit={handleSubmit}
+            disabled={loading}
             defaultValues={{
               email: '',
               password: '',
@@ -145,8 +192,19 @@ export default function LoginPage() {
                   </Button>
                 </div>
 
-                <Button type="submit" size="lg" className="flex mx-auto w-full lg:w-[350px] sm:w-auto">
-                  Log In
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="flex mx-auto w-full lg:w-[350px] sm:w-auto"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader size="sm" variant="default" color="white" className="mr-2" />
+                    </>
+                  ) : (
+                    'Log In'
+                  )}
                 </Button>
               </div>
             )}
