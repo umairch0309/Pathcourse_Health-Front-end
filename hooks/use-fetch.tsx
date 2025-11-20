@@ -35,6 +35,7 @@ export function useFetch<T>({ path, queryKey, ...config }: IUseFetch<T>) {
               Authorization: `Bearer ${auth?.token}`,
             }
           : {},
+        withCredentials: true,
       })
       if (response.data.data) {
         return response.data.data

@@ -45,7 +45,7 @@ export default function SettingsPage() {
       <div className="flex gap-2">
         {/* Tab List - Hidden on mobile when content is shown */}
         <div className={cn(
-          'w-full lg:w-[400px] p-6 bg-background rounded-lg',
+          'w-full lg:w-[400px] p-6 bg-background rounded-lg shadow shadow-lg border border-border',
           showTabContent && 'hidden lg:block',
         )}
         >

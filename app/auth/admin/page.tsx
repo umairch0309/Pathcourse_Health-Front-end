@@ -1,7 +1,6 @@
 'use client';
 
-import { Eye, EyeOff, Info } from 'lucide-react';
-import Image from 'next/image';
+import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,10 +8,8 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import FormModified from '@/components/ui/form-modified';
-import { Separator } from '@/components/ui/separator';
 import { Typography } from '@/components/ui/typography';
 import { Loader } from '@/components/loader';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import auth from '@/lib/auth';
 import useToast from '@/hooks/use-toast';
 
@@ -24,16 +21,14 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
   const router = useRouter();
   const { toastError } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (data: LoginFormData) => {
     setLoading(true);
-    setError(null);
     try {
       const result = await auth.signIn.email(
         {
@@ -41,35 +36,30 @@ export default function LoginPage() {
           password: data.password,
         },
         {
-          onSuccess(context) {
+          onSuccess: async (context) => {
             router.refresh();
-            console.log('Login successful:', context);
-            // Redirect to a protected route - the layout will handle role-based redirects
+            console.log('Admin login successful:', context);
+            
+            // Route to admin dashboard
             // Using window.location for full page reload to ensure session is loaded
             window.location.href = '/admin';
           },
         }
       );
-      console.log('Login result:', result);
+      console.log('Admin login result:', result);
       
       // Check if result has an error
       if (result?.error) {
         const errorMessage = result.error.message || 'An error occurred during login';
-        setError(errorMessage);
         toastError(errorMessage);
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('Admin login error:', error);
       const errorMessage = error?.message || error?.response?.data?.message || 'Invalid email or password.';
-      setError(errorMessage);
       toastError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    console.log(`Login with ${provider}`);
   };
 
   return (
@@ -87,45 +77,6 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-4 sm:space-y-6 ">
-          <div className="flex flex-col lg:flex-row gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleSocialLogin('google')}
-            >
-              <Image src="/google.svg" alt="Google" width={20} height={20} className="mr-2" />
-              <span className="hidden sm:inline">Continue with Google</span>
-              <span className="sm:hidden">Google</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleSocialLogin('facebook')}
-            >
-              <Image src="/facebook.svg" alt="Facebook" width={20} height={20} className="mr-2" />
-              <span className="hidden sm:inline">Continue with Facebook</span>
-              <span className="sm:hidden">Facebook</span>
-            </Button>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <Separator className="w-full" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <Typography variant="span" className="text-muted-foreground bg-background px-2">
-                or
-              </Typography>
-            </div>
-          </div>
-
-          {error && (
-            <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive/50">
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-destructive">{error}</AlertDescription>
-            </Alert>
-          )}
 
           <FormModified
             schema={loginSchema}
@@ -175,7 +126,7 @@ export default function LoginPage() {
                   </components.Field>
                 </div>
 
-                <div className="flex flex-row items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
                   <components.Field name="rememberMe">
                     {field => (
                       <div className="flex items-center space-x-2">

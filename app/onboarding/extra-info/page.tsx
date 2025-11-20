@@ -12,18 +12,47 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import FormModified from '@/components/ui/form-modified';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Typography } from '@/components/ui/typography';
 import { Label } from '@/components/ui/label';
+import { Loader } from '@/components/loader';
+import useApi from '@/hooks/use-api';
+import { CountryCodeSelect } from '@/components/country-code-select';
+import { subYears } from 'date-fns';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const patientInfoSchema = z.object({
-  date_of_birth: z.string().min(1, 'Date of birth is required'),
+  date_of_birth: z
+    .string()
+    .min(1, 'Date of birth is required')
+    .refine(
+      (date) => {
+        const birthDate = new Date(date);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+        
+        // Calculate actual age considering month and day
+        const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+        return actualAge >= 18;
+      },
+      {
+        message: 'You must be at least 18 years old',
+      }
+    ),
   gender: z.string().min(1, 'Gender is required'),
   address: z.string().min(1, 'Address is required'),
   phone: z.string().min(1, 'Phone number is required'),
 });
 
 type PatientInfoFormData = z.infer<typeof patientInfoSchema>;
+
+type UserInfoApiData = {
+  address: string | null;
+  dateOfBirth: string | null;
+  gender: string | null;
+  phone: string | null;
+};
 
 function PatientInfoContent() {
   const router = useRouter();
@@ -33,28 +62,41 @@ function PatientInfoContent() {
   const [countryCode, setCountryCode] = useState('+1');
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const handleSubmit = (data: PatientInfoFormData) => {
-    const submitData = {
-      ...data,
-      phone: countryCode + data.phone, // Combine country code with phone number
-    };
-    console.log('Patient info data:', submitData);
-    
-    // Navigate to appropriate portal based on role
-    if (role === 'practitioner') {
-      router.push('/specialist');
-    } else {
-      router.push('/patient');
-    }
-  };
+  const { onRequest, isPending } = useApi<UserInfoApiData>({
+    key: 'user-info',
+    showSuccessToast: true,
+    showErrorToast: true,
+  });
 
-  const handleSkip = () => {
-    // Navigate to appropriate portal based on role
-    if (role === 'practitioner') {
-      router.push('/specialist');
-    } else {
-      router.push('/patient');
-    }
+  const handleSubmit = (data: PatientInfoFormData) => {
+    // Convert date from 'yyyy-MM-dd' to ISO 8601 format (date-time)
+    const dateOfBirthISO = data.date_of_birth 
+      ? new Date(data.date_of_birth + 'T00:00:00Z').toISOString()
+      : null;
+
+    // Prepare API data
+    const apiData: UserInfoApiData = {
+      address: data.address || null,
+      dateOfBirth: dateOfBirthISO,
+      gender: data.gender || null,
+      phone: countryCode + data.phone || null, // Combine country code with phone number
+    };
+
+    onRequest({
+      path: '/api/user/info',
+      data: apiData,
+      onSuccess: () => {
+        // Navigate to appropriate portal based on role
+        if (role === 'practitioner') {
+          router.push('/specialist' as any);
+        } else {
+          router.push('/patient' as any);
+        }
+      },
+      onError: (error) => {
+        console.error('Error submitting user info:', error);
+      },
+    });
   };
 
   return (
@@ -88,6 +130,7 @@ function PatientInfoContent() {
         <FormModified
           schema={patientInfoSchema}
           onSubmit={handleSubmit}
+          disabled={isPending}
           defaultValues={{
             date_of_birth: '',
             gender: '',
@@ -159,23 +202,11 @@ function PatientInfoContent() {
                 <Label className="text-muted-foreground mb-2">Phone</Label>
                 <div className="grid grid-cols-3 gap-5 sm:gap-2 mt-2">
                   <div className="col-span-1">
-                    <Select value={countryCode} onValueChange={setCountryCode}>
-                      <SelectTrigger className="w-full border-0 border-b-2 border-border rounded-none px-0 py-2 focus-visible:ring-0 focus-visible:outline-0 focus:border-primary text-sm [&>span]:text-muted-foreground/60">
-                        <SelectValue placeholder="US +1" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="+1">US +1</SelectItem>
-                        <SelectItem value="+44">UK +44</SelectItem>
-                        <SelectItem value="+91">IN +91</SelectItem>
-                        <SelectItem value="+86">CN +86</SelectItem>
-                        <SelectItem value="+81">JP +81</SelectItem>
-                        <SelectItem value="+49">DE +49</SelectItem>
-                        <SelectItem value="+33">FR +33</SelectItem>
-                        <SelectItem value="+39">IT +39</SelectItem>
-                        <SelectItem value="+34">ES +34</SelectItem>
-                        <SelectItem value="+7">RU +7</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <CountryCodeSelect
+                      value={countryCode}
+                      onValueChange={setCountryCode}
+                      disabled={isPending}
+                    />
                   </div>
 
                   <div className="col-span-2">
@@ -197,18 +228,20 @@ function PatientInfoContent() {
                 labelClassName="text-xs text-muted-foreground mb-2"
               />
 
-              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="lg"
-                  onClick={handleSkip}
-                  className="w-full sm:w-auto min-w-[150px]"
+              <div className="flex justify-center items-center">
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  disabled={isPending}
+                  className="w-full sm:w-auto min-w-[250px]"
                 >
-                  Skip
-                </Button>
-                <Button type="submit" size="lg" className="w-full sm:w-auto min-w-[150px]">
-                  Continue
+                  {isPending ? (
+                    <>
+                      <Loader size="sm" variant="default" color="white" className="mr-2" />
+                    </>
+                  ) : (
+                    'Continue'
+                  )}
                 </Button>
               </div>
             </div>

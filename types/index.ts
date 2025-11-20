@@ -8,5 +8,6 @@ export type Post = {
 export enum OnboardingStage {
   ROLE_SELECTION = "ROLE_SELECTION",
   USER_INFO = "USER_INFO",
+  DOCTOR_INFO = "DOCTOR_INFO",
   COMPLETED = "COMPLETED",
 }

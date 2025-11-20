@@ -45,7 +45,7 @@ export default function SettingsPage() {
       <div className="flex gap-2">
         {/* Tab List - Hidden on mobile when content is shown */}
         <div className={cn(
-          'w-full lg:w-[400px] p-6 bg-background rounded-lg',
+          'w-full lg:w-[400px] p-6 bg-background rounded-lg shadow shadow-lg border border-border',
           showTabContent && 'hidden lg:block',
         )}
         >
@@ -84,7 +84,7 @@ export default function SettingsPage() {
         >
           {/* Mobile Header */}
           <div className="lg:hidden mb-4">
-            <div className="flex items-center gap-3 p-4 bg-background rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-background shadow shadow-lg rounded-lg">
               <Button
                 size="icon"
                 variant="ghost"

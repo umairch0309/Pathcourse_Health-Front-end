@@ -1,4 +1,3 @@
-/* eslint-disable unused-imports/no-unused-vars */
 'use client';
 import { Facebook, Instagram, Mail, MapPin, MoveUpRight, Smartphone, Twitter } from 'lucide-react';
 import Link from 'next/link';
@@ -6,6 +5,9 @@ import { useState } from 'react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import FormModified from '@/components/ui/form-modified';
+import useApi from '@/hooks/use-api';
+import { Loader } from '@/components/loader';
+import Image from 'next/image';
 
 // Contact form schema
 const contactSchema = z.object({
@@ -17,9 +19,19 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
+type UserQueryApiData = {
+  message: string;
+  name: string;
+  number: string;
+  email: string;
+};
+
 export default function ContactSection() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState('');
+  const [formKey, setFormKey] = useState(0);
+  const { onRequest, isPending } = useApi<UserQueryApiData>({
+    key: 'create-user-query',
+    method: 'post',
+  });
 
   return (
     <section className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-30 bg-white">
@@ -91,7 +103,19 @@ export default function ContactSection() {
             <FormModified
               schema={contactSchema}
               onSubmit={async (values) => {
-
+                onRequest({
+                  path: '/api/user-queries',
+                  data: {
+                    message: values.message,
+                    name: values.name,
+                    number: values.whatsapp || '',
+                    email: values.email,
+                  },
+                  onSuccess: () => {
+                    // Reset form by changing formKey
+                    setFormKey(prev => prev + 1);
+                  },
+                });
               }}
               defaultValues={{
                 name: '',
@@ -99,7 +123,8 @@ export default function ContactSection() {
                 email: '',
                 message: '',
               }}
-              disabled={isSubmitting}
+              disabled={isPending}
+              formKey={formKey}
             >
               {({ methods, components }) => (
                 <div className="space-y-2">
@@ -133,10 +158,11 @@ export default function ContactSection() {
                   />
 
                   {/* Message Field */}
-                  <components.Input
+                  <components.Textarea
                     name="message"
                     label="Message"
                     placeholder="Write message"
+                    rows={4}
                     labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
                     className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300 resize-none"
                   />
@@ -145,11 +171,25 @@ export default function ContactSection() {
                   <div className="mt-12 sm:mt-16 md:mt-20">
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
-                      className="w-full sm:w-auto"
+                      disabled={isPending}
+                      className="w-full sm:w-auto min-w-[200px]"
                     >
-                      {isSubmitting ? 'Sending...' : 'Send Message'}
-                      <MoveUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                      {isPending ? (
+                        <>
+                          <Loader size="sm" variant="default" className="mr-2" color="white" />
+                        </>
+                      ) : (
+                        <>
+                          Send Message
+                          <Image
+                            src="/MoveUpWhite.svg"
+                            alt=""
+                            width={17}
+                            height={17}
+                            className="inline-block ml-1"
+                          />
+                        </>
+                      )}
                     </Button>
                   </div>
 

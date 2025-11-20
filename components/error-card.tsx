@@ -13,13 +13,6 @@ import { AlertCircle, RefreshCcw } from "lucide-react"
  */
 import { useCallback, useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 export default function ErrorCard({
@@ -86,23 +79,24 @@ export default function ErrorCard({
   const [message] = useState<string>(getErrorMessage(error))
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-destructive">
-          <AlertCircle className="mr-2 h-5 w-5" />
-          Error
-        </CardTitle>
-        <CardDescription>{message}</CardDescription>
-      </CardHeader>
-
-      {/* Show different buttons depending on the error */}
-      <CardFooter className="flex items-center justify-center gap-x-3">
+    <div className="w-full flex items-center justify-center py-12">
+      <div className="flex flex-col items-center justify-center text-center space-y-4 max-w-md">
+        <div className="rounded-full bg-destructive/10 p-4">
+          <AlertCircle className="size-10 text-destructive font-bold" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">Something went wrong</h3>
+          <p className="text-xs text-muted-foreground">{message}</p>
+        </div>
+        
+        {/* Show different buttons depending on the error */}
         {isUnauthorized(error) ? (
           <Button
             onClick={onLogout}
             variant="outline"
-            size="lg"
+            size="sm"
             disabled={isLoading}
+            className="mt-2"
           >
             Logout
           </Button>
@@ -111,8 +105,9 @@ export default function ErrorCard({
             <Button
               onClick={onRetry}
               variant="outline"
-              size="lg"
+              size="sm"
               disabled={isLoading}
+              className="mt-2"
             >
               <RefreshCcw
                 className={cn("mr-2 h-4 w-4", {
@@ -127,8 +122,9 @@ export default function ErrorCard({
             <Button
               onClick={onRetry}
               variant="outline"
-              size="lg"
+              size="sm"
               disabled={isLoading}
+              className="mt-2"
             >
               <RefreshCcw
                 className={cn("mr-2 h-4 w-4", {
@@ -139,7 +135,7 @@ export default function ErrorCard({
             </Button>
           )
         )}
-      </CardFooter>
-    </Card>
+      </div>
+    </div>
   )
 }

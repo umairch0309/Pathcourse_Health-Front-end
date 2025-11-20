@@ -6,19 +6,29 @@ import { InboxIcon } from "lucide-react"
  * @component
  * @returns {JSX.Element} A card component with an inbox icon and message
  */
-import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
-export default function EmptyCard() {
+interface EmptyCardProps {
+  className?: string;
+  message?: string;
+}
+
+export default function EmptyCard({ className, message = "No data available" }: EmptyCardProps) {
   return (
-    <Card className="w-full">
-      <CardContent className="flex flex-col items-center justify-center px-4 py-8 text-center">
-        <div className="mb-4">
-          <InboxIcon className="h-12 w-12 text-muted-foreground" />
+    <div className={cn("w-full flex items-center justify-center py-12", className)}>
+      <div className="flex flex-col items-center justify-center text-center space-y-3">
+        <div className="rounded-full bg-muted/50 p-4">
+          <InboxIcon className="size-10 text-primary font-bold" />
         </div>
-        <p className="text-lg font-medium text-muted-foreground">
-          No data available
-        </p>
-      </CardContent>
-    </Card>
+        <div className="space-y-1">
+          <p className="text-sm font-medium text-foreground">
+            {message}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Try adjusting your search or filters
+          </p>
+        </div>
+      </div>
+    </div>
   )
 }

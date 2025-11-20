@@ -27,6 +27,9 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Loader } from '@/components/loader';
+import EmptyCard from '@/components/empty-card';
+import ErrorCard from '@/components/error-card';
 
 export type Column<T> = {
   key: string;
@@ -74,6 +77,9 @@ export type DataTableProps<T> = {
   hideFilters?: boolean;
   onFilterChange?: (key: string, value: string) => void;
   filterValues?: Record<string, string>;
+  isLoading?: boolean;
+  error?: unknown;
+  onRetry?: () => void;
 };
 
 export function DataTable<T extends Record<string, any>>({
@@ -93,6 +99,9 @@ export function DataTable<T extends Record<string, any>>({
   hideFilters = false,
   onFilterChange,
   filterValues: externalFilterValues,
+  isLoading = false,
+  error,
+  onRetry,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState('');
   const [internalFilterValues, setInternalFilterValues] = useState<Record<string, string>>({});
@@ -155,9 +164,20 @@ export function DataTable<T extends Record<string, any>>({
 
   return (
     <div className={cn('w-full', className)}>
-      {/* Title */}
-      {title && (
+      {/* Title - Mobile: with button on opposite side, Desktop: standalone */}
+      {title && customButton && (
+        <div className="flex items-center justify-between mb-4 sm:hidden">
+          <h2 className="text-lg font-bold text-foreground">{title}</h2>
+          <div className="flex-shrink-0">
+            {customButton}
+          </div>
+        </div>
+      )}
+      {title && !customButton && (
         <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">{title}</h2>
+      )}
+      {title && customButton && (
+        <h2 className="hidden sm:block text-lg sm:text-xl font-bold text-foreground mb-4">{title}</h2>
       )}
       {/* Top Filters Section */}
       <div className="flex flex-col gap-4 mb-4 sm:mb-6">
@@ -174,30 +194,38 @@ export function DataTable<T extends Record<string, any>>({
             </Button>
           )}
 
-          {/* Filter Dropdowns */}
-          {!hideFilters && filters.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-              {filters.map((filter) => (
-                <Select
-                  key={filter.key}
-                  value={filterValues[filter.key] || undefined}
-                  onValueChange={(value) => handleFilterChange(filter.key, value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[140px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
-                    <SelectValue placeholder={filter.placeholder || filter.label} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All</SelectItem>
-                    {filter.options.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ))}
-            </div>
-          )}
+          {/* Filter Dropdowns and Custom Button (Mobile) */}
+          <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+            {!hideFilters && filters.length > 0 && (
+              <>
+                {filters.map((filter) => (
+                  <Select
+                    key={filter.key}
+                    value={filterValues[filter.key] || undefined}
+                    onValueChange={(value) => handleFilterChange(filter.key, value)}
+                  >
+                    <SelectTrigger className="w-full sm:w-[140px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
+                      <SelectValue placeholder={filter.placeholder || filter.label} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {filter.options.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ))}
+              </>
+            )}
+            {/* Custom Button on Mobile (when no title prop) */}
+            {customButton && !title && (
+              <div className="ml-auto sm:hidden">
+                {customButton}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -228,7 +256,7 @@ export function DataTable<T extends Record<string, any>>({
                 className="pl-10 w-full sm:w-[300px] md:w-[350px] border border-border rounded-md"
               />
             </div>
-            <div className="flex-shrink-0">
+            <div className="hidden lg:flex flex-shrink-0">
               {customButton}
             </div>
           </div>
@@ -245,13 +273,33 @@ export function DataTable<T extends Record<string, any>>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.length === 0 ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
-                  className="text-center text-muted-foreground py-8 text-sm"
+                  className="text-center py-8"
                 >
-                  No data found
+                  <div className="flex items-center justify-center">
+                    <Loader size="md" variant="spinner" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
+                  className="p-0"
+                >
+                  <ErrorCard error={error} onRetry={onRetry} isLoading={isLoading} />
+                </TableCell>
+              </TableRow>
+            ) : filteredData.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + (actions.length > 0 ? 1 : 0)}
+                  className="p-0"
+                >
+                  <EmptyCard message="No data found" />
                 </TableCell>
               </TableRow>
             ) : (

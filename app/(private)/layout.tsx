@@ -12,9 +12,24 @@ export default async function ProtectedLayout({
   const headersList = await headers()
   const pathname = headersList.get("x-pathname") || ""
 
-  const session = await getCachedSession()
+  let session
+  let user
 
-  const user = session.data?.user
+  try {
+    session = await getCachedSession()
+    
+    // Check if there was an error fetching the session
+    if (session.error) {
+      console.error("Session fetch error:", session.error)
+      redirect("/auth/login")
+    }
+    
+    user = session.data?.user
+  } catch (error) {
+    // If backend is unavailable or fetch fails, redirect to login
+    console.error("Failed to fetch session:", error)
+    redirect("/auth/login")
+  }
 
   // If no user, redirect to signin
   if (!user) {
@@ -26,15 +41,29 @@ export default async function ProtectedLayout({
   if (user) {
     const onboardingStage = user.onboardingStage as OnboardingStage
 
+    // Special handling for doctor with DOCTOR_INFO stage - keep them on update-profile
+    if (user.role === "doctor" && onboardingStage === OnboardingStage.DOCTOR_INFO) {
+      const isOnUpdateProfile = pathname === "/onboarding/update-profile" || pathname === "/onboarding/update-profile/"
+      if (!isOnUpdateProfile) {
+        console.log(
+          `Doctor with DOCTOR_INFO stage, redirecting from ${pathname} to /onboarding/update-profile`
+        )
+        // @ts-expect-error - Next.js route type inference issue
+        redirect("/onboarding/update-profile")
+      }
+      // Allow them to stay on update-profile page
+      return <>{children}</>
+    }
+
     // If onboarding is not completed, redirect to auth flow
-    if (onboardingStage !== OnboardingStage.COMPLETED) {
-      const stageRoutes = {
+    if (onboardingStage !== OnboardingStage.COMPLETED && onboardingStage !== OnboardingStage.DOCTOR_INFO) {
+      const stageRoutes: Record<OnboardingStage.ROLE_SELECTION | OnboardingStage.USER_INFO, string> = {
         [OnboardingStage.ROLE_SELECTION]: "/onboarding/role-selection",
         [OnboardingStage.USER_INFO]: "/onboarding/extra-info",
       }
 
       const redirectRoute =
-        stageRoutes[onboardingStage] || "/onboarding/role-selection"
+        stageRoutes[onboardingStage as OnboardingStage.ROLE_SELECTION | OnboardingStage.USER_INFO] || "/onboarding/role-selection"
       console.log(
         `User onboarding not completed (stage: ${onboardingStage}), redirecting from ${pathname} to ${redirectRoute}`
       )

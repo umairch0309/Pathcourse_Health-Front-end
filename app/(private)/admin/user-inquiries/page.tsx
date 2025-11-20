@@ -1,45 +1,70 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+import { useState, useMemo } from 'react';
 import { DataTable, type Column, type FilterConfig, type ActionMenuItem } from '@/components/ui/data-table';
-import { userInquiries } from '@/app/data/user-inquiries-table';
 import { useRouter } from 'next/navigation';
+import { useFetch } from '@/hooks/use-fetch';
+import { format } from 'date-fns';
+import { DeleteInquiryModal } from './_components/delete-inquiry-modal';
+import useApi from '@/hooks/use-api';
 
-type UserInquiry = (typeof userInquiries)[0];
+type UserQuery = {
+  id: string;
+  message: string;
+  name: string;
+  number: string;
+  email: string;
+  userId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+};
 
-const columns: Column<UserInquiry>[] = [
+type UserQueryResponse = {
+  userQueries: UserQuery[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+type TableUserQuery = {
+  id: string;
+  name: string;
+  email: string;
+  number: string;
+  message: string;
+  sentOn: string;
+  originalData: UserQuery;
+};
+
+const columns: Column<TableUserQuery>[] = [
   {
-    key: 'id',
-    header: 'ID',
-  },
-  {
-    key: 'user',
-    header: 'User',
-    render: (row) => (
-      <div className="flex items-center gap-2">
-        <Image
-          src={row.user.image}
-          alt={row.user.name}
-          width={32}
-          height={32}
-          className="rounded-full"
-        />
-        <span>{row.user.name}</span>
-      </div>
-    ),
+    key: 'name',
+    header: 'Name',
   },
   {
     key: 'email',
     header: 'Email',
   },
   {
-    key: 'contactNo',
+    key: 'number',
     header: 'Contact no.',
   },
   {
     key: 'message',
     header: 'Message',
+    render: (row) => (
+      <span className="max-w-[200px] truncate block" title={row.message}>
+        {row.message}
+      </span>
+    ),
   },
   {
     key: 'sentOn',
@@ -62,36 +87,100 @@ const filters: FilterConfig[] = [
 
 export default function UserInquiriesPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 5;
-  const router = useRouter()
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedInquiry, setSelectedInquiry] = useState<UserQuery | null>(null);
+  const router = useRouter();
+
+  const { data, isLoading, error, refetch } = useFetch<UserQueryResponse>({
+    path: `/api/user-queries?page=${currentPage}&limit=10`,
+    queryKey: ['user-queries', currentPage],
+  });
+
+  const { onRequest: onDeleteRequest, isPending: isDeleting } = useApi<{ id: string }>({
+    key: 'delete-user-query',
+    method: 'delete',
+  });
+
+  const tableData: TableUserQuery[] = useMemo(() => {
+    if (!data?.userQueries) return [];
+    return data.userQueries.map((item) => ({
+      id: item.id,
+      name: item.name,
+      email: item.email,
+      number: item.number,
+      message: item.message,
+      sentOn: format(new Date(item.createdAt), 'MMM dd, yyyy'),
+      originalData: item,
+    }));
+  }, [data]);
+
+  const handleDelete = (row: TableUserQuery) => {
+    setSelectedInquiry(row.originalData);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!selectedInquiry) return;
+    
+    onDeleteRequest({
+      path: `/api/user-queries/${selectedInquiry.id}`,
+      data: {} as any, // Delete requests don't need body data
+      onSuccess: () => {
+        setDeleteModalOpen(false);
+        setSelectedInquiry(null);
+        refetch();
+      },
+    });
+  };
 
   const actions: ActionMenuItem[] = [
     {
       label: 'View Details',
       onClick: (row, index) => {
-        router.push(`/admin/user-inquiries/${row.id}`)
-        console.log('View Details', row, index);
+        router.push(`/admin/user-inquiries/${(row as TableUserQuery).id}`);
+      },
+    },
+    {
+      label: 'Delete',
+      onClick: (row, index) => {
+        handleDelete(row as TableUserQuery);
       },
     },
   ];
 
+  const totalPages = data?.pagination?.totalPages || 1;
+
   return (
     <div className="w-full">
-      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">User Inquiries</h2>
-
       <DataTable
-        data={userInquiries}
+        data={tableData}
         columns={columns}
         filters={filters}
         actions={actions}
         searchPlaceholder="Search"
         showAllButton={false}
+        isLoading={isLoading}
+        error={error}
+        onRetry={() => {
+          refetch();
+        }}
+        title="User Inquiries"
         pagination={{
           currentPage,
           totalPages,
           onPageChange: (page) => setCurrentPage(page),
         }}
       />
+
+      {selectedInquiry && (
+        <DeleteInquiryModal
+          open={deleteModalOpen}
+          onOpenChange={setDeleteModalOpen}
+          inquiry={selectedInquiry}
+          onConfirm={handleConfirmDelete}
+          isDeleting={isDeleting}
+        />
+      )}
     </div>
   );
 }

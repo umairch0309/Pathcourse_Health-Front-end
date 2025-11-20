@@ -14,7 +14,6 @@ import { Separator } from '@/components/ui/separator';
 import { Typography } from '@/components/ui/typography';
 import { Loader } from '@/components/loader';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import auth from '@/lib/auth';
 import useToast from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -77,12 +76,10 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
   const handleSubmit = async (data: SignupFormData) => {
     setLoading(true);
-    setError(null);
     try {
       // Combine first_name and last_name into name for the API
       const result = await auth.signUp.email(
@@ -105,13 +102,11 @@ export default function SignupPage() {
       // Check if result has an error
       if (result?.error) {
         const errorMessage = result.error.message || 'An error occurred during sign up';
-        setError(errorMessage);
         toastError(errorMessage);
       }
     } catch (error: any) {
       console.error('Sign-up error:', error);
       const errorMessage = error?.message || error?.response?.data?.message || 'Credentials not matched.';
-      setError(errorMessage);
       toastError(errorMessage);
     } finally {
       setLoading(false);
@@ -169,13 +164,6 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {error && (
-            <Alert variant="destructive" className="mb-4 bg-destructive/10 border-destructive/50">
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-destructive">{error}</AlertDescription>
-            </Alert>
-          )}
-
           <FormModified
             schema={signupSchema}
             onSubmit={handleSubmit}
@@ -200,7 +188,7 @@ export default function SignupPage() {
                   />
                   <components.Input 
                     name="last_name" 
-                    label="Name" 
+                    label="Last Name" 
                     placeholder="Doe"
                     labelClassName="text-xs text-muted-foreground mb-2"
                   />
@@ -231,25 +219,26 @@ export default function SignupPage() {
                               field.onChange(e);
                               setPassword(e.target.value);
                             }}
-                            onFocus={() => setShowPasswordRequirements(true)}
+                            onBlur={() => setShowPasswordRequirements(false)}
                             className="flex h-9 w-full rounded-none border-0 border-b-2 border-border bg-transparent px-0 py-1 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:outline-0 focus:border-primary disabled:cursor-not-allowed disabled:opacity-50 pr-20 transition-colors duration-300"
                           />
                           <div className="absolute right-0 top-0 h-full flex items-center gap-1">
-                            <Popover open={showPasswordRequirements} onOpenChange={setShowPasswordRequirements}>
-                              <PopoverTrigger asChild>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-full px-2 py-1 hover:bg-transparent text-muted-foreground"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowPasswordRequirements(!showPasswordRequirements);
-                                  }}
-                                >
-                                  <Info className="h-4 w-4" />
-                                </Button>
-                              </PopoverTrigger>
+                            {password && (
+                              <Popover open={showPasswordRequirements} onOpenChange={setShowPasswordRequirements}>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-full px-2 py-1 hover:bg-transparent text-muted-foreground"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      setShowPasswordRequirements(!showPasswordRequirements);
+                                    }}
+                                  >
+                                    <Info className="h-4 w-4" />
+                                  </Button>
+                                </PopoverTrigger>
                               <PopoverContent className="w-64 p-3" align="end" side="bottom">
                                 <div className="space-y-2">
                                   {password && (
@@ -314,7 +303,8 @@ export default function SignupPage() {
                                   </div>
                                 </div>
                               </PopoverContent>
-                            </Popover>
+                              </Popover>
+                            )}
                             <Button
                               type="button"
                               variant="ghost"

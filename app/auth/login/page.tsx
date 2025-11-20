@@ -11,6 +11,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import FormModified from '@/components/ui/form-modified';
 import { Separator } from '@/components/ui/separator';
 import { Typography } from '@/components/ui/typography';
+import { Loader } from '@/components/loader';
+import auth from '@/lib/auth';
+import useToast from '@/hooks/use-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -22,11 +25,46 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toastError } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (data: LoginFormData) => {
-    console.log('Login data:', data);
-    router.push('/auth/admin/verify-email');
+  const handleSubmit = async (data: LoginFormData) => {
+    setLoading(true);
+    try {
+      const result = await auth.signIn.email(
+        {
+          email: data.email,
+          password: data.password,
+        },
+        {
+          onSuccess(context) {
+            router.refresh();
+            console.log('Login successful:', context);
+            // Redirect to a protected route - the layout will handle role-based redirects
+            // Using window.location for full page reload to ensure session is loaded
+            window.location.href = '/admin';
+          },
+        }
+      );
+      console.log('Login result:', result);
+      
+      // Check if result has an error
+      if (result?.error) {
+        const errorMessage = result.error.message || 'An error occurred during login';
+        toastError(errorMessage);
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const errorMessage = error?.message || error?.response?.data?.message || 'Invalid email or password.';
+      toastError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocialLogin = (provider: 'google' | 'facebook') => {
+    console.log(`Login with ${provider}`);
   };
 
   return (
@@ -44,10 +82,43 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-4 sm:space-y-6 ">
+          <div className="flex flex-col lg:flex-row gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleSocialLogin('google')}
+            >
+              <Image src="/google.svg" alt="Google" width={20} height={20} className="mr-2" />
+              <span className="hidden sm:inline">Continue with Google</span>
+              <span className="sm:hidden">Google</span>
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleSocialLogin('facebook')}
+            >
+              <Image src="/facebook.svg" alt="Facebook" width={20} height={20} className="mr-2" />
+              <span className="hidden sm:inline">Continue with Facebook</span>
+              <span className="sm:hidden">Facebook</span>
+            </Button>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <Separator className="w-full" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <Typography variant="span" className="text-muted-foreground bg-background px-2">
+                or
+              </Typography>
+            </div>
+          </div>
 
           <FormModified
             schema={loginSchema}
             onSubmit={handleSubmit}
+            disabled={loading}
             defaultValues={{
               email: '',
               password: '',
@@ -92,7 +163,7 @@ export default function LoginPage() {
                   </components.Field>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <div className="flex flex-row items-center justify-between">
                   <components.Field name="rememberMe">
                     {field => (
                       <div className="flex items-center space-x-2">
@@ -109,8 +180,19 @@ export default function LoginPage() {
                   </Button>
                 </div>
 
-                <Button type="submit" size="lg" className="flex mx-auto w-full lg:w-[350px] sm:w-auto">
-                  Log In
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  className="flex mx-auto w-full lg:w-[350px] sm:w-auto"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader size="sm" variant="default" color="white" className="mr-2" />
+                    </>
+                  ) : (
+                    'Log In'
+                  )}
                 </Button>
               </div>
             )}

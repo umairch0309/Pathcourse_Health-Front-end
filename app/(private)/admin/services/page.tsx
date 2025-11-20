@@ -1,21 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DataTable, type Column, type FilterConfig, type ActionMenuItem } from '@/components/ui/data-table';
-import { services } from '@/app/data/services-table';
-import { EditServiceModal } from './_components/edit-service-modal';
-import { DeleteServiceModal } from './_components/delete-service-modal';
+import { ViewServiceDetailsModal } from './_components/view-service-details-modal';
 import { useRouter } from 'next/navigation';
+import { useFetch } from '@/hooks/use-fetch';
+import { format } from 'date-fns';
 
-type Service = (typeof services)[0];
+type ServicePricing = {
+  id: string;
+  serviceId: string;
+  service: {
+    id: string;
+    name: string;
+  };
+  duration: number;
+  userPrice: number;
+  doctorAmount: number;
+  platformAmount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
 
-const columns: Column<Service>[] = [
-  {
-    key: 'id',
-    header: 'ID',
-  },
+type ServicePricingResponse = {
+  pricing: ServicePricing[];
+};
+
+type TableService = {
+  serviceId: string;
+  serviceTitle: string;
+  timeDurations: number; // This will be the count of durations
+  addedOn: string;
+  allPricingData: ServicePricing[]; // Store all pricing entries for this service
+};
+
+const columns: Column<TableService>[] = [
   {
     key: 'serviceTitle',
     header: 'Service title',
@@ -23,6 +44,7 @@ const columns: Column<Service>[] = [
   {
     key: 'timeDurations',
     header: 'Time durations',
+    render: (row) => `${row.timeDurations} ${row.timeDurations === 1 ? 'duration' : 'durations'}`,
   },
   {
     key: 'addedOn',
@@ -30,97 +52,80 @@ const columns: Column<Service>[] = [
   },
 ];
 
-const filters: FilterConfig[] = [
-  {
-    label: 'By price',
-    key: 'price',
-    options: [
-      { label: '$0 - $25', value: '0-25' },
-      { label: '$25 - $50', value: '25-50' },
-      { label: '$50+', value: '50+' },
-    ],
-  },
-  {
-    label: 'Sort by',
-    key: 'sort',
-    options: [
-      { label: 'Date (Newest)', value: 'date-newest' },
-      { label: 'Date (Oldest)', value: 'date-oldest' },
-      { label: 'Title (A-Z)', value: 'title-asc' },
-      { label: 'Title (Z-A)', value: 'title-desc' },
-    ],
-  },
-];
-
 export default function ServicesPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const totalPages = 5;
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<ServicePricing[] | null>(null);
   const router = useRouter();
 
-  const handleEdit = (row: Service) => {
-    setSelectedService(row);
-    setEditModalOpen(true);
-  };
+  const { data, isLoading, error } = useFetch<ServicePricingResponse>({
+    path: '/api/service-pricing',
+    queryKey: ['service-pricing'],
+  });
 
-  const handleDelete = (row: Service) => {
-    setSelectedService(row);
-    setDeleteModalOpen(true);
+  const tableData: TableService[] = useMemo(() => {
+    if (!data?.pricing) return [];
+    
+    // Group by serviceId
+    const groupedByService = data.pricing.reduce((acc, item) => {
+      const serviceId = item.serviceId;
+      if (!acc[serviceId]) {
+        acc[serviceId] = {
+          serviceId: item.serviceId,
+          serviceTitle: item.service.name,
+          timeDurations: 0,
+          addedOn: format(new Date(item.createdAt), 'MMM dd, yyyy'),
+          allPricingData: [],
+        };
+      }
+      acc[serviceId].allPricingData.push(item);
+      acc[serviceId].timeDurations = acc[serviceId].allPricingData.length;
+      return acc;
+    }, {} as Record<string, TableService>);
+    
+    return Object.values(groupedByService);
+  }, [data]);
+
+  const handleViewDetails = (row: TableService) => {
+    setSelectedService(row.allPricingData);
+    setViewModalOpen(true);
   };
 
   const actions: ActionMenuItem[] = [
     {
-      label: 'Edit',
+      label: 'View Details',
       onClick: (row, index) => {
-        handleEdit(row);
-      },
-    },
-    {
-      label: 'Delete',
-      onClick: (row, index) => {
-        handleDelete(row);
+        handleViewDetails(row as TableService);
       },
     },
   ];
 
+  const totalPages = 5;
+
   return (
     <div className="w-full">
-      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Services</h2>
 
       <DataTable
-        data={services}
+        data={tableData}
         columns={columns}
-        filters={filters}
         actions={actions}
         searchPlaceholder="Search"
         showAllButton={false}
-        customButton={
-          <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => router.push('/admin/services/add')}>
-            Add Service
-          </Button>
-        }
-        pagination={{
-          currentPage,
-          totalPages,
-          onPageChange: (page) => setCurrentPage(page),
+        isLoading={isLoading}
+        error={error}
+        onRetry={() => {
+          // Refetch data
+          window.location.reload();
         }}
+        title="Services"
       />
 
       {selectedService && (
-        <>
-          <EditServiceModal
-            open={editModalOpen}
-            onOpenChange={setEditModalOpen}
-            service={selectedService}
-          />
-          <DeleteServiceModal
-            open={deleteModalOpen}
-            onOpenChange={setDeleteModalOpen}
-            service={selectedService}
-          />
-        </>
+        <ViewServiceDetailsModal
+          open={viewModalOpen}
+          onOpenChange={setViewModalOpen}
+          service={selectedService}
+        />
       )}
     </div>
   );

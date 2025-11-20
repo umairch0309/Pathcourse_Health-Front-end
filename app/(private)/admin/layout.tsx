@@ -23,7 +23,7 @@ export default function AdminLayout({
             <Header />
             <div className="flex flex-1 pt-[60px] min-h-0 overflow-hidden">
               {!hideSidebar && <AdminSidebar />}
-              <main className="flex-1 bg-muted lg:p-4 md:p-2 p-2 overflow-y-auto min-h-0">
+              <main className="flex-1 bg-muted lg:p-4 md:p-2 p-5 overflow-y-auto min-h-0">
                 {children}
               </main>
             </div>

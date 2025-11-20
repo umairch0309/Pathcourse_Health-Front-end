@@ -7,15 +7,39 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Typography } from '@/components/ui/typography';
+import { Loader } from '@/components/loader';
+import useApi from '@/hooks/use-api';
+
+type RoleType = 'practitioner' | 'patient';
+type ApiRoleType = 'doctor' | 'patient';
 
 export default function RoleSelectionPage() {
   const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<'practitioner' | 'patient' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<RoleType | null>(null);
+  
+  const { onRequest, isPending } = useApi<{ role: ApiRoleType }>({
+    key: 'select-role',
+    showSuccessToast: true,
+    showErrorToast: true,
+  });
 
   const handleContinue = () => {
     if (selectedRole) {
-      // Navigate to extra-info with role parameter
-      router.push(`/extra-info?role=${selectedRole}`);
+      // Map practitioner to doctor for API
+      const apiRole: ApiRoleType = selectedRole === 'practitioner' ? 'doctor' : 'patient';
+      
+      onRequest({
+        path: '/api/user/select-role',
+        data: { role: apiRole },
+        onSuccess: () => {
+          // Navigate to extra-info with role parameter on success
+          // @ts-expect-error - Next.js route type inference issue
+          router.push(`/onboarding/extra-info?role=${selectedRole}`);
+        },
+        onError: (error) => {
+          console.error('Error selecting role:', error);
+        },
+      });
     }
   };
 
@@ -53,13 +77,14 @@ export default function RoleSelectionPage() {
             {/* Practitioner Card */}
             <Card
               className={`
-                w-full sm:w-[280px] lg:w-[320px] p-6 cursor-pointer transition-all duration-300
+                w-full sm:w-[280px] lg:w-[320px] p-6 transition-all duration-300
                 ${selectedRole === 'practitioner'
                   ? 'ring-2 ring-primary shadow-lg border-primary'
                   : 'border-border hover:shadow-md'
                 }
+                ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
-              onClick={() => setSelectedRole('practitioner')}
+              onClick={() => !isPending && setSelectedRole('practitioner')}
             >
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] relative flex items-center justify-center">
@@ -81,13 +106,14 @@ export default function RoleSelectionPage() {
             {/* Patient Card */}
             <Card
               className={`
-                w-full sm:w-[280px] lg:w-[320px] p-6 cursor-pointer transition-all duration-300
+                w-full sm:w-[280px] lg:w-[320px] p-6 transition-all duration-300
                 ${selectedRole === 'patient'
                   ? 'ring-2 ring-primary shadow-lg border-primary'
                   : 'border-border hover:shadow-md'
                 }
+                ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
-              onClick={() => setSelectedRole('patient')}
+              onClick={() => !isPending && setSelectedRole('patient')}
             >
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] relative flex items-center justify-center">
@@ -111,10 +137,16 @@ export default function RoleSelectionPage() {
             <Button
               size="lg"
               onClick={handleContinue}
-              disabled={!selectedRole}
+              disabled={!selectedRole || isPending}
               className="w-full sm:w-auto min-w-[200px] px-8"
             >
-              Continue
+              {isPending ? (
+                <>
+                  <Loader size="sm" variant="default" color="white" className="mr-2" />
+                </>
+              ) : (
+                'Continue'
+              )}
             </Button>
           </div>
         </div>
