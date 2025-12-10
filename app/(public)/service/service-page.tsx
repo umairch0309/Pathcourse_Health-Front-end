@@ -1,7 +1,11 @@
-import Image from 'next/image';
-import { Typography } from '@/components/ui/typography';
+"use client"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
 
 export default function ServicePage() {
+  const router = useRouter()
   return (
     <section className="bg-background py-8 sm:py-10 md:py-12 lg:py-16 px-4 sm:px-6 md:px-8 lg:px-30">
       <div className="container mx-auto">
@@ -12,7 +16,7 @@ export default function ServicePage() {
               variant="h2"
               className="text-foreground font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl"
             >
-              You&apos;re Not Alone in This{' '}
+              You&apos;re Not Alone in This{" "}
               <span className="block">Journey</span>
             </Typography>
 
@@ -27,6 +31,21 @@ export default function ServicePage() {
               postpartum depression, anxiety, or simply need someone to talk to,
               we&apos;re here to help you thrive.
             </Typography>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-primary"
+              onClick={() => router.push("/auth/signup")}
+            >
+              Get Started Now
+              <Image
+                src="/MoveUp.svg"
+                alt="Move Up"
+                width={12}
+                height={12}
+                className="ml-2"
+              />
+            </Button>
           </div>
 
           {/* Right Column - Image */}
@@ -45,6 +64,5 @@ export default function ServicePage() {
         </div>
       </div>
     </section>
-  );
+  )
 }
-

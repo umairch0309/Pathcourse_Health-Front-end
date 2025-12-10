@@ -16,7 +16,7 @@ import { useForm } from "react-hook-form"
 import type { infer as ZodInfer, ZodType, ZodTypeAny, ZodTypeDef } from "zod"
 
 import { cn } from "@/lib/utils"
-
+import S3FileUpload, { type FileType } from "../s3-file-upload"
 import {
   Form,
   FormControl,
@@ -106,6 +106,15 @@ type FormComponents<T extends FieldValues> = {
     props: WrappedFieldProps<T> &
       Omit<React.ComponentProps<"textarea">, "name" | "onChange" | "onBlur">
   ) => ReactNode
+  S3FileUpload: (
+    props: WrappedFieldProps<T> & {
+      singleItem?: boolean
+      fileType?: FileType
+      maxSize?: number
+      disabled?: boolean
+      placeholder?: string
+    }
+  ) => ReactNode
   Field: React.ComponentType<Omit<FormFieldProps<T>, "control">>
 }
 
@@ -154,6 +163,61 @@ function createFormComponents<T extends FieldValues>(
         descriptionClassName={descriptionClassName}
       >
         {(field) => <Textarea {...field} {...rest} />}
+      </FormFieldWrapper>
+    ),
+
+    S3FileUpload: ({
+      name,
+      label,
+      description,
+      formItemClassName,
+      labelClassName,
+      descriptionClassName,
+      singleItem = true,
+      fileType = "all",
+      maxSize,
+      disabled,
+      placeholder,
+    }) => (
+      <FormFieldWrapper
+        control={control}
+        name={name}
+        label={label}
+        description={description}
+        formItemClassName={formItemClassName}
+        labelClassName={labelClassName}
+        descriptionClassName={descriptionClassName}
+      >
+        {(field) => (
+          <S3FileUpload
+            value={field.value}
+            onSuccess={(urls) => {
+              // onSuccess now returns permanent S3 URLs
+              console.log(
+                "FormModified: Received URLs from S3FileUpload:",
+                urls
+              )
+              if (Array.isArray(urls)) {
+                const valueToSet = singleItem ? urls[0] : urls
+                console.log("FormModified: Setting field value to:", valueToSet)
+                field.onChange(valueToSet)
+              } else {
+                const valueToSet = singleItem ? urls : [urls]
+                console.log("FormModified: Setting field value to:", valueToSet)
+                field.onChange(valueToSet)
+              }
+            }}
+            onDelete={() => {
+              console.log("FormModified: Deleting file, clearing field")
+              field.onChange(singleItem ? "" : [])
+            }}
+            singleItem={singleItem}
+            fileType={fileType}
+            maxSize={maxSize}
+            disabled={disabled}
+            placeholder={placeholder}
+          />
+        )}
       </FormFieldWrapper>
     ),
 

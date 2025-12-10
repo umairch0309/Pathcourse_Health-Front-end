@@ -6,6 +6,7 @@ import type React from "react"
 import { useState } from "react"
 
 import { Toaster } from "react-hot-toast"
+import CookieConsent from "@/components/cookie-consent"
 
 const MAX_RETRIES = 2
 
@@ -46,6 +47,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
       {children}
       <Toaster />
       <ReactQueryDevtools initialIsOpen={false} />
+      <CookieConsent />
     </QueryClientProvider>
   )
 }
