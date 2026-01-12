@@ -1,11 +1,11 @@
-'use client';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
+"use client"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
 
 export default function HeroSection() {
-  const router = useRouter();
+  const router = useRouter()
   return (
     <section className="relative min-h-[60vh] sm:min-h-[80vh] lg:min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
@@ -37,12 +37,13 @@ export default function HeroSection() {
               variant="p"
               className="text-white drop-shadow mb-4"
             >
-              HIPAA secure and built for privacy.
+              Non-clinical human support for moments when you just need someone
+              to listen.
             </Typography>
             <Button
               className="rounded-lg px-5 py-4 sm:px-6 sm:py-6 text-base sm:text-lg font-medium text-foreground bg-background hover:bg-background/90"
               variant="outline"
-              onClick={() => router.push('/auth/signup')}
+              onClick={() => router.push("/auth/login")}
             >
               Get Started Now
               <Image
@@ -57,5 +58,5 @@ export default function HeroSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }

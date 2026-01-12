@@ -11,7 +11,6 @@ const educationData = [
     startDate: '2010-09-01',
     completionDate: '2014-06-30',
     instituteAddress: '25 Shattuck St, Boston, MA 02115',
-    transcript: 'transcript_harvard.pdf',
   },
   {
     degreeTitle: 'Bachelor of Science',
@@ -19,7 +18,6 @@ const educationData = [
     startDate: '2006-09-01',
     completionDate: '2010-06-30',
     instituteAddress: '77 Massachusetts Ave, Cambridge, MA 02139',
-    transcript: 'transcript_mit.pdf',
   },
 ];
 
@@ -63,10 +61,6 @@ export default function EducationalInfo() {
                 <div className="text-foreground mb-2 font-medium">Institute address</div>
                 <div className="text-muted-foreground border-b pb-2">{edu.instituteAddress}</div>
               </div>
-              <div>
-                <div className="text-foreground mb-2 font-medium">Transcript/Degree</div>
-                <div className="text-muted-foreground border-b pb-2">{edu.transcript}</div>
-              </div>
             </div>
 
             <div className="hidden lg:grid grid-cols-2">
@@ -76,7 +70,6 @@ export default function EducationalInfo() {
                 <div className="text-foreground border-b p-2 font-medium text-sm">Start date</div>
                 <div className="text-foreground border-b p-2 font-medium text-sm">Completion date</div>
                 <div className="text-foreground border-b p-2 font-medium text-sm">Institute address</div>
-                <div className="text-foreground border-b p-2 font-medium text-sm">Transcript/Degree</div>
               </div>
               <div className="space-y-6">
                 <div className="border-b p-2 text-sm">{edu.degreeTitle}</div>
@@ -88,7 +81,6 @@ export default function EducationalInfo() {
                   {edu.completionDate ? format(parse(edu.completionDate, 'yyyy-MM-dd', new Date()), 'PPP') : '-'}
                 </div>
                 <div className="border-b p-2 text-sm">{edu.instituteAddress}</div>
-                <div className="border-b p-2 text-sm">{edu.transcript}</div>
               </div>
             </div>
 

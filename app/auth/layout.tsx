@@ -1,13 +1,17 @@
-'use client';
+"use client"
 
-import type { ReactNode } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import type { ReactNode } from "react"
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
-  const useResetImage = ['/auth/reset-password', '/auth/verify-email', '/auth/new-password'].includes(pathname);
+  const pathname = usePathname()
+  const useResetImage = [
+    "/auth/reset-password",
+    "/auth/verify-email",
+    "/auth/new-password",
+  ].includes(pathname)
 
   return (
     <div className="relative flex flex-col h-screen">
@@ -33,7 +37,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
         <div className="hidden lg:block w-1/2 h-full relative">
           <Image
-            src={useResetImage ? '/reset.jpg' : '/auth.jpg'}
+            src={useResetImage ? "/reset.jpg" : "/auth.jpg"}
             alt="Auth Background"
             fill
             className="object-cover"
@@ -41,5 +45,5 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

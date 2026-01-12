@@ -1,11 +1,11 @@
-'use client';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
-import { useRouter } from 'next/navigation';
+"use client"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
 
 export default function AboutPage() {
-  const router = useRouter();
+  const router = useRouter()
   return (
     <div className="lg:py-15 py-8 lg:px-20 px-4 bg-white">
       {/* Main Content */}
@@ -19,40 +19,29 @@ export default function AboutPage() {
             </Typography>
 
             <Typography variant="span" className="text-foreground">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis
-              tellus. Sed dignissim, metus nec fringilla accumsan, risus sem sollicitudin lacus, ut rhoncus tellus elit
-              sed risus. Maecenas eget condimentum velit, sit amet feugiat lectus.
+              PathCourse Health is a secure, private platform built around real
+              human connection. We offer non-clinical support through meaningful
+              conversations with trained Specialists who are here to listen
+              without judgment, rush, or scripts. In a world increasingly driven
+              by automation, PathCourse exists to restore something essential:
+              being heard by another person.
             </Typography>
 
-            {/* Mission and Vision Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Our Mission */}
-              <div className="space-y-3">
-                <Typography variant="h3" className="text-foreground">
-                  Our Mission
-                </Typography>
-                <Typography variant="span" className="text-foreground">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis
-                  tellus. Sed dignissim, metus nec fringilla accumsan.
-                </Typography>
-              </div>
-
-              {/* Our Vision */}
-              <div className="space-y-3">
-                <Typography variant="h3" className="text-foreground">
-                  Our Vision
-                </Typography>
-                <Typography variant="span" className="text-foreground">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis
-                  tellus. Sed dignissim, metus nec fringilla accumsan.
-                </Typography>
-              </div>
-            </div>
-
             {/* Get Started Button */}
-            <Button variant="outline" size="lg" className="border-primary" onClick={() => router.push('/auth/signup')}>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-primary"
+              onClick={() => router.push("/auth/login")}
+            >
               Get Started Now
-              <Image src="/MoveUp.svg" alt="Move Up" width={12} height={12} className="ml-2" />
+              <Image
+                src="/MoveUp.svg"
+                alt="Move Up"
+                width={12}
+                height={12}
+                className="ml-2"
+              />
             </Button>
           </div>
 
@@ -72,5 +61,5 @@ export default function AboutPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

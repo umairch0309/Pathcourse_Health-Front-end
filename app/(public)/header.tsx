@@ -1,73 +1,20 @@
-'use client';
-import { Menu, Search, X, User, LogOut, UserCircle } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useRouter } from 'next/navigation';
-import auth from '@/lib/auth';
+"use client"
+import { Menu, Search, X } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export default function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-
-  // Fetch user session
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const session = await auth.getSession();
-        if (session.data?.user) {
-          setUser(session.data.user);
-        }
-      } catch (error) {
-        console.error('Failed to fetch session:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchSession();
-  }, []);
-
-  // Handle click outside dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setUserDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [searchText, setSearchText] = useState("")
+  const router = useRouter()
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await auth.signOut();
-      setUser(null);
-      router.push('/');
-      router.refresh();
-    } catch (error) {
-      console.error('Failed to logout:', error);
-    }
-  };
-
-  const getProfileRoute = () => {
-    if (!user) return '/';
-    if (user.role === 'admin') return '/admin';
-    if (user.role === 'doctor') return '/specialist';
-    if (user.role === 'patient') return '/patient';
-    return '/';
-  };
-
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
 
   return (
     <header className="fixed bg-background w-full z-50">
@@ -76,24 +23,30 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center flex-shrink-0">
             <Link href="/" className="cursor-pointer">
-              <Image src="/logo.svg" alt="Logo" width={100} height={30} className="w-20 sm:w-24 lg:w-[100px] h-auto" />
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width={100}
+                height={30}
+                className="w-20 sm:w-24 lg:w-[100px] h-auto"
+              />
             </Link>
           </div>
 
           {/* Desktop Navigation and Search */}
           <div className="hidden lg:flex items-center flex-1 justify-center gap-6 xl:gap-8">
             <nav className="flex items-center space-x-6 xl:space-x-8">
-              <Link href="/about" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
+              <Link
+                href="/about"
+                className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base"
+              >
                 About
               </Link>
-              <Link href="/service" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
-                Services
-              </Link>
-              <Link href="/contact-us" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
+              <Link
+                href="/contact-us"
+                className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base"
+              >
                 Contact Us
-              </Link>
-              <Link href="/doctors" className="text-foreground hover:text-foreground/90 transition-colors text-sm xl:text-base">
-                Specialists 
               </Link>
             </nav>
 
@@ -106,7 +59,7 @@ export default function Header() {
                   placeholder="Search"
                   className="pl-10 pr-4 py-2 w-32 xl:w-40 rounded-md border-0 focus:ring-0 focus:border-0 shadow-none outline-none text-sm"
                   value={searchText}
-                  onChange={e => setSearchText(e.target.value)}
+                  onChange={(e) => setSearchText(e.target.value)}
                 />
               </div>
             </div>
@@ -123,83 +76,34 @@ export default function Header() {
                   placeholder="Search"
                   className="pl-10 pr-4 py-2 w-40 rounded-md focus:ring-foreground focus:border-foreground text-sm"
                   value={searchText}
-                  onChange={e => setSearchText(e.target.value)}                />
+                  onChange={(e) => setSearchText(e.target.value)}
+                />
               </div>
             </div>
-
-            {/* User Icon - Show on all screen sizes when logged in */}
-            {isLoading ? (
-              <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
-            ) : user ? (
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="cursor-pointer"
-                >
-                  <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-                    <User className="size-6 text-primary" />
-                  </div>
-                </button>
-                {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-background border rounded-lg shadow-lg z-50 overflow-hidden">
-                    <div className="px-4 py-3 border-b border-border">
-                      <p className="text-sm font-semibold text-foreground">
-                        {user.name || 'User'}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                    <div className="py-1">
-                      <button
-                        onClick={() => {
-                          router.push(getProfileRoute());
-                          setUserDropdownOpen(false);
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-muted/50 transition-colors"
-                      >
-                        <UserCircle className="w-4 h-4" />
-                        Profile
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : null}
 
             {/* Action Buttons - Hidden on Mobile */}
             <div className="hidden sm:flex items-center space-x-3">
-              {!user && (
-                <Button variant="outline" className="border-primary" onClick={() => router.push('/auth/login')}>
-                  Login
-                </Button>
-              )}
-              
-              {/* Book Session Button - Show for not authenticated or patient users only */}
-              {(!user || user.role === 'patient') && (
-                <Button variant="default" className="border-primary" onClick={() => router.push('/book-session')}>
-                  Book Session{' '}
-                  <Image
-                    src="/MoveUpWhite.svg"
-                    alt=""
-                    width={17}
-                    height={17}
-                    className="inline-block ml-1"
-                  />
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                className="border-primary"
+                onClick={() => router.push("/auth/login")}
+              >
+                Login
+              </Button>
             </div>
 
             {/* Mobile Menu Button */}
-            <Button variant="outline" size="sm" className="lg:hidden p-2" onClick={toggleMobileMenu}>
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-8 h-8" />}
+            <Button
+              variant="outline"
+              size="sm"
+              className="lg:hidden p-2"
+              onClick={toggleMobileMenu}
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-8 h-8" />
+              )}
             </Button>
           </div>
         </div>
@@ -236,22 +140,20 @@ export default function Header() {
               >
                 Specialists
               </Link>
-              {!user && (
-                <Link href="/auth/login" className="text-muted-foreground hover:text-primary transition-colors py-2" onClick={() => setIsMobileMenuOpen(false)}>
-                  Login
-                </Link>
-              )}
-              
-              {/* Book Session - Show for not authenticated or patient users only */}
-              {(!user || user.role === 'patient') && (
-                <Link
-                  href="/book-session"
-                  className="text-muted-foreground hover:text-primary transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Book Session
-                </Link>
-              )}
+              <Link
+                href="/auth/login"
+                className="text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link
+                href="/book-session"
+                className="text-muted-foreground hover:text-primary transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Book Session
+              </Link>
 
               {/* Mobile Search */}
               <div className="pt-2 border-t border-muted">
@@ -262,7 +164,7 @@ export default function Header() {
                     placeholder="Search"
                     className="pl-10 pr-4 py-2 w-full rounded-md focus:ring-primary focus:border-primary text-sm"
                     value={searchText}
-                    onChange={e => setSearchText(e.target.value)}
+                    onChange={(e) => setSearchText(e.target.value)}
                   />
                 </div>
               </div>
@@ -271,5 +173,5 @@ export default function Header() {
         )}
       </div>
     </header>
-  );
+  )
 }

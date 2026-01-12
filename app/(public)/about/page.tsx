@@ -1,11 +1,8 @@
-import Footer from "../footer";
-import Header from "../header";
-import InfoSection from "../info-section";
-import PoliciesSection from "../policies";
-import PortalsSection from "../portals";
-import Banner from "./about-banner";
-import AboutSection from "./about-page";
-import Specialists from "./specialists";
+import Footer from "../footer"
+import Header from "../header"
+import PoliciesSection from "../policies"
+import Banner from "./about-banner"
+import AboutSection from "./about-page"
 
 export default function Page() {
   return (
@@ -13,11 +10,11 @@ export default function Page() {
       <Header />
       <Banner />
       <AboutSection />
-      <InfoSection />
+      {/* <InfoSection />
       <Specialists />
-      <PortalsSection />
+      <PortalsSection /> */}
       <PoliciesSection />
       <Footer />
     </div>
-  );
+  )
 }

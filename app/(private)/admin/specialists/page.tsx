@@ -1,24 +1,35 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DataTable, type Column, type FilterConfig, type ActionMenuItem } from '@/components/ui/data-table';
-import { specialists } from '@/app/data/specialists-table';
-import { useRouter } from 'next/navigation';
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { specialists } from "@/app/data/specialists-table"
+import { Button } from "@/components/ui/button"
+import {
+  type ActionMenuItem,
+  type Column,
+  DataTable,
+  type FilterConfig,
+} from "@/components/ui/data-table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-type Specialist = (typeof specialists)[0];
+type Specialist = (typeof specialists)[0]
 
 const columns: Column<Specialist>[] = [
   {
-    key: 'id',
-    header: 'ID',
+    key: "id",
+    header: "ID",
   },
   {
-    key: 'specialist',
-    header: 'Specialist',
+    key: "specialist",
+    header: "Specialist",
     render: (row) => (
       <div className="flex items-center gap-2">
         <Image
@@ -33,86 +44,98 @@ const columns: Column<Specialist>[] = [
     ),
   },
   {
-    key: 'email',
-    header: 'Email',
+    key: "email",
+    header: "Email",
   },
   {
-    key: 'contactNo',
-    header: 'Contact no.',
+    key: "contactNo",
+    header: "Contact no.",
   },
   {
-    key: 'specialistIn',
-    header: 'Specialist in',
+    key: "specialistIn",
+    header: "Specialist in",
   },
   {
-    key: 'addedOn',
-    header: 'Added on',
+    key: "addedOn",
+    header: "Added on",
   },
-];
+]
 
 const filters: FilterConfig[] = [
   {
-    label: 'By service',
-    key: 'service',
+    label: "By service",
+    key: "service",
     options: [
-      { label: 'Open Ear', value: 'open ear' },
-      { label: 'Hearing Test', value: 'hearing test' },
-      { label: 'Consultation', value: 'consultation' },
+      { label: "Open Ear", value: "open ear" },
+      { label: "Hearing Test", value: "hearing test" },
+      { label: "Consultation", value: "consultation" },
     ],
   },
   {
-    label: 'Sort by',
-    key: 'sort',
+    label: "Sort by",
+    key: "sort",
     options: [
-      { label: 'Date (Newest)', value: 'date-newest' },
-      { label: 'Date (Oldest)', value: 'date-oldest' },
-      { label: 'Name (A-Z)', value: 'name-asc' },
-      { label: 'Name (Z-A)', value: 'name-desc' },
+      { label: "Date (Newest)", value: "date-newest" },
+      { label: "Date (Oldest)", value: "date-oldest" },
+      { label: "Name (A-Z)", value: "name-asc" },
+      { label: "Name (Z-A)", value: "name-desc" },
     ],
   },
-];
+]
 
 export default function SpecialistsPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState('registered');
-  const [filterValues, setFilterValues] = useState<Record<string, string>>({});
-  const totalPages = 5;
+  const [currentPage, setCurrentPage] = useState(1)
+  const [activeTab, setActiveTab] = useState("registered")
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({})
+  const totalPages = 5
 
-  const router = useRouter();
+  const router = useRouter()
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilterValues((prev) => ({ ...prev, [key]: value }));
-  };
+    setFilterValues((prev) => ({ ...prev, [key]: value }))
+  }
 
   const registeredActions: ActionMenuItem[] = [
     {
-      label: 'View Details',
+      label: "View Details",
       onClick: (row, index) => {
-        router.push(`/admin/specialists/${row.id}` as any);
+        router.push(`/admin/specialists/${row.id}` as any)
       },
     },
-  ];
+  ]
 
   const newRequestsActions: ActionMenuItem[] = [
     {
-      label: 'View Details',
+      label: "View Details",
       onClick: (row, index) => {
-        router.push(`/admin/specialists/detail/${row.id}` as any);
+        router.push(`/admin/specialists/detail/${row.id}` as any)
       },
     },
-  ];
+  ]
 
   return (
     <div className="w-full">
-      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Specialists</h2>
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">
+        Specialists
+      </h2>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <TabsList className="space-x-4">
-            <TabsTrigger className='text-foreground font-semibold data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2' value="registered">Registered</TabsTrigger>
-            <TabsTrigger className='text-foreground font-semibold data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2' value="new-requests">New Requests</TabsTrigger>
+            <TabsTrigger
+              className="text-foreground font-semibold data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
+              value="registered"
+            >
+              Registered
+            </TabsTrigger>
+            <TabsTrigger
+              className="text-foreground font-semibold data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
+              value="new-requests"
+            >
+              New Requests
+            </TabsTrigger>
           </TabsList>
-          
+
           {/* Filter Dropdowns */}
           {filters.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
@@ -120,10 +143,14 @@ export default function SpecialistsPage() {
                 <Select
                   key={filter.key}
                   value={filterValues[filter.key] || undefined}
-                  onValueChange={(value) => handleFilterChange(filter.key, value)}
+                  onValueChange={(value) =>
+                    handleFilterChange(filter.key, value)
+                  }
                 >
                   <SelectTrigger className="w-full sm:w-[140px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
-                    <SelectValue placeholder={filter.placeholder || filter.label} />
+                    <SelectValue
+                      placeholder={filter.placeholder || filter.label}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All</SelectItem>
@@ -151,7 +178,10 @@ export default function SpecialistsPage() {
             filterValues={filterValues}
             onFilterChange={handleFilterChange}
             customButton={
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => router.push('/admin/specialists/add')}>
+              <Button
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => router.push("/admin/specialists/add")}
+              >
                 Add Specialist
               </Button>
             }
@@ -175,7 +205,10 @@ export default function SpecialistsPage() {
             filterValues={filterValues}
             onFilterChange={handleFilterChange}
             customButton={
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => router.push('/admin/specialists/add')}>
+              <Button
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => router.push("/admin/specialists/add")}
+              >
                 Add Specialist
               </Button>
             }
@@ -188,6 +221,5 @@ export default function SpecialistsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }
-

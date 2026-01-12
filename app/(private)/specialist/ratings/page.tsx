@@ -1,109 +1,86 @@
-'use client';
+"use client"
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Star } from 'lucide-react';
-import { DataTable, type Column, type FilterConfig, type ActionMenuItem } from '@/components/ui/data-table';
-import { specialistRatings } from '@/app/data/specialist-ratings-table';
+import { Star } from "lucide-react"
+import { useState } from "react"
+import { specialistRatings } from "@/app/data/specialist-ratings-table"
+import { Button } from "@/components/ui/button"
+import {
+  type ActionMenuItem,
+  type Column,
+  DataTable,
+  type FilterConfig,
+} from "@/components/ui/data-table"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from "@/components/ui/dialog"
 
-type SpecialistRating = (typeof specialistRatings)[0];
+type SpecialistRating = (typeof specialistRatings)[0]
 
 const columns: Column<SpecialistRating>[] = [
   {
-    key: 'id',
-    header: 'ID',
+    key: "user",
+    header: "User",
   },
   {
-    key: 'reviewedBy',
-    header: 'Reviewed by',
-    render: (row) => (
-      <div className="flex items-center gap-2">
-        <Image
-          src={row.reviewedBy.image}
-          alt={row.reviewedBy.name}
-          width={32}
-          height={32}
-          className="rounded-full"
-        />
-        <span>{row.reviewedBy.name}</span>
-      </div>
-    ),
+    key: "sessionReason",
+    header: "Session Reason",
   },
   {
-    key: 'session',
-    header: 'Session',
+    key: "submittedOn",
+    header: "Submitted on",
   },
-  {
-    key: 'rating',
-    header: 'Review',
-    render: (row) => (
-      <div className="flex items-center gap-1">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className="h-4 w-4 fill-blue-600 text-blue-600"
-          />
-        ))}
-        <span className="text-sm">{row.rating.toFixed(1)} rating</span>
-      </div>
-    ),
-  },
-  {
-    key: 'submittedOn',
-    header: 'Submitted on',
-  },
-];
+]
 
 const filters: FilterConfig[] = [
   {
-    label: 'By rating',
-    key: 'rating',
+    label: "By rating",
+    key: "rating",
     options: [
-      { label: '5 Stars', value: '5' },
-      { label: '4 Stars', value: '4' },
-      { label: '3 Stars', value: '3' },
-      { label: '2 Stars', value: '2' },
-      { label: '1 Star', value: '1' },
+      { label: "5 Stars", value: "5" },
+      { label: "4 Stars", value: "4" },
+      { label: "3 Stars", value: "3" },
+      { label: "2 Stars", value: "2" },
+      { label: "1 Star", value: "1" },
     ],
   },
   {
-    label: 'Sort by',
-    key: 'sort',
+    label: "Sort by",
+    key: "sort",
     options: [
-      { label: 'Date (Newest)', value: 'date-newest' },
-      { label: 'Date (Oldest)', value: 'date-oldest' },
-      { label: 'Rating (High to Low)', value: 'rating-high' },
-      { label: 'Rating (Low to High)', value: 'rating-low' },
+      { label: "Date (Newest)", value: "date-newest" },
+      { label: "Date (Oldest)", value: "date-oldest" },
+      { label: "Rating (High to Low)", value: "rating-high" },
+      { label: "Rating (Low to High)", value: "rating-low" },
     ],
   },
-];
+]
 
 export default function RatingsPage() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 5;
-  const [selectedReview, setSelectedReview] = useState<SpecialistRating | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1)
+  const totalPages = 5
+  const [selectedReview, setSelectedReview] = useState<SpecialistRating | null>(
+    null
+  )
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const actions: ActionMenuItem[] = [
     {
-      label: 'View Details',
-      onClick: (row, index) => {
-        setSelectedReview(row);
-        setIsDialogOpen(true);
+      label: "View Details",
+      onClick: (row) => {
+        setSelectedReview(row)
+        setIsDialogOpen(true)
       },
     },
-  ];
+  ]
 
   return (
     <div className="w-full">
-      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">Rating & Reviews</h2>
+      <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">
+        Rating & Reviews
+      </h2>
 
       <DataTable
         data={specialistRatings}
@@ -129,7 +106,7 @@ export default function RatingsPage() {
               <div className="flex items-center gap-2">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
-                    key={i}
+                    key={`star-${selectedReview.user}-${i}`}
                     className="h-5 w-5 fill-blue-600 text-blue-600"
                   />
                 ))}
@@ -138,7 +115,7 @@ export default function RatingsPage() {
                 </span>
               </div>
               <div className="text-sm text-foreground leading-relaxed">
-                {selectedReview.reviewText || 'No review text available.'}
+                {selectedReview.reviewText || "No review text available."}
               </div>
               <div className="flex justify-end pt-4">
                 <Button
@@ -153,6 +130,5 @@ export default function RatingsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }
-
