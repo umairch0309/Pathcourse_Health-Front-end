@@ -1,11 +1,32 @@
 "use client"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/typography"
+import auth from "@/lib/auth"
 
 export default function HeroSection() {
   const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user) {
+          setIsLoggedIn(true)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    checkAuth()
+  }, [])
+
   return (
     <section className="relative min-h-[60vh] sm:min-h-[80vh] lg:min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
@@ -40,20 +61,22 @@ export default function HeroSection() {
               Non-clinical human support for moments when you just need someone
               to listen.
             </Typography>
-            <Button
-              className="rounded-lg px-5 py-4 sm:px-6 sm:py-6 text-base sm:text-lg font-medium text-foreground bg-background hover:bg-background/90"
-              variant="outline"
-              onClick={() => router.push("/auth/login")}
-            >
-              Get Started Now
-              <Image
-                src="/MoveUp.svg"
-                alt=""
-                width={11}
-                height={11}
-                className="inline-block ml-1"
-              />
-            </Button>
+            {!isLoading && !isLoggedIn && (
+              <Button
+                className="rounded-lg px-5 py-4 sm:px-6 sm:py-6 text-base sm:text-lg font-medium text-foreground bg-background hover:bg-background/90"
+                variant="outline"
+                onClick={() => router.push("/auth/login")}
+              >
+                Get Started Now
+                <Image
+                  src="/MoveUp.svg"
+                  alt=""
+                  width={11}
+                  height={11}
+                  className="inline-block ml-1"
+                />
+              </Button>
+            )}
           </div>
         </div>
       </div>

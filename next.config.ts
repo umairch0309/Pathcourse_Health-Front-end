@@ -9,6 +9,22 @@ const nextConfig: NextConfig = {
     position: "bottom-right",
   },
   typedRoutes: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pathcourse.s3.eu-north-1.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.s3.eu-north-1.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.s3.*.amazonaws.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

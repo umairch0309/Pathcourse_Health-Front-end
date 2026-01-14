@@ -59,6 +59,24 @@ export default async function ProtectedLayout({
       return <>{children}</>
     }
 
+    // Special handling for REJECTED stage - keep them on rejected page
+    if (onboardingStage === OnboardingStage.REJECTED) {
+      const isOnRejectedPage =
+        pathname === "/onboarding/rejected" ||
+        pathname === "/onboarding/rejected/" ||
+        pathname === "/onboarding/update-profile" ||
+        pathname === "/onboarding/update-profile/"
+      if (!isOnRejectedPage) {
+        console.log(
+          `User with REJECTED stage, redirecting from ${pathname} to /onboarding/rejected`
+        )
+        // @ts-expect-error - Next.js route type inference issue
+        redirect("/onboarding/rejected")
+      }
+      // Allow them to stay on rejected or update-profile page
+      return <>{children}</>
+    }
+
     // Special handling for doctor with DOCTOR_INFO stage - keep them on update-profile
     if (
       user.role === "doctor" &&

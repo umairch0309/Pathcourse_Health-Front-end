@@ -1,8 +1,36 @@
 "use client"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
 import { Typography } from "@/components/ui/typography"
+import auth from "@/lib/auth"
 
 export default function ServicesSection() {
+  const router = useRouter()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user) {
+          setIsLoggedIn(true)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    checkAuth()
+  }, [])
+
+  const handleBookAppointment = () => {
+    router.push("/book-session")
+  }
+
   return (
     <section className="container mx-auto px-4 sm:px-6 lg:px-20 py-12 sm:py-16 lg:py-20">
       {/* Section Heading */}
@@ -21,12 +49,31 @@ export default function ServicesSection() {
           </Typography>
 
           <Typography as="p" variant="p" className="text-white">
-            Open Ear is PathCourse Health’s on-demand listening experience,
+            Open Ear is PathCourse Health's on-demand listening experience,
             grounded in empathy rather than algorithms. It connects you with a
             real Specialist for a private, non-clinical conversation focused on
             presence, understanding, and perspective. No diagnosis. No
             treatment. Just a human connection when you need someone to talk to.
           </Typography>
+
+          {!isLoading && isLoggedIn && (
+            <div className="pt-2">
+              <Button
+                onClick={handleBookAppointment}
+                size="lg"
+                variant="outline"
+              >
+                Book Appointment
+                <Image
+                  src="/MoveUp.svg"
+                  alt="Move Up"
+                  width={12}
+                  height={12}
+                  className="inline-block ml-1"
+                />
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Right Image Section (40%) */}

@@ -311,7 +311,7 @@ export default function GeneralInfo() {
               Upload Documents
             </Typography>
 
-            <div className="space-y-6">
+            <div className="space-y-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Typography
                   variant="p"
@@ -354,9 +354,9 @@ export default function GeneralInfo() {
                 <components.S3FileUpload
                   name="introductionVideo"
                   singleItem={true}
-                  fileType="all"
-                  maxSize={100 * 1024 * 1024} // 100MB
-                  placeholder="Upload introduction video (Max 100MB)"
+                  fileType="videos"
+                  maxSize={200 * 1024 * 1024} // 200MB
+                  placeholder="Upload introduction video (Max 200MB)"
                 />
               </div>
             </div>

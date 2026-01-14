@@ -24,9 +24,9 @@ export default function SignupPage() {
         </div>
 
         <div className="space-y-4">
-          <Button
-            type="button"
-            variant="outline"
+            <Button
+              type="button"
+              variant="outline"
             size="lg"
             className="w-full h-auto p-6 flex flex-col items-center justify-center gap-3 hover:bg-primary/5 hover:border-primary transition-colors"
             onClick={() => router.push('/auth/signup/patient')}
@@ -37,15 +37,15 @@ export default function SignupPage() {
                 <Typography variant="h6" className="font-semibold">
                   Patient Signup
                 </Typography>
-                <Typography variant="span" className="text-xs text-muted-foreground">
+                                        <Typography variant="span" className="text-xs text-muted-foreground">
                   Create a patient account
-                </Typography>
-              </div>
-            </div>
-          </Button>
+                                            </Typography>
+                                  </div>
+                                </div>
+                            </Button>
 
-          <Button
-            type="button"
+                        <Button
+                          type="button"
             variant="outline"
             size="lg"
             className="w-full h-auto p-6 flex flex-col items-center justify-center gap-3 hover:bg-primary/5 hover:border-primary transition-colors"
@@ -59,19 +59,19 @@ export default function SignupPage() {
                 </Typography>
                 <Typography variant="span" className="text-xs text-muted-foreground">
                   Create a doctor account
-                </Typography>
+                        </Typography>
+                      </div>
+                </div>
+                </Button>
               </div>
-            </div>
-          </Button>
-        </div>
 
-        <div className="text-center">
-          <Typography variant="span" className="text-foreground/60">
-            Have an account? {' '}
-            <Link href="/auth/login">
-              <span className='font-bold hover:underline text-foreground'>Login</span>
-            </Link>
-          </Typography>
+          <div className="text-center">
+            <Typography variant="span" className="text-foreground/60">
+              Have an account? {' '}
+              <Link href="/auth/login">
+                <span className='font-bold hover:underline text-foreground'>Login</span>
+              </Link>
+            </Typography>
         </div>
       </div>
     </div>

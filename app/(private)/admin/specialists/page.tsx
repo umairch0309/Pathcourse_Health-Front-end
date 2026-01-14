@@ -1,9 +1,9 @@
 "use client"
 
-import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { specialists } from "@/app/data/specialists-table"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   type ActionMenuItem,
@@ -19,29 +19,83 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useFetch } from "@/hooks/use-fetch"
 
 type Specialist = (typeof specialists)[0]
 
+type DoctorRequest = {
+  id: string
+  userid: string
+  professional_contact: string
+  professional_email: string
+  secondary_contact: string | null
+  isAvailable: boolean
+  isInMeeting: boolean
+  rejectReason: string | null
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+    role: string
+    onboardingStage: string
+    createdAt: string
+  }
+  documents: {
+    id: string
+    resume: string | null
+    medicalLicense: string | null
+    introductionVideo: string | null
+  } | null
+  education: Array<{
+    id: string
+    degree: string
+    institution_name: string
+    startYear: string
+    endYear: string
+  }>
+  professionalExperience: {
+    id: string
+    profession: string
+    special_interest_area: string
+    age_group: string
+    languages: string[]
+  } | null
+}
+
+type DoctorRequestsResponse = {
+  doctors: DoctorRequest[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
 const columns: Column<Specialist>[] = [
-  {
-    key: "id",
-    header: "ID",
-  },
   {
     key: "specialist",
     header: "Specialist",
-    render: (row) => (
-      <div className="flex items-center gap-2">
-        <Image
-          src={row.specialist.image}
-          alt={row.specialist.name}
-          width={32}
-          height={32}
-          className="rounded-full"
-        />
-        <span>{row.specialist.name}</span>
-      </div>
-    ),
+    render: (row) => {
+      const initials = row.specialist.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+      return (
+        <div className="flex items-center gap-2">
+          <Avatar className="size-8">
+            <AvatarImage src={row.specialist.image} alt={row.specialist.name} />
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+          <span>{row.specialist.name}</span>
+        </div>
+      )
+    },
   },
   {
     key: "email",
@@ -87,19 +141,54 @@ export default function SpecialistsPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [activeTab, setActiveTab] = useState("registered")
   const [filterValues, setFilterValues] = useState<Record<string, string>>({})
-  const totalPages = 5
-
   const router = useRouter()
+
+  // Fetch doctor requests for New Requests tab
+  const doctorRequestsPath = useMemo(() => {
+    const params = new URLSearchParams()
+    params.append("page", currentPage.toString())
+    params.append("limit", "10")
+    return `/api/admin/doctor-requests?${params.toString()}`
+  }, [currentPage])
+
+  const { data: doctorRequestsData, isLoading: isLoadingRequests } =
+    useFetch<DoctorRequestsResponse>({
+      path: doctorRequestsPath,
+      queryKey: ["doctor-requests", currentPage],
+      config: {
+        enabled: activeTab === "new-requests",
+      },
+    })
 
   const handleFilterChange = (key: string, value: string) => {
     setFilterValues((prev) => ({ ...prev, [key]: value }))
   }
 
+  // Transform doctor requests to table format
+  const transformedDoctorRequests = useMemo(() => {
+    if (!doctorRequestsData?.doctors) return []
+    return doctorRequestsData.doctors.map((doctor) => ({
+      id: doctor.id,
+      specialist: {
+        name: doctor.user.name,
+        image: doctor.user.image || "/doc-1.svg",
+      },
+      email: doctor.user.email,
+      contactNo: doctor.professional_contact || "-",
+      specialistIn: doctor.professionalExperience?.profession || "-",
+      addedOn: new Date(doctor.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    }))
+  }, [doctorRequestsData])
+
   const registeredActions: ActionMenuItem[] = [
     {
       label: "View Details",
-      onClick: (row, index) => {
-        router.push(`/admin/specialists/${row.id}` as any)
+      onClick: (row) => {
+        router.push(`/admin/specialists/${row.id}` as never)
       },
     },
   ]
@@ -107,8 +196,8 @@ export default function SpecialistsPage() {
   const newRequestsActions: ActionMenuItem[] = [
     {
       label: "View Details",
-      onClick: (row, index) => {
-        router.push(`/admin/specialists/detail/${row.id}` as any)
+      onClick: (row) => {
+        router.push(`/admin/specialists/detail/${row.id}` as never)
       },
     },
   ]
@@ -187,7 +276,7 @@ export default function SpecialistsPage() {
             }
             pagination={{
               currentPage,
-              totalPages,
+              totalPages: 5,
               onPageChange: (page) => setCurrentPage(page),
             }}
           />
@@ -195,7 +284,7 @@ export default function SpecialistsPage() {
 
         <TabsContent value="new-requests" className="mt-0">
           <DataTable
-            data={specialists}
+            data={transformedDoctorRequests}
             columns={columns}
             filters={filters}
             actions={newRequestsActions}
@@ -204,19 +293,16 @@ export default function SpecialistsPage() {
             hideFilters={true}
             filterValues={filterValues}
             onFilterChange={handleFilterChange}
-            customButton={
-              <Button
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => router.push("/admin/specialists/add")}
-              >
-                Add Specialist
-              </Button>
+            isLoading={isLoadingRequests}
+            pagination={
+              doctorRequestsData?.pagination
+                ? {
+                    currentPage: doctorRequestsData.pagination.page,
+                    totalPages: doctorRequestsData.pagination.totalPages,
+                    onPageChange: (page) => setCurrentPage(page),
+                  }
+                : undefined
             }
-            pagination={{
-              currentPage,
-              totalPages,
-              onPageChange: (page) => setCurrentPage(page),
-            }}
           />
         </TabsContent>
       </Tabs>

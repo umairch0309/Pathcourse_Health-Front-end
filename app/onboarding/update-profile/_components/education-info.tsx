@@ -30,7 +30,6 @@ const educationSchema = z.object({
           instituteName: z.string().min(1, "Institute name is required"),
           startDate: z.string().min(1, "Start date is required"),
           completionDate: z.string().optional(), // Optional for ongoing education
-          transcript: z.string().optional(), // S3 key
         })
         .refine(
           (data) => {
@@ -78,7 +77,6 @@ type EducationApiRequest = {
     degree: string
     startYear: string
     endYear?: string | null
-    document?: string | null
     institution_name: string
   }>
 }
@@ -154,39 +152,10 @@ export default function EducationalInfo() {
         ? new Date(edu.completionDate + "T00:00:00.000Z").toISOString()
         : null
 
-      // S3FileUpload passes S3 KEYS (not URLs) - store the key directly
-      // Extract key from URL if it's a URL (backward compatibility with old data)
-      let documentKey: string | null = null
-      if (edu.transcript?.trim()) {
-        if (edu.transcript.startsWith("http")) {
-          // Extract S3 key from URL (for backward compatibility)
-          try {
-            const url = new URL(edu.transcript)
-            const pathname = url.pathname
-            const parts = pathname.split("/").filter(Boolean)
-            // Remove bucket name (pathcourse or international.hc)
-            if (parts[0] === "pathcourse" || parts[0] === "international.hc") {
-              parts.shift()
-            }
-            documentKey = parts.join("/")
-          } catch {
-            // Fallback: try regex extraction
-            const match = edu.transcript.match(
-              /\/pathcourse\/(.+)|international\.hc\/(.+)/
-            )
-            documentKey = match ? match[1] || match[2] : edu.transcript
-          }
-        } else {
-          // Value is already a key - use it directly
-          documentKey = edu.transcript
-        }
-      }
-
       return {
         degree: edu.degreeTitle,
         startYear: startYearISO,
         endYear: endYearISO,
-        document: documentKey, // Store S3 key (not URL) in database
         institution_name: edu.instituteName,
       }
     })
@@ -221,36 +190,6 @@ export default function EducationalInfo() {
   const getCalendarKey = (type: "start" | "completion", index: number) =>
     `${type}-${index}`
 
-  // Helper function to extract S3 key from URL or return key as-is
-  const extractDocumentKey = (
-    documentValue: string | null | undefined
-  ): string => {
-    if (!documentValue) return ""
-
-    // If it's a URL, extract the key
-    if (documentValue.startsWith("http")) {
-      try {
-        const url = new URL(documentValue)
-        const pathname = url.pathname
-        const parts = pathname.split("/").filter(Boolean)
-        // Remove bucket name (pathcourse or international.hc)
-        if (parts[0] === "pathcourse" || parts[0] === "international.hc") {
-          parts.shift()
-        }
-        return parts.join("/")
-      } catch {
-        // Fallback: try regex extraction
-        const match = documentValue.match(
-          /\/pathcourse\/(.+)|international\.hc\/(.+)/
-        )
-        return match ? match[1] || match[2] : documentValue
-      }
-    }
-
-    // If it's already a key, return as-is
-    return documentValue
-  }
-
   // Helper function to convert ISO 8601 to yyyy-MM-dd
   const isoToDateString = (isoString: string | null | undefined): string => {
     if (!isoString) return ""
@@ -271,7 +210,6 @@ export default function EducationalInfo() {
           instituteName: edu.institution_name || "",
           startDate: isoToDateString(edu.startYear),
           completionDate: isoToDateString(edu.endYear),
-          transcript: extractDocumentKey(edu.document), // Store KEY in form field (S3FileUpload will display it correctly)
         })),
       }
     }
@@ -282,7 +220,6 @@ export default function EducationalInfo() {
         instituteName: "",
         startDate: "",
         completionDate: "",
-        transcript: "",
       })),
     }
   }
@@ -448,14 +385,6 @@ export default function EducationalInfo() {
                   }}
                 </components.Field>
               </div>
-
-              <components.S3FileUpload
-                name={`education.${index}.transcript`}
-                singleItem={true}
-                fileType="documents"
-                maxSize={10 * 1024 * 1024} // 10MB
-                placeholder="Upload transcript/degree"
-              />
 
               <div className="flex">
                 {entries.length > 1 && (

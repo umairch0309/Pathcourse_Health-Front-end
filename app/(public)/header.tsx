@@ -1,19 +1,93 @@
 "use client"
-import { Menu, Search, X } from "lucide-react"
+import { LogOut, Menu, Search, User, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import useToast from "@/hooks/use-toast"
+import auth from "@/lib/auth"
+
+type AuthUser = {
+  id?: string
+  name?: string | null
+  email?: string | null
+  role?: "admin" | "doctor" | "patient"
+}
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchText, setSearchText] = useState("")
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false)
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { toastSuccess, toastError } = useToast()
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user) {
+          setUser(session.data.user as AuthUser)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchSession()
+  }, [])
+
+  // Handle click outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut()
+      toastSuccess("Logged out successfully")
+      setUser(null)
+      setUserDropdownOpen(false)
+      setTimeout(() => {
+        router.push("/")
+        router.refresh()
+      }, 500)
+    } catch (error) {
+      console.error("Failed to logout:", error)
+      toastError("Failed to logout. Please try again.")
+    }
+  }
+
+  const getDashboardPath = (role?: string) => {
+    switch (role) {
+      case "admin":
+        return "/admin"
+      case "doctor":
+        return "/specialist"
+      case "patient":
+        return "/patient"
+      default:
+        return "/"
+    }
   }
 
   return (
@@ -83,13 +157,60 @@ export default function Header() {
 
             {/* Action Buttons - Hidden on Mobile */}
             <div className="hidden sm:flex items-center space-x-3">
-              <Button
-                variant="outline"
-                className="border-primary"
-                onClick={() => router.push("/auth/login")}
-              >
-                Login
-              </Button>
+              {!isLoading && user ? (
+                <div className="relative" ref={dropdownRef}>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-primary"
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  >
+                    <User className="w-5 h-5" />
+                  </Button>
+                  {userDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-background border rounded-lg shadow-lg z-50 overflow-hidden">
+                      {user && (
+                        <>
+                          <div className="px-4 py-3 border-b border-border">
+                            <p className="text-sm font-semibold text-foreground">
+                              {user.name || "User"}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {user.email}
+                            </p>
+                          </div>
+                          <div className="py-1">
+                            <Link
+                              href={getDashboardPath(user.role)}
+                              className="flex items-center gap-3 px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+                              onClick={() => setUserDropdownOpen(false)}
+                            >
+                              <User className="w-4 h-4" />
+                              Profile
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={handleLogout}
+                              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                            >
+                              <LogOut className="w-4 h-4" />
+                              Logout
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="border-primary"
+                  onClick={() => router.push("/auth/login")}
+                >
+                  Login
+                </Button>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -140,20 +261,54 @@ export default function Header() {
               >
                 Specialists
               </Link>
-              <Link
-                href="/auth/login"
-                className="text-muted-foreground hover:text-primary transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                href="/book-session"
-                className="text-muted-foreground hover:text-primary transition-colors py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Book Session
-              </Link>
+              {!isLoading && user ? (
+                <>
+                  <div className="px-2 py-2 border-b border-muted">
+                    <p className="text-sm font-semibold text-foreground">
+                      {user.name || "User"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                  <Link
+                    href={getDashboardPath(user.role)}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="w-4 h-4" />
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleLogout()
+                      setIsMobileMenuOpen(false)
+                    }}
+                    className="flex items-center gap-2 text-destructive hover:text-destructive/80 transition-colors py-2 w-full text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="text-muted-foreground hover:text-primary transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/book-session"
+                    className="text-muted-foreground hover:text-primary transition-colors py-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Book Session
+                  </Link>
+                </>
+              )}
 
               {/* Mobile Search */}
               <div className="pt-2 border-t border-muted">

@@ -112,17 +112,12 @@ export default function WaitingForAdminPage() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col">
                   {user?.name && (
-                    <Typography variant="span" className="text-xs font-medium">
-                      {user.name}
-                    </Typography>
+                    <div className="text-sm font-medium">{user.name}</div>
                   )}
                   {user?.email && (
-                    <Typography
-                      variant="span"
-                      className="text-xs text-muted-foreground"
-                    >
+                    <div className="text-sm text-muted-foreground">
                       {user.email}
-                    </Typography>
+                    </div>
                   )}
                 </div>
               </DropdownMenuLabel>

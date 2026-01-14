@@ -9,6 +9,7 @@ import {
   Loader2,
   Trash2,
   Upload,
+  Video,
   X,
 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
@@ -24,7 +25,7 @@ import {
 import { buildRequestUrl, cn } from "@/lib/utils"
 
 // File type definitions
-export type FileType = "images" | "documents" | "all"
+export type FileType = "images" | "documents" | "videos" | "all"
 
 interface S3FileUploadProps {
   onSuccess?: (keys: string | string[]) => void // Return key(s) directly
@@ -60,6 +61,11 @@ const FILE_TYPE_CONFIG = {
     description: "PDF, DOC, XLS, PPT",
     icon: File,
   },
+  videos: {
+    accept: "video/*",
+    description: "MP4, MOV, AVI, WEBM",
+    icon: Video,
+  },
   all: {
     accept: "*",
     description: "Any file type",
@@ -91,6 +97,15 @@ function extractFileNameFromUrl(url: string): string {
     const segments = url.split("/")
     return segments[segments.length - 1] || "Unknown file"
   }
+}
+
+// Helper function to truncate filename for display
+function truncateFileName(fileName: string, maxLength: number = 30): string {
+  if (fileName.length <= maxLength) return fileName
+  const extension = fileName.split(".").pop()
+  const nameWithoutExt = fileName.slice(0, fileName.lastIndexOf("."))
+  const truncatedName = nameWithoutExt.slice(0, maxLength - extension!.length - 4) // -4 for "..."
+  return `${truncatedName}...${extension}`
 }
 
 function getFileTypeFromUrl(url: string): string {
@@ -730,9 +745,12 @@ export default function S3FileUpload({
 
                   {/* Image Info */}
                   <div className="p-3 flex items-center justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
-                        {file.name}
+                    <div className="min-w-0 flex-1 max-w-[calc(100%-3rem)]">
+                      <p
+                        className="truncate text-sm font-medium"
+                        title={file.name}
+                      >
+                        {truncateFileName(file.name, 30)}
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
                         {file.size > 0 ? formatBytes(file.size) : "Uploaded"}
@@ -774,9 +792,12 @@ export default function S3FileUpload({
                   </div>
 
                   {/* Document Info */}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">
-                      {file.name}
+                  <div className="min-w-0 flex-1 max-w-[calc(100%-4rem)]">
+                    <p
+                      className="truncate text-sm font-semibold"
+                      title={file.name}
+                    >
+                      {truncateFileName(file.name, 30)}
                     </p>
                     <div className="mt-1 flex items-center gap-2">
                       <span className="text-xs text-muted-foreground">
@@ -958,9 +979,12 @@ export default function S3FileUpload({
                     </div>
                   )}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {fileItem.file.name}
+                <div className="min-w-0 flex-1 max-w-[calc(100%-4rem)]">
+                  <p
+                    className="truncate text-sm font-medium"
+                    title={fileItem.file.name}
+                  >
+                    {truncateFileName(fileItem.file.name, 30)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {formatBytes(fileItem.file.size)}

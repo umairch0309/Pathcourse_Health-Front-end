@@ -1,89 +1,75 @@
-import Image from 'next/image';
-import { Typography } from '@/components/ui/typography';
+import { Typography } from "@/components/ui/typography"
 
-export default function EducationInfo() {
+type Doctor = {
+  education: Array<{
+    id: string
+    degree: string
+    institution_name: string
+    startYear: string
+    endYear: string
+  }>
+}
+
+type EducationInfoProps = {
+  doctor: Doctor
+}
+
+export default function EducationInfo({ doctor }: EducationInfoProps) {
+  if (!doctor.education || doctor.education.length === 0) {
+    return (
+      <div className="space-y-6">
+        <Typography variant="p" className="text-foreground">
+          No education information available.
+        </Typography>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div className="bg-muted rounded-lg p-4 space-y-4">
-        <Typography variant="p" className="font-bold text-foreground">Degree 01</Typography>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <div className="text-sm text-muted-foreground">Title</div>
-            <div className="text-md text-foreground">M.B.B.S</div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Institute:</div>
-            <div className="text-md text-foreground">Oxford University</div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Start date:</div>
-            <div className="text-md text-foreground">September 2014</div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Completion date</div>
-            <div className="text-md text-foreground">August 2020</div>
-          </div>
-        </div>
-        <div>
-          <div className="text-sm text-muted-foreground">Institute location:</div>
-          <div className="text-md text-foreground">4517 Washington Ave, Manchester, Kentucky 39495</div>
-        </div>
-
-        <div className="pt-2">
-          <Typography variant="span" className="font-bold text-foreground">Attached File</Typography>
-          <div className="flex items-center gap-2 mt-1">
-            <Image
-              src="/pdf.svg"
-              alt="pdf"
-              width={40}
-              height={40}
-            />
-            <Typography variant="p" className="text-foreground">
-              Degree.pdf
-            </Typography>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-muted rounded-lg p-4 space-y-4">
-        <Typography variant="p" className="font-bold text-foreground">Degree 02</Typography>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div>
-            <div className="text-sm text-muted-foreground">Title</div>
-            <div className="text-md text-foreground">M.B.B.S</div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Institute:</div>
-            <div className="text-md text-foreground">Oxford University</div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Start date:</div>
-            <div className="text-md text-foreground">September 2014</div>
-          </div>
-          <div>
-            <div className="text-sm text-muted-foreground">Completion date</div>
-            <div className="text-md text-foreground">August 2020</div>
-          </div>
-        </div>
-        <div>
-          <div className="text-sm text-muted-foreground">Institute location:</div>
-          <div className="text-md text-foreground">4517 Washington Ave, Manchester, Kentucky 39495</div>
-        </div>
-        <div className="pt-2">
-          <Typography variant="span" className="font-bold text-foreground">Attached File</Typography>
-          <div className="flex items-center gap-2 mt-1">
-            <Image
-              src="/pdf.svg"
-              alt="pdf"
-              width={40}
-              height={40}
-            />
-            <div className="text-md text-foreground">
-              Degree.pdf
+      {doctor.education.map((edu, index) => (
+        <div key={edu.id} className="bg-muted rounded-lg p-4 space-y-4">
+          <Typography variant="p" className="font-bold text-foreground">
+            Degree {String(index + 1).padStart(2, "0")}
+          </Typography>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <div className="text-sm text-muted-foreground">Title</div>
+              <div className="text-md text-foreground">{edu.degree || "-"}</div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Institute:</div>
+              <div className="text-md text-foreground">
+                {edu.institution_name || "-"}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Start date:</div>
+              <div className="text-md text-foreground">
+                {edu.startYear
+                  ? new Date(edu.startYear).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "-"}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">
+                Completion date
+              </div>
+              <div className="text-md text-foreground">
+                {edu.endYear
+                  ? new Date(edu.endYear).toLocaleDateString("en-US", {
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "-"}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ))}
     </div>
-  );
+  )
 }
