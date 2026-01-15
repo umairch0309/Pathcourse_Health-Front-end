@@ -1,4 +1,6 @@
 'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,14 +10,102 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Typography } from '@/components/ui/typography';
+import useApi from '@/hooks/use-api';
+import { Loader } from '@/components/loader';
+
+type AppointmentRequest = {
+  doctorId: string;
+  appointmentFor: 'self' | 'someone else';
+  issue?: string;
+  age?: number;
+  uploadId?: string;
+  scheduledAt?: string;
+  relationWithPatient?: string;
+  patientName?: string;
+  patientAge?: number;
+};
 
 type ConsentModalProps = {
   open: boolean;
   onClose: () => void;
   onAgree: () => void;
+  formData: any; // PersonalInfoFormData
+  doctorId: string;
 };
 
-export default function ConsentModal({ open, onClose, onAgree }: ConsentModalProps) {
+export default function ConsentModal({ open, onClose, onAgree, formData, doctorId }: ConsentModalProps) {
+  const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
+
+  const { onRequest: createAppointment } = useApi<AppointmentRequest>({
+    key: 'create-appointment',
+    showSuccessToast: true,
+    showErrorToast: true,
+    method: 'post',
+  });
+
+  const handleAgree = () => {
+    if (!formData || !doctorId) {
+      console.error('Missing form data or doctor ID');
+      return;
+    }
+
+    setIsCreating(true);
+
+    // Prepare issue description from form fields
+    const issueParts: string[] = []
+    if (formData.currentCondition) {
+      issueParts.push(`Current condition: ${formData.currentCondition}`)
+    }
+    if (formData.preCondition) {
+      issueParts.push(`Previous condition: ${formData.preCondition}`)
+    }
+    if (formData.takingMedicine) {
+      issueParts.push(`Taking medicine: ${formData.takingMedicine}`)
+    }
+    if (formData.firstVisit) {
+      issueParts.push(`First visit: ${formData.firstVisit}`)
+    }
+    const issue = issueParts.length > 0 ? issueParts.join('. ') : 'General consultation'
+
+    // Prepare appointment data
+    const appointmentData: AppointmentRequest = {
+      doctorId: doctorId,
+      appointmentFor: formData.sessionFor === 'me' ? 'self' : 'someone else',
+      issue: issue,
+      uploadId: formData.uploadId || undefined,
+    };
+
+    // Add age if appointment is for self
+    if (formData.sessionFor === 'me' && formData.age) {
+      appointmentData.age = parseInt(formData.age, 10);
+    }
+
+    // Add patient details if appointment is for someone else
+    if (formData.sessionFor === 'someone else') {
+      appointmentData.relationWithPatient = formData.relationWithUser || undefined;
+      appointmentData.patientName = formData.userName || undefined;
+      if (formData.age) {
+        appointmentData.patientAge = parseInt(formData.age, 10);
+      }
+    }
+
+    createAppointment({
+      path: '/api/appointment',
+      data: appointmentData,
+      onSuccess: (response: any) => {
+        setIsCreating(false);
+        onAgree();
+        // Navigate to join session page
+        router.push('/join-session');
+      },
+      onError: (error) => {
+        console.error('Failed to create appointment:', error);
+        setIsCreating(false);
+      },
+    });
+  };
+
   const consentPoints = [
     {
       title: 'Authorization for Telehealth Services',
@@ -77,11 +167,18 @@ export default function ConsentModal({ open, onClose, onAgree }: ConsentModalPro
         </div>
 
         <DialogFooter className="flex-row justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isCreating}>
             Cancel
           </Button>
-          <Button variant="default" onClick={onAgree}>
-            I agree
+          <Button variant="default" onClick={handleAgree} disabled={isCreating}>
+            {isCreating ? (
+              <span className="flex items-center gap-2">
+                <Loader size="sm" />
+                Creating appointment...
+              </span>
+            ) : (
+              'I agree'
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

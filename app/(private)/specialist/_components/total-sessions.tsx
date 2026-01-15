@@ -16,7 +16,7 @@ export function TotalSessions() {
   return (
     <Card className=" w-full lg:h-[350px] bg-background space-y-2 px-6">
       <CardHeader>
-        <CardTitle className="text-foreground mb-3 font-medium">Sessions</CardTitle>
+        <CardTitle className="text-foreground mb-3 font-bold">Sessions</CardTitle>
         <CardDescription className="text-muted-foreground -mb-6">
           Total no. of Sessions attended.
         </CardDescription>

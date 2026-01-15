@@ -138,15 +138,7 @@ export default function DoctorDetails() {
     })
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader size="lg" />
-      </div>
-    )
-  }
-
-  if (!doctor) {
+  if (!doctor && !isLoading) {
     return (
       <div className="space-y-6">
         <Typography variant="h5" className="font-bold text-foreground">
@@ -166,113 +158,121 @@ export default function DoctorDetails() {
         Specialist Info
       </Typography>
       <div className="bg-background rounded-lg shadow-sm p-4 sm:p-6">
-        <div className="flex lg:flex-row flex-col gap-6 mb-8">
-          <div className="flex-shrink-0 lg:h-[250px] flex justify-center">
-            <Image
-              src={doctor.user.image || "/dr-john.jpg"}
-              width={250}
-              height={250}
-              alt={doctor.user.name}
-              className="rounded-lg object-cover"
-            />
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[400px]">
+            <Loader size="lg" />
           </div>
-          <div className="flex-1">
-            <div className="flex flex-col gap-4 lg:mt-8">
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">
-                  {doctor.user.name}
-                </h2>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {doctor.professionalExperience && (
-                    <Badge
-                      variant="default"
-                      className="rounded-full text-foreground bg-accent px-3 py-1 flex items-center gap-1"
-                    >
-                      <BadgeCheck className="w-4 h-4" />
-                      {doctor.professionalExperience.profession}
-                    </Badge>
-                  )}
-                  <Badge
-                    variant="default"
-                    className="rounded-full text-foreground bg-accent px-3 py-1 flex items-center gap-1"
-                  >
-                    <ClipboardList className="w-4 h-4" />
-                    {doctor.id.slice(0, 8)}
-                  </Badge>
-                </div>
-                {doctor.professionalExperience && (
-                  <div className="text-sm text-foreground/80">
-                    {doctor.professionalExperience.special_interest_area}
+        ) : doctor ? (
+          <>
+            <div className="flex lg:flex-row flex-col gap-6 mb-8">
+              <div className="flex-shrink-0 lg:h-[250px] flex justify-center">
+                <Image
+                  src={doctor.user.image || "/dr-john.jpg"}
+                  width={250}
+                  height={250}
+                  alt={doctor.user.name}
+                  className="rounded-lg object-cover"
+                />
+              </div>
+              <div className="flex-1">
+                <div className="flex flex-col gap-4 lg:mt-8">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3">
+                      {doctor.user.name}
+                    </h2>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {doctor.professionalExperience && (
+                        <Badge
+                          variant="default"
+                          className="rounded-full text-foreground bg-accent px-3 py-1 flex items-center gap-1"
+                        >
+                          <BadgeCheck className="w-4 h-4" />
+                          {doctor.professionalExperience.profession}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant="default"
+                        className="rounded-full text-foreground bg-accent px-3 py-1 flex items-center gap-1"
+                      >
+                        <ClipboardList className="w-4 h-4" />
+                        {doctor.id.slice(0, 8)}
+                      </Badge>
+                    </div>
+                    {doctor.professionalExperience && (
+                      <div className="text-sm text-foreground/80">
+                        {doctor.professionalExperience.special_interest_area}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row lg:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  className="w-full sm:w-auto"
+                  onClick={handleApprove}
+                  disabled={isApproving || isRejecting}
+                >
+                  {isApproving ? (
+                    <>
+                      <Loader size="sm" color="white" className="mr-2" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Accept Registration"
+                  )}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="w-full sm:w-auto bg-background border border-destructive text-destructive hover:bg-destructive/10"
+                  onClick={() => setRejectDialogOpen(true)}
+                  disabled={isApproving || isRejecting}
+                >
+                  Reject Request
+                </Button>
               </div>
             </div>
-          </div>
-          <div className="flex flex-col sm:flex-row lg:flex-row gap-2 w-full sm:w-auto">
-            <Button
-              className="w-full sm:w-auto"
-              onClick={handleApprove}
-              disabled={isApproving || isRejecting}
-            >
-              {isApproving ? (
-                <>
-                  <Loader size="sm" color="white" className="mr-2" />
-                  Approving...
-                </>
-              ) : (
-                "Accept Registration"
-              )}
-            </Button>
-            <Button
-              variant="destructive"
-              className="w-full sm:w-auto bg-background border border-destructive text-destructive hover:bg-destructive/10"
-              onClick={() => setRejectDialogOpen(true)}
-              disabled={isApproving || isRejecting}
-            >
-              Reject Request
-            </Button>
-          </div>
-        </div>
-        <Tabs defaultValue="contact" className="w-full">
-          <TabsList className="flex flex-wrap gap-2">
-            <TabsTrigger
-              className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
-              value="contact"
-            >
-              Contact Info
-            </TabsTrigger>
-            <TabsTrigger
-              className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
-              value="education"
-            >
-              Educational Info
-            </TabsTrigger>
-            <TabsTrigger
-              className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
-              value="professional"
-            >
-              Professional Experience
-            </TabsTrigger>
-            <TabsTrigger
-              className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
-              value="documents"
-            >
-              Attached Documents
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="contact" className="mt-6">
-            <ContactInfo doctor={doctor} />
-          </TabsContent>
-          <TabsContent value="education" className="mt-6">
-            <EducationInfo doctor={doctor} />
-          </TabsContent>
-          <TabsContent value="professional" className="mt-6">
-            <ProfessionalExperience doctor={doctor} />
-          </TabsContent>
-          <TabsContent value="documents" className="mt-6">
-            <ProfessionalDocuments doctor={doctor} />
-          </TabsContent>
-        </Tabs>
+            <Tabs defaultValue="contact" className="w-full">
+              <TabsList className="flex flex-wrap gap-2">
+                <TabsTrigger
+                  className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
+                  value="contact"
+                >
+                  Contact Info
+                </TabsTrigger>
+                <TabsTrigger
+                  className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
+                  value="education"
+                >
+                  Educational Info
+                </TabsTrigger>
+                <TabsTrigger
+                  className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
+                  value="professional"
+                >
+                  Professional Experience
+                </TabsTrigger>
+                <TabsTrigger
+                  className="text-foreground font-semibold bg-muted data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground p-2"
+                  value="documents"
+                >
+                  Attached Documents
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="contact" className="mt-6">
+                <ContactInfo doctor={doctor} />
+              </TabsContent>
+              <TabsContent value="education" className="mt-6">
+                <EducationInfo doctor={doctor} />
+              </TabsContent>
+              <TabsContent value="professional" className="mt-6">
+                <ProfessionalExperience doctor={doctor} />
+              </TabsContent>
+              <TabsContent value="documents" className="mt-6">
+                <ProfessionalDocuments doctor={doctor} />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : null}
       </div>
 
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>

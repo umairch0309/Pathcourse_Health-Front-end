@@ -4,26 +4,120 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Typography } from '@/components/ui/typography';
-import { doctors } from '@/app/data/doctors';
+import { Loader } from '@/components/loader';
+import { useFetch } from '@/hooks/use-fetch';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle2, XCircle } from 'lucide-react';
+
+type DoctorData = {
+  id: string;
+  userid: string;
+  professional_contact: string;
+  professional_email: string;
+  secondary_contact: string | null;
+  isAvailable: boolean;
+  isInMeeting: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    role: string;
+  };
+  documents?: {
+    id: string;
+    resume: string | null;
+    medicalLicense: string | null;
+    introductionVideo: string | null;
+  };
+  education?: Array<{
+    id: string;
+    degree: string;
+    institution_name: string;
+    startYear: string;
+    endYear: string | null;
+    document: string | null;
+  }>;
+  professionalExperience?: {
+    id: string;
+    profession: string;
+    special_interest_area: string;
+    age_group: string;
+    languages: string[];
+  };
+};
 
 type SpecialistDetailProps = {
-  doctorId: number;
+  doctorId: string;
   onBack?: () => void;
-  onContinue?: (duration: number) => void;
+  onContinue?: () => void;
 };
 
 export default function SpecialistDetail({ doctorId, onBack, onContinue }: SpecialistDetailProps) {
   const [readMore, setReadMore] = useState(false);
-  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
 
-  const doctor = doctors.find(d => d.id === doctorId) || doctors[0];
-  
-  // Extended description for read more functionality
-  const shortDescription = 'Yorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est a, mattis tellus. Sed dignissim, metus nec fringilla accumsan';
-  const fullDescription = `${shortDescription} Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.`;
+  // Fetch doctor data from API
+  const { data: doctorData, isLoading, error } = useFetch<DoctorData>({
+    path: `/api/doctor/${doctorId}`,
+    queryKey: ['doctor', doctorId],
+  });
 
-  const durations = [15, 30, 45, 60];
-  const services = ["Men's Health", "Women's Health", "Sextual Health", "Skin Care"];
+  // Get description from API - use special_interest_area as the description
+  const description = doctorData?.professionalExperience?.special_interest_area || '';
+
+  const services = doctorData?.professionalExperience?.special_interest_area
+    ? doctorData.professionalExperience.special_interest_area.split(',').map(s => s.trim())
+    : ["Men's Health", "Women's Health", "Sextual Health", "Skin Care"];
+
+  if (isLoading) {
+    return (
+      <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Page Title */}
+          <Typography variant="h3" className="text-foreground font-bold mb-8">
+            Specialist Details
+          </Typography>
+
+          {/* Loading Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:mb-12">
+            {/* Left Column - Placeholder */}
+            <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1 bg-muted animate-pulse" />
+
+            {/* Right Column - Loading */}
+            <div className="col-span-2 mt-4 lg:mt-0">
+              <div className="flex items-center justify-center py-20">
+                <Loader size="lg" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || !doctorData) {
+    return (
+      <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <Typography variant="h3" className="text-foreground font-bold mb-8">
+            Specialist Details
+          </Typography>
+          <div className="text-center py-12">
+            <Typography variant="p" className="text-muted-foreground">
+              Failed to load specialist details. Please try again.
+            </Typography>
+            {onBack && (
+              <Button variant="outline" size="lg" onClick={onBack} className="mt-4">
+                Go Back
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
@@ -35,103 +129,86 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
 
         {/* Main Content - Two Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:mb-12">
-          {/* Left Column - Specialist Image with Play Button */}
-            <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1">
-              <Image
-                src='/doctor-detail.jpg'
-                alt={doctor.name}
-                fill
-                className="object-cover"
-              />
+          {/* Left Column - Specialist Image */}
+            <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1 bg-muted">
+              {doctorData.user.image ? (
+                <Image
+                  src={doctorData.user.image}
+                  alt={doctorData.user.name}
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <Typography variant="p" className="text-muted-foreground">
+                    No image available
+                  </Typography>
+                </div>
+              )}
             </div>
 
           {/* Right Column - Specialist Information */}
           <div className="col-span-2 mt-4 lg:mt-0">
-            {/* Name */}
-            <Typography variant="h4" className="text-foreground font-bold">
-            Specialist Name Here
-            </Typography>
-
-            {/* Description with Read More */}
-            <Typography variant="span" className="text-foreground">
-              {readMore ? fullDescription : `${shortDescription.substring(0, 200)}...`}
-              {' '}
-              <button
-                onClick={() => setReadMore(!readMore)}
-                className="text-destructive hover:underline text-sm cursor-pointer"
-              >
-                {readMore ? 'Read less' : 'Read more'}
-              </button>
-            </Typography>
-
-            {/* Starting Price */}
-            <div className='mt-2'>
-              <Typography variant="span" className="text-foreground">
-                Starting:{' '}
-                <span className="font-semibold text-2xl">$200.00</span>
+            {/* Name and Availability Status */}
+            <div className="flex items-start justify-between mb-2">
+              <Typography variant="h4" className="text-foreground font-bold">
+                {doctorData.user.name}
               </Typography>
+              <div className="flex items-center gap-2">
+                {doctorData.isAvailable ? (
+                  <>
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <Badge className="bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400 dark:bg-green-500/20">
+                      Available
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="h-5 w-5 text-muted-foreground" />
+                    <Badge variant="outline" className="bg-muted text-muted-foreground">
+                      Unavailable
+                    </Badge>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className='grid lg:grid-cols-2 gap-10 mt-6'>
-              {/* Feedback Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-muted-foreground">Feedback</CardTitle>
-                  <Typography variant="span" className="text-foreground mt-4">
-                    Ratings & Reviews
-                  </Typography>
-                </CardHeader>
-                <CardContent>
-                  <Typography variant="p" className="text-foreground font-bold mt-[-25]">
-                    4.8 / 5
-                  </Typography>
-                </CardContent>
-              </Card>
-              
-              {/* Select Time Duration Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-foreground">Select Time Duration</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-3">
-                    {durations.map((duration) => (
-                      <Button
-                        key={duration}
-                        onClick={() => setSelectedDuration(duration)}
-                        variant="outline"
-                        className={`
-                          bg-muted text-foreground hover:bg-muted/80 border-border
-                          ${selectedDuration === duration 
-                            ? 'ring-2 ring-primary bg-accent' 
-                            : ''
-                          }
-                        `}
-                      >
-                        {duration} min
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Description */}
+            {description && (
+              <Typography variant="span" className="text-foreground">
+                {description}
+              </Typography>
+            )}
+
+            {/* Professional Contact */}
+            <div className='mt-2'>
+              <Typography variant="span" className="text-muted-foreground">
+                Email:{' '}
+                <span className="text-foreground">{doctorData.professional_email}</span>
+              </Typography>
+              {doctorData.professional_contact && (
+                <Typography variant="span" className="text-muted-foreground ml-4">
+                  Contact:{' '}
+                  <span className="text-foreground">{doctorData.professional_contact}</span>
+                </Typography>
+              )}
             </div>
 
-            
 
-            {/* Services */}
+            {/* Services / Special Interest Areas */}
             <div className='mt-4'>
               <Typography variant="p" className="text-muted-foreground font-semibold mb-3">
-                Services
+                Special Interest Areas
               </Typography>
               <div className="flex flex-wrap gap-2">
                 {services.map((service, index) => (
-                  <Button
+                  <Badge
                     key={index}
                     variant="outline"
                     className="bg-muted text-foreground hover:bg-muted/80 border-border"
                   >
                     {service}
-                  </Button>
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -146,22 +223,46 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
             Other Details
           </Typography>
           <div className="space-y-3">
-            <div>
-              <Typography variant="span" className="text-muted-foreground">
-                Language:{' '}
-              </Typography>
-              <Typography variant="span" className="text-foreground">
-                English, Spanish
-              </Typography>
-            </div>
-            <div>
-              <Typography variant="span" className="text-muted-foreground">
-                Special interest area:{' '}
-              </Typography>
-              <Typography variant="span" className="text-foreground">
-                Developmental Language Disorder (DLD), Literacy, Articulation, Supporting autistic individuals, Parent and caregiver coaching, Early language supports, Social Skills
-              </Typography>
-            </div>
+            {doctorData.professionalExperience?.languages && doctorData.professionalExperience.languages.length > 0 && (
+              <div>
+                <Typography variant="span" className="text-muted-foreground">
+                  Languages:{' '}
+                </Typography>
+                <Typography variant="span" className="text-foreground">
+                  {doctorData.professionalExperience.languages.join(', ')}
+                </Typography>
+              </div>
+            )}
+            {doctorData.professionalExperience?.special_interest_area && (
+              <div>
+                <Typography variant="span" className="text-muted-foreground">
+                  Special interest area:{' '}
+                </Typography>
+                <Typography variant="span" className="text-foreground">
+                  {doctorData.professionalExperience.special_interest_area}
+                </Typography>
+              </div>
+            )}
+            {doctorData.professionalExperience?.age_group && (
+              <div>
+                <Typography variant="span" className="text-muted-foreground">
+                  Age group:{' '}
+                </Typography>
+                <Typography variant="span" className="text-foreground">
+                  {doctorData.professionalExperience.age_group}
+                </Typography>
+              </div>
+            )}
+            {doctorData.professionalExperience?.profession && (
+              <div>
+                <Typography variant="span" className="text-muted-foreground">
+                  Profession:{' '}
+                </Typography>
+                <Typography variant="span" className="text-foreground">
+                  {doctorData.professionalExperience.profession}
+                </Typography>
+              </div>
+            )}
           </div>
         </div>
 
@@ -170,13 +271,13 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
           <Button variant="outline" size="lg" onClick={onBack}>
             Back
           </Button>
-                  <Button
+          <Button
             variant="default"
             size="lg"
-            disabled={selectedDuration === null}
-            onClick={() => selectedDuration !== null && onContinue?.(selectedDuration)}
+            disabled={!doctorData.isAvailable}
+            onClick={onContinue}
           >
-            Continue
+            {doctorData.isAvailable ? 'Select and Continue' : 'Doctor Unavailable'}
           </Button>
         </div>
       </div>
