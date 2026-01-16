@@ -1,14 +1,14 @@
 "use client"
 
+import axios from "axios"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Loader } from "@/components/loader"
 import { Card, CardContent, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
+import { env } from "@/env"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
-import { env } from "@/env"
 import { buildRequestUrl } from "@/lib/utils"
-import axios from "axios"
 
 type DoctorData = {
   id: string
@@ -33,9 +33,14 @@ export default function Availability() {
   const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const connectionIdRef = useRef<string | null>(null)
   const [isToggling, setIsToggling] = useState(false)
+  const isPageVisibleRef = useRef(true) // Track page visibility
 
   // Fetch current doctor data
-  const { data: doctorData, isLoading, refetch } = useFetch<DoctorData>({
+  const {
+    data: doctorData,
+    isLoading,
+    refetch,
+  } = useFetch<DoctorData>({
     path: "/api/doctor",
     queryKey: ["doctor", "current"],
   })
@@ -73,7 +78,10 @@ export default function Availability() {
       connectionIdRef.current = connectionId
 
       const heartbeatPath = `/api/doctor/connection/heartbeat?connectionId=${connectionId}`
-      const REQUEST_URL = buildRequestUrl(env.NEXT_PUBLIC_APP_URL, heartbeatPath)
+      const REQUEST_URL = buildRequestUrl(
+        env.NEXT_PUBLIC_APP_URL,
+        heartbeatPath
+      )
 
       await axios.post(
         REQUEST_URL,
@@ -82,6 +90,8 @@ export default function Availability() {
           withCredentials: true,
         }
       )
+
+      console.log(`Heartbeat sent at ${new Date().toISOString()}`)
     } catch (error) {
       console.error("Heartbeat failed:", error)
       // Stop heartbeat on failure
@@ -92,7 +102,7 @@ export default function Availability() {
     }
   }, [isAvailable, generateConnectionId, stopHeartbeat, refetch])
 
-  // Start heartbeat when available
+  // Start heartbeat when available - MORE AGGRESSIVE TIMING
   const startHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
       return // Already running
@@ -101,42 +111,14 @@ export default function Availability() {
     // Send initial heartbeat immediately
     sendHeartbeat()
 
-    // Then send every 10 seconds
+    // CRITICAL FIX: Send heartbeats every 5 seconds instead of 10
+    // This ensures we always beat the 40-second stale threshold even with delays
     heartbeatIntervalRef.current = setInterval(() => {
       sendHeartbeat()
-    }, 10000) // 10 seconds
+    }, 5000) // Changed from 10000 to 5000 (5 seconds)
+
+    console.log("Heartbeat started - sending every 5 seconds")
   }, [sendHeartbeat])
-
-  // Handle disconnection
-  const handleDisconnect = useCallback(async () => {
-    stopHeartbeat()
-
-    try {
-      const disconnectPath = "/api/doctor/connection/disconnect"
-      const REQUEST_URL = buildRequestUrl(env.NEXT_PUBLIC_APP_URL, disconnectPath)
-
-      // Use sendBeacon for reliability during page unload
-      if (navigator.sendBeacon) {
-        const blob = new Blob([JSON.stringify({})], {
-          type: "application/json",
-        })
-        navigator.sendBeacon(REQUEST_URL, blob)
-      } else {
-        // Fallback for browsers that don't support sendBeacon
-        await fetch(REQUEST_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({}),
-          keepalive: true, // Keep request alive even after page unload
-          credentials: "include", // Include cookies for authentication
-        })
-      }
-    } catch (error) {
-      console.error("Disconnect signal failed:", error)
-    }
-  }, [stopHeartbeat])
 
   // Handle availability toggle
   const handleToggle = (checked: boolean) => {
@@ -174,16 +156,25 @@ export default function Availability() {
     }
   }, [isAvailable, isLoading, startHeartbeat, stopHeartbeat])
 
-  // Handle page visibility changes
+  // IMPROVED: Handle page visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
+      isPageVisibleRef.current = !document.hidden
+
       if (document.hidden) {
-        // Page is hidden, but keep heartbeat running
-        // Connection will be detected as stale if heartbeat stops
+        console.log("Page hidden - heartbeat continues in background")
+        // CRITICAL: Keep heartbeat running even when page is hidden
+        // The browser may throttle setInterval, but it will still run
+        // Our 5-second interval gives us plenty of buffer
       } else {
+        console.log("Page visible - ensuring heartbeat is active")
         // Page is visible again, ensure heartbeat is running if available
         if (isAvailable && !isLoading && !heartbeatIntervalRef.current) {
           startHeartbeat()
+        }
+        // Send immediate heartbeat when page becomes visible to sync quickly
+        if (isAvailable && !isLoading) {
+          sendHeartbeat()
         }
       }
     }
@@ -193,13 +184,9 @@ export default function Availability() {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange)
     }
-  }, [isAvailable, isLoading, startHeartbeat])
+  }, [isAvailable, isLoading, startHeartbeat, sendHeartbeat])
 
-  // Handle page unload
-  // Note: We don't send disconnect on page unload (reload or close)
-  // The backend's 30-second heartbeat timeout will automatically handle disconnections
-  // This provides better UX: quick reloads maintain availability
-  // If user wants to explicitly disconnect, they can toggle availability off
+  // Handle page unload - DON'T send disconnect, let timeout handle it
   useEffect(() => {
     const handleBeforeUnload = () => {
       // Just stop the heartbeat
@@ -218,6 +205,9 @@ export default function Availability() {
   if (isLoading) {
     return (
       <Card className="bg-background rounded-lg">
+        <CardTitle className="text-lg font-bold text-foreground mb-3">
+          Set your Availability
+        </CardTitle>
         <CardContent className="p-6">
           <div className="flex items-center justify-center min-h-[100px]">
             <Loader size="sm" />
@@ -238,18 +228,18 @@ export default function Availability() {
                 Set your Availability
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-               Turn it On/Off for your availability to start receiving appointments
+                Turn it On/Off for your availability to start receiving
+                appointments
               </p>
             </div>
-          
           </div>
           <div className="flex items-center justify-center gap-2 lg:mt-20">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground">
-                Your availability is currently {isAvailable ? "On" : "Off"}
-              </p>
-            </div>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  Your availability is currently {isAvailable ? "On" : "Off"}
+                </p>
+              </div>
               {isToggling && <Loader size="sm" />}
               <Switch
                 checked={isAvailable}
@@ -257,7 +247,7 @@ export default function Availability() {
                 disabled={isToggling}
               />
             </div>
-            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

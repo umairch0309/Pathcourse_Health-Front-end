@@ -1,75 +1,82 @@
-'use client';
-import Image from 'next/image';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Typography } from '@/components/ui/typography';
-import { Loader } from '@/components/loader';
-import { useFetch } from '@/hooks/use-fetch';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle } from 'lucide-react';
+"use client"
+import { CheckCircle2, XCircle } from "lucide-react"
+import Image from "next/image"
+import { Loader } from "@/components/loader"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
+import { useFetch } from "@/hooks/use-fetch"
 
 type DoctorData = {
-  id: string;
-  userid: string;
-  professional_contact: string;
-  professional_email: string;
-  secondary_contact: string | null;
-  isAvailable: boolean;
-  isInMeeting: boolean;
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  userid: string
+  professional_contact: string
+  professional_email: string
+  secondary_contact: string | null
+  isAvailable: boolean
+  isInMeeting: boolean
+  createdAt: string
+  updatedAt: string
   user: {
-    id: string;
-    name: string;
-    email: string;
-    image: string | null;
-    role: string;
-  };
+    id: string
+    name: string
+    email: string
+    image: string | null
+    role: string
+  }
   documents?: {
-    id: string;
-    resume: string | null;
-    medicalLicense: string | null;
-    introductionVideo: string | null;
-  };
+    id: string
+    resume: string | null
+    medicalLicense: string | null
+    introductionVideo: string | null
+  }
   education?: Array<{
-    id: string;
-    degree: string;
-    institution_name: string;
-    startYear: string;
-    endYear: string | null;
-    document: string | null;
-  }>;
+    id: string
+    degree: string
+    institution_name: string
+    startYear: string
+    endYear: string | null
+    document: string | null
+  }>
   professionalExperience?: {
-    id: string;
-    profession: string;
-    special_interest_area: string;
-    age_group: string;
-    languages: string[];
-  };
-};
+    id: string
+    profession: string
+    special_interest_area: string
+    age_group: string
+    languages: string[]
+  }
+}
 
 type SpecialistDetailProps = {
-  doctorId: string;
-  onBack?: () => void;
-  onContinue?: () => void;
-};
+  doctorId: string
+  onBack?: () => void
+  onContinue?: () => void
+}
 
-export default function SpecialistDetail({ doctorId, onBack, onContinue }: SpecialistDetailProps) {
-  const [readMore, setReadMore] = useState(false);
-
+export default function SpecialistDetail({
+  doctorId,
+  onBack,
+  onContinue,
+}: SpecialistDetailProps) {
   // Fetch doctor data from API
-  const { data: doctorData, isLoading, error } = useFetch<DoctorData>({
+  const {
+    data: doctorData,
+    isLoading,
+    error,
+  } = useFetch<DoctorData>({
     path: `/api/doctor/${doctorId}`,
-    queryKey: ['doctor', doctorId],
-  });
+    queryKey: ["doctor", doctorId],
+  })
 
   // Get description from API - use special_interest_area as the description
-  const description = doctorData?.professionalExperience?.special_interest_area || '';
+  const description =
+    doctorData?.professionalExperience?.special_interest_area || ""
 
   const services = doctorData?.professionalExperience?.special_interest_area
-    ? doctorData.professionalExperience.special_interest_area.split(',').map(s => s.trim())
-    : ["Men's Health", "Women's Health", "Sextual Health", "Skin Care"];
+    ? doctorData.professionalExperience.special_interest_area
+        .split(",")
+        .map((s) => s.trim())
+    : ["Men's Health", "Women's Health", "Sextual Health", "Skin Care"]
 
   if (isLoading) {
     return (
@@ -94,7 +101,7 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   if (error || !doctorData) {
@@ -109,14 +116,19 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
               Failed to load specialist details. Please try again.
             </Typography>
             {onBack && (
-              <Button variant="outline" size="lg" onClick={onBack} className="mt-4">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={onBack}
+                className="mt-4"
+              >
                 Go Back
               </Button>
             )}
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   return (
@@ -130,22 +142,22 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
         {/* Main Content - Two Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:mb-12">
           {/* Left Column - Specialist Image */}
-            <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1 bg-muted">
-              {doctorData.user.image ? (
-                <Image
-                  src={doctorData.user.image}
-                  alt={doctorData.user.name}
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <Typography variant="p" className="text-muted-foreground">
-                    No image available
-                  </Typography>
-                </div>
-              )}
-            </div>
+          <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1 bg-muted">
+            {doctorData.user.image ? (
+              <Image
+                src={doctorData.user.image}
+                alt={doctorData.user.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <Typography variant="p" className="text-muted-foreground">
+                  No image available
+                </Typography>
+              </div>
+            )}
+          </div>
 
           {/* Right Column - Specialist Information */}
           <div className="col-span-2 mt-4 lg:mt-0">
@@ -165,7 +177,10 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
                 ) : (
                   <>
                     <XCircle className="h-5 w-5 text-muted-foreground" />
-                    <Badge variant="outline" className="bg-muted text-muted-foreground">
+                    <Badge
+                      variant="outline"
+                      className="bg-muted text-muted-foreground"
+                    >
                       Unavailable
                     </Badge>
                   </>
@@ -181,29 +196,38 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
             )}
 
             {/* Professional Contact */}
-            <div className='mt-2'>
+            <div className="mt-2">
               <Typography variant="span" className="text-muted-foreground">
-                Email:{' '}
-                <span className="text-foreground">{doctorData.professional_email}</span>
+                Email:{" "}
+                <span className="text-foreground">
+                  {doctorData.professional_email}
+                </span>
               </Typography>
               {doctorData.professional_contact && (
-                <Typography variant="span" className="text-muted-foreground ml-4">
-                  Contact:{' '}
-                  <span className="text-foreground">{doctorData.professional_contact}</span>
+                <Typography
+                  variant="span"
+                  className="text-muted-foreground ml-4"
+                >
+                  Contact:{" "}
+                  <span className="text-foreground">
+                    {doctorData.professional_contact}
+                  </span>
                 </Typography>
               )}
             </div>
 
-
             {/* Services / Special Interest Areas */}
-            <div className='mt-4'>
-              <Typography variant="p" className="text-muted-foreground font-semibold mb-3">
+            <div className="mt-4">
+              <Typography
+                variant="p"
+                className="text-muted-foreground font-semibold mb-3"
+              >
                 Special Interest Areas
               </Typography>
               <div className="flex flex-wrap gap-2">
-                {services.map((service, index) => (
+                {services.map((service) => (
                   <Badge
-                    key={index}
+                    key={service}
                     variant="outline"
                     className="bg-muted text-foreground hover:bg-muted/80 border-border"
                   >
@@ -212,31 +236,33 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
                 ))}
               </div>
             </div>
-
-          
           </div>
         </div>
 
         {/* Other Details Section */}
         <div className="mb-12 bg-muted p-6 rounded-2xl lg:mt-0 mt-4">
-          <Typography variant="h5" className="text-foreground font-semibold mb-4">
+          <Typography
+            variant="h5"
+            className="text-foreground font-semibold mb-4"
+          >
             Other Details
           </Typography>
           <div className="space-y-3">
-            {doctorData.professionalExperience?.languages && doctorData.professionalExperience.languages.length > 0 && (
-              <div>
-                <Typography variant="span" className="text-muted-foreground">
-                  Languages:{' '}
-                </Typography>
-                <Typography variant="span" className="text-foreground">
-                  {doctorData.professionalExperience.languages.join(', ')}
-                </Typography>
-              </div>
-            )}
+            {doctorData.professionalExperience?.languages &&
+              doctorData.professionalExperience.languages.length > 0 && (
+                <div>
+                  <Typography variant="span" className="text-muted-foreground">
+                    Languages:{" "}
+                  </Typography>
+                  <Typography variant="span" className="text-foreground">
+                    {doctorData.professionalExperience.languages.join(", ")}
+                  </Typography>
+                </div>
+              )}
             {doctorData.professionalExperience?.special_interest_area && (
               <div>
                 <Typography variant="span" className="text-muted-foreground">
-                  Special interest area:{' '}
+                  Special interest area:{" "}
                 </Typography>
                 <Typography variant="span" className="text-foreground">
                   {doctorData.professionalExperience.special_interest_area}
@@ -246,7 +272,7 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
             {doctorData.professionalExperience?.age_group && (
               <div>
                 <Typography variant="span" className="text-muted-foreground">
-                  Age group:{' '}
+                  Age group:{" "}
                 </Typography>
                 <Typography variant="span" className="text-foreground">
                   {doctorData.professionalExperience.age_group}
@@ -256,7 +282,7 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
             {doctorData.professionalExperience?.profession && (
               <div>
                 <Typography variant="span" className="text-muted-foreground">
-                  Profession:{' '}
+                  Profession:{" "}
                 </Typography>
                 <Typography variant="span" className="text-foreground">
                   {doctorData.professionalExperience.profession}
@@ -277,11 +303,12 @@ export default function SpecialistDetail({ doctorId, onBack, onContinue }: Speci
             disabled={!doctorData.isAvailable}
             onClick={onContinue}
           >
-            {doctorData.isAvailable ? 'Select and Continue' : 'Doctor Unavailable'}
+            {doctorData.isAvailable
+              ? "Select and Continue"
+              : "Doctor Unavailable"}
           </Button>
         </div>
       </div>
     </section>
-  );
+  )
 }
-
