@@ -205,10 +205,10 @@ export default function Availability() {
   if (isLoading) {
     return (
       <Card className="bg-background rounded-lg">
-        <CardTitle className="text-lg font-bold text-foreground mb-3">
-          Set your Availability
-        </CardTitle>
         <CardContent className="p-6">
+          <CardTitle className="text-lg font-bold text-foreground mb-3">
+            Set your Availability
+          </CardTitle>
           <div className="flex items-center justify-center min-h-[100px]">
             <Loader size="sm" />
           </div>

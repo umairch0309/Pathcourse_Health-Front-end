@@ -14,8 +14,16 @@ export default function SpecialistLayout({
 }) {
   const pathname = usePathname()
   const hideSidebar = pathname === "/specialist/update-profile"
+  const isVideoCall = pathname?.includes(
+    "/specialist/session/join-session/video-call"
+  )
   const isOnDashboard =
     pathname === "/specialist" || pathname === "/specialist/"
+
+  // For video call, render children without layout elements
+  if (isVideoCall) {
+    return <>{children}</>
+  }
 
   return (
     <div>

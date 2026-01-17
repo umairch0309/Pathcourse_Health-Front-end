@@ -8,15 +8,15 @@ import auth from "@/lib/auth"
 
 export default function ServicesSection() {
   const router = useRouter()
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isPatient, setIsPatient] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const session = await auth.getSession()
-        if (session.data?.user) {
-          setIsLoggedIn(true)
+        if (session.data?.user && session.data.user.role === "patient") {
+          setIsPatient(true)
         }
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -56,7 +56,7 @@ export default function ServicesSection() {
             treatment. Just a human connection when you need someone to talk to.
           </Typography>
 
-          {!isLoading && isLoggedIn && (
+          {!isLoading && isPatient && (
             <div className="pt-2">
               <Button
                 onClick={handleBookAppointment}

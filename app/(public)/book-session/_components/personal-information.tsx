@@ -443,7 +443,7 @@ export default function PersonalInformation({
                     fileType="documents"
                     maxSize={50 * 1024 * 1024} // 50MB
                     placeholder="Upload ID document (PDF, DOC, DOCX, JPG, JPEG, PNG)"
-                  />
+                      />
                 </div>
 
                 {/* Navigation Buttons */}

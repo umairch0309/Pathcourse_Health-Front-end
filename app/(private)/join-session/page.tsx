@@ -1,31 +1,99 @@
-'use client';
-import { Mic, Video } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
-import Header from '@/app/(public)/header';
+"use client"
+import { useQueryClient } from "@tanstack/react-query"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import Header from "@/app/(public)/header"
+import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Typography } from "@/components/ui/typography"
+import useApi from "@/hooks/use-api"
+import { useFetch } from "@/hooks/use-fetch"
+import auth from "@/lib/auth"
+
+type UserInfo = {
+  isAnonymous?: boolean | null
+  employeeCode?: string | null
+  role?: string | null
+}
 
 export default function JoinSessionPage() {
-  const router = useRouter();
-  const [isMicEnabled, setIsMicEnabled] = useState(true);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const appointmentId = searchParams.get("appointmentId")
+  const [user, setUser] = useState<{
+    id?: string
+    role?: string | null
+  } | null>(null)
+  const [isLoadingSession, setIsLoadingSession] = useState(true)
+  const [stayAnonymous, setStayAnonymous] = useState(false)
+  const queryClient = useQueryClient()
 
+  // Fetch user session
   useEffect(() => {
-    // Request camera and microphone permissions
-    const requestPermissions = async () => {
+    const fetchSession = async () => {
       try {
-        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const session = await auth.getSession()
+        if (session.data?.user) {
+          setUser(session.data.user)
+        }
       } catch (error) {
-        console.error('Error accessing media devices:', error);
+        console.error("Failed to fetch session:", error)
+      } finally {
+        setIsLoadingSession(false)
       }
-    };
-    requestPermissions();
-  }, []);
+    }
+    fetchSession()
+  }, [])
+
+  // Fetch user info to get current anonymous status
+  const { data: userInfoData } = useFetch<{ user: UserInfo }>({
+    path: "/api/user/info",
+    queryKey: ["user-info", "current"],
+    config: {
+      enabled: !isLoadingSession && !!user,
+      retry: false,
+    },
+  })
+
+  // Set initial anonymous state from user info
+  useEffect(() => {
+    if (userInfoData?.user?.isAnonymous !== undefined) {
+      setStayAnonymous(userInfoData.user.isAnonymous || false)
+    }
+  }, [userInfoData])
+
+  // API hook for toggling anonymous mode
+  const { onRequest, isPending: isTogglingAnonymous } = useApi<
+    Record<string, never>
+  >({
+    key: "toggle-anonymous",
+    showSuccessToast: true,
+    showErrorToast: true,
+    method: "post",
+  })
+
+  const handleToggleAnonymous = (checked: boolean) => {
+    setStayAnonymous(checked)
+    onRequest({
+      path: "/api/user/anonymous",
+      data: {},
+      onSuccess: () => {
+        // Invalidate and refetch user info
+        queryClient.invalidateQueries({ queryKey: ["user-info", "current"] })
+      },
+    })
+  }
 
   const handleJoinSession = () => {
-    router.push('/join-session/video-call');
-  };
+    if (appointmentId) {
+      router.push(`/join-session/video-call?appointmentId=${appointmentId}`)
+    } else {
+      router.push("/join-session/video-call")
+    }
+  }
+
+  // Only show anonymous option for patients
+  const isPatient = user?.role === "patient"
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,51 +106,55 @@ export default function JoinSessionPage() {
           </Typography>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Side - Video Preview */}
+            {/* Left Side - Info Card */}
             <div className="lg:col-span-2">
-              <div className="bg-muted rounded-2xl aspect-video relative overflow-hidden">
-                {/* Video Preview Area */}
-                <div className="absolute inset-0 flex items-center justify-center bg-foreground">
-                  <Typography variant="p" className="text-muted-foreground">
-                    {isVideoEnabled ? 'Video feed will appear here' : 'Camera is off'}
-                  </Typography>
-                </div>
-
-                {/* User Name Overlay */}
-                <div className="absolute top-4 left-4">
-                  <Typography variant="p" className="text-background font-medium">
-                    Emilie Corner
-                  </Typography>
-                </div>
-
-                {/* Audio Indicator */}
-                {isMicEnabled && (
-                  <div className="absolute top-4 left-32">
-                    <div className="w-3 h-3 bg-primary rounded-full flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
+              <div className="bg-muted rounded-2xl p-8">
+                <Typography
+                  variant="h5"
+                  className="text-foreground font-bold mb-4"
+                >
+                  Session Information
+                </Typography>
+                <Typography variant="p" className="text-foreground mb-6">
+                  You are about to join your individual session with your
+                  therapist. Make sure you are in a quiet and private location.
+                </Typography>
+                {isPatient && (
+                  <div className="mt-6 p-4 border rounded-lg bg-background">
+                    <div className="flex items-center justify-between mb-2">
+                      <Typography
+                        variant="p"
+                        className="font-medium text-foreground"
+                      >
+                        Stay Anonymous
+                      </Typography>
+                      <Switch
+                        checked={stayAnonymous}
+                        onCheckedChange={handleToggleAnonymous}
+                        disabled={isTogglingAnonymous}
+                      />
                     </div>
+                    <Typography
+                      variant="p"
+                      className="text-sm text-muted-foreground"
+                    >
+                      {stayAnonymous
+                        ? "Your name, email, and image will be hidden. Only your employee ID will be visible to the doctor."
+                        : "Your full information will be visible to the doctor."}
+                    </Typography>
+                    {stayAnonymous && userInfoData?.user?.employeeCode && (
+                      <Typography
+                        variant="p"
+                        className="text-sm text-muted-foreground mt-2"
+                      >
+                        Employee ID:{" "}
+                        <span className="font-medium">
+                          {userInfoData.user.employeeCode}
+                        </span>
+                      </Typography>
+                    )}
                   </div>
                 )}
-
-                {/* Controls at Bottom */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-4">
-                  <Button
-                    variant={isMicEnabled ? 'default' : 'outline'}
-                    size="lg"
-                    onClick={() => setIsMicEnabled(!isMicEnabled)}
-                    className="rounded-full p-2"
-                  >
-                    <Mic className="size-6" />
-                  </Button>
-                  <Button
-                    variant={isVideoEnabled ? 'default' : 'outline'}
-                    size="lg"
-                    onClick={() => setIsVideoEnabled(!isVideoEnabled)}
-                    className="rounded-full p-2"
-                  >
-                    <Video className="size-6" />
-                  </Button>
-                </div>
               </div>
             </div>
 
@@ -95,7 +167,12 @@ export default function JoinSessionPage() {
                 <Typography variant="p" className="text-foreground mb-6">
                   Are you ready to join your individual session with therapist?
                 </Typography>
-                <Button variant="default" size="lg" className="w-full" onClick={handleJoinSession}>
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="w-full"
+                  onClick={handleJoinSession}
+                >
                   Join Session
                 </Button>
               </div>
@@ -104,6 +181,5 @@ export default function JoinSessionPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-

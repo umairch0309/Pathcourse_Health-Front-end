@@ -54,11 +54,6 @@ const adminMenuItems = [
     href: "/admin/sessions",
   },
   {
-    title: "Transactions",
-    icon: Wallet,
-    href: "/admin/transactions",
-  },
-  {
     title: "User Inquiries",
     icon: MailQuestion,
     href: "/admin/user-inquiries",

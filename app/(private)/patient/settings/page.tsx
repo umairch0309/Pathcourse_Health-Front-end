@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-m
 import { ChangePassword } from './_components/change-password';
 import ProfileSettings from './_components/profile-settings';
 import ManageAccount from './_components/manage-account';
+import PrivacySettings from './_components/privacy-settings';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -29,6 +30,8 @@ export default function SettingsPage() {
         return 'Profile Settings';
       case 'medical':
         return 'Medical Info';
+      case 'privacy':
+        return 'Privacy Settings';
       case 'password':
         return 'Change Password';
       case 'account':
@@ -57,6 +60,13 @@ export default function SettingsPage() {
                 onClick={() => handleTabClick('profile')}
               >
                 Profile Settings
+              </TabsTrigger>
+              <TabsTrigger
+                value="privacy"
+                className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
+                onClick={() => handleTabClick('privacy')}
+              >
+                Privacy Settings
               </TabsTrigger>
               <TabsTrigger
                 value="password"
@@ -102,6 +112,9 @@ export default function SettingsPage() {
           <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
             <TabsContent value="profile">
               <ProfileSettings />
+            </TabsContent>
+            <TabsContent value="privacy">
+              <PrivacySettings />
             </TabsContent>
             <TabsContent value="password">
               <ChangePassword />

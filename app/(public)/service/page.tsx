@@ -1,10 +1,10 @@
-import Footer from "../footer";
-import Header from "../header";
-import ServicePage from "./service-page";
-import PoliciesSection from "../policies";
-import Banner from "./service-banner";
-import InfoSection from "../info-section";
-import OtherDoctors from "../doctors/[id]/other-doctors";
+import OtherDoctors from "../doctors/[id]/other-doctors"
+import Footer from "../footer"
+import Header from "../header"
+import InfoSection from "../info-section"
+import PoliciesSection from "../policies"
+import Banner from "./service-banner"
+import ServicePage from "./service-page"
 
 export default function Page() {
   return (
@@ -17,5 +17,5 @@ export default function Page() {
       <PoliciesSection />
       <Footer />
     </div>
-  );
+  )
 }
