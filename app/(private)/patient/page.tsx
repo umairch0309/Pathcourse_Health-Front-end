@@ -2,7 +2,6 @@ import { Typography } from "@/components/ui/typography";
 import { ActivityChart } from "./_components/activity";
 import { TotalSessions } from "./_components/total-sessions";
 import { Reviews } from "./_components/reviews";
-import { PaymentsTable } from "./_components/payment";
 import { AppointmentsTable } from "./_components/session";
 
 export default function PatientPage() {
@@ -13,10 +12,6 @@ export default function PatientPage() {
       <TotalSessions />
         <ActivityChart />
         <Reviews />
-      </div>
-
-      <div className="mt-4">
-        <PaymentsTable />
       </div>
 
       <div className="mt-4">

@@ -39,7 +39,7 @@ const specialistMenuItems = [
   {
     title: "User Data",
     icon: User,
-    href: "/specialist/ratings",
+    href: "/specialist/user-data",
   },
   {
     title: "Settings",

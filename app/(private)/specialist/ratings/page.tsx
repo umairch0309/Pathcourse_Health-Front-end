@@ -79,7 +79,7 @@ export default function RatingsPage() {
   return (
     <div className="w-full">
       <h2 className="text-lg sm:text-xl font-bold text-foreground mb-4">
-        Rating & Reviews
+        User Data
       </h2>
 
       <DataTable

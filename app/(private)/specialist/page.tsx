@@ -1,6 +1,5 @@
 import { Typography } from "@/components/ui/typography"
 import Availability from "./_components/availability"
-import { PaymentsTable } from "./_components/payments"
 import { Reviews } from "./_components/reviews"
 import { AppointmentsTable } from "./_components/session"
 import { TotalSessions } from "./_components/total-sessions"
@@ -15,10 +14,6 @@ export default function SpecialistPage() {
       <Availability />
         <TotalSessions />
 
-      </div>
-
-      <div className="mt-4">
-        <PaymentsTable />
       </div>
 
       <div className="mt-4">

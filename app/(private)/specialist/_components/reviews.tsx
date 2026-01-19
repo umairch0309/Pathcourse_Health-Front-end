@@ -40,7 +40,7 @@ export function Reviews() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-background">
               <DropdownMenuItem asChild>
-                <Link href="/specialist/ratings">View all</Link>
+                <Link href="/specialist/user-data">View all</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

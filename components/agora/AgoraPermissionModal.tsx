@@ -145,14 +145,14 @@ export function AgoraPermissionModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-foreground">
             <Camera className="h-5 w-5" />
-            SHC Consultation Permissions
+            PathCourse Consultation Permissions
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-300">
-            To join the Smart Health Center consultation, please allow access to
-            your camera and microphone when prompted by your browser.
+            To join the PathCourse consultation, please allow access to your
+            camera and microphone when prompted by your browser.
           </p>
 
           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">

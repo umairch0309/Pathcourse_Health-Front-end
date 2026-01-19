@@ -10,6 +10,7 @@ import type {
 import axios from "axios"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { env } from "@/env"
+import { useFetch } from "@/hooks/use-fetch"
 import auth from "@/lib/auth"
 import { buildRequestUrl } from "@/lib/utils"
 
@@ -20,6 +21,7 @@ import { AgoraLoadingState } from "./AgoraLoadingState"
 import { AgoraMedicalSidebar } from "./AgoraMedicalSidebar"
 import { AgoraPermissionModal } from "./AgoraPermissionModal"
 import { AgoraVideoGrid } from "./AgoraVideoGrid"
+import { SessionReasonModal } from "./SessionReasonModal"
 
 type RemoteUser = {
   uid: string
@@ -113,6 +115,8 @@ export function AgoraVideo({
   const [showPermissionModal, setShowPermissionModal] = useState(true) // Show on first load
   const [hasRequestedInitialPermissions, setHasRequestedInitialPermissions] =
     useState(false)
+  const [showSessionReasonModal, setShowSessionReasonModal] = useState(false)
+  const hasShownSessionReasonModalRef = useRef(false)
   const [timerSeconds, setTimerSeconds] = useState<number | undefined>(
     undefined
   )
@@ -125,7 +129,6 @@ export function AgoraVideo({
   const hasCompletedAppointmentRef = useRef(false)
   const timerStartTimeRef = useRef<number | null>(null)
   const TIMER_DURATION = 900 // 15 minutes in seconds
-  const STORAGE_KEY = `appointment_timer_${appointmentId}`
 
   // Fetch current user session to determine role
   useEffect(() => {
@@ -144,36 +147,47 @@ export function AgoraVideo({
     fetchSession()
   }, [])
 
-  // Initialize timer from localStorage (for both doctor and patient)
+  // Fetch appointment data to get startedAt timestamp (works across browsers/devices)
+  const { data: appointmentData } = useFetch<{
+    id?: string
+    startedAt: string | null
+    status: string
+  }>({
+    path: appointmentId ? `/api/appointment/${appointmentId}` : "",
+    queryKey: ["appointment-timer", appointmentId],
+    config: {
+      enabled: !!appointmentId && !isLoadingSession,
+      refetchOnWindowFocus: false,
+      // Refetch every 2 seconds to sync startedAt between doctor and patient
+      refetchInterval: 2000,
+    },
+  })
+
+  // Initialize timer from appointment startedAt (works across browsers/devices)
+  // Only initialize when user is joined to prevent timer starting on page reload before joining
   useEffect(() => {
-    if (!appointmentId || isLoadingSession || !currentUser) return
-
-    // Check if timer exists in localStorage (shared between doctor and patient)
-    const storedTimerData = localStorage.getItem(STORAGE_KEY)
-
-    if (storedTimerData) {
-      try {
-        const { startTime } = JSON.parse(storedTimerData)
-        const elapsed = Math.floor((Date.now() - startTime) / 1000)
-        const remaining = TIMER_DURATION - elapsed
-
-        if (remaining > 0) {
-          // Timer is still valid, continue from remaining time
-          setTimerSeconds(remaining)
-          timerStartTimeRef.current = startTime
-        } else {
-          // Timer has expired, clear storage and don't start
-          localStorage.removeItem(STORAGE_KEY)
-          setTimerSeconds(0)
-        }
-      } catch (error) {
-        console.error("Failed to parse stored timer data:", error)
-        localStorage.removeItem(STORAGE_KEY)
-      }
+    if (!appointmentData?.startedAt || !appointmentId || !isJoined) {
+      // Timer not started yet or user not joined
+      return
     }
-  }, [appointmentId, isLoadingSession, currentUser, STORAGE_KEY])
+
+    const startTime = new Date(appointmentData.startedAt).getTime()
+    const elapsed = Math.floor((Date.now() - startTime) / 1000)
+    const remaining = TIMER_DURATION - elapsed
+
+    if (remaining > 0) {
+      // Timer is still valid
+      setTimerSeconds(remaining)
+      timerStartTimeRef.current = startTime
+    } else {
+      // Timer has expired
+      setTimerSeconds(0)
+      timerStartTimeRef.current = startTime
+    }
+  }, [appointmentData?.startedAt, appointmentId, isJoined])
 
   // Start timer when doctor joins the call (only doctor can start timer)
+  // Updates appointment startedAt via API so patient can sync across browsers/devices
   useEffect(() => {
     if (!appointmentId || isLoadingSession || !currentUser || !isJoined) return
 
@@ -181,81 +195,85 @@ export function AgoraVideo({
       currentUser.role === "doctor" || currentUser.role === "specialist"
 
     if (!isDoctor) {
-      // Patients don't start timer, but will read from localStorage when doctor starts it
+      // Patients don't start timer - they will sync from appointment startedAt via API
       return
     }
 
-    // Only start timer if it hasn't been started yet
-    if (timerStartTimeRef.current === null && timerSeconds === undefined) {
-      const startTime = Date.now()
-      timerStartTimeRef.current = startTime
+    // Only start timer if appointment doesn't have startedAt yet
+    // Check both appointmentData (from API) and local timer state
+    const shouldStartTimer =
+      !appointmentData?.startedAt &&
+      timerStartTimeRef.current === null &&
+      timerSeconds === undefined
 
-      // Store timer start time in localStorage (shared with patient)
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ startTime }))
+    if (shouldStartTimer) {
+      const startAppointment = async () => {
+        try {
+          const API_URL = env.NEXT_PUBLIC_APP_URL
+          const startedAtISO = new Date().toISOString()
+          const REQUEST_PATH = buildRequestUrl(
+            API_URL,
+            `/api/appointment/${appointmentId}`
+          )
 
-      // Start timer from full duration
-      setTimerSeconds(TIMER_DURATION)
-    }
-  }, [
-    isJoined,
-    appointmentId,
-    isLoadingSession,
-    currentUser,
-    timerSeconds,
-    STORAGE_KEY,
-  ])
+          console.log(
+            `[Doctor] Starting appointment ${appointmentId}, setting startedAt:`,
+            startedAtISO
+          )
 
-  // Patient side: Check localStorage periodically for timer started by doctor
-  useEffect(() => {
-    if (!appointmentId || isLoadingSession || !currentUser || !isJoined) return
-
-    const isDoctor =
-      currentUser.role === "doctor" || currentUser.role === "specialist"
-
-    if (isDoctor) {
-      // Doctor handles timer start in the effect above
-      return
-    }
-
-    // Patient: Check if doctor has started the timer
-    if (timerStartTimeRef.current === null && timerSeconds === undefined) {
-      const checkTimer = () => {
-        const storedTimerData = localStorage.getItem(STORAGE_KEY)
-        if (storedTimerData) {
-          try {
-            const { startTime } = JSON.parse(storedTimerData)
-            const elapsed = Math.floor((Date.now() - startTime) / 1000)
-            const remaining = TIMER_DURATION - elapsed
-
-            if (remaining > 0) {
-              // Timer exists and is valid, sync with it
-              setTimerSeconds(remaining)
-              timerStartTimeRef.current = startTime
-            } else {
-              // Timer expired
-              setTimerSeconds(0)
+          // Update appointment with startedAt timestamp
+          const response = await axios.patch(
+            REQUEST_PATH,
+            {
+              startedAt: startedAtISO,
+            },
+            {
+              withCredentials: true,
             }
-          } catch (error) {
-            console.error("Failed to parse stored timer data:", error)
-          }
+          )
+
+          console.log(
+            "[Doctor] Appointment startedAt updated successfully:",
+            response.data
+          )
+
+          // Set timer locally using the same timestamp
+          const startTime = new Date(startedAtISO).getTime()
+          timerStartTimeRef.current = startTime
+          setTimerSeconds(TIMER_DURATION)
+        } catch (error) {
+          const errorDetails =
+            error instanceof Error
+              ? {
+                  message: error.message,
+                  response: (
+                    error as { response?: { data?: unknown; status?: number } }
+                  )?.response?.data,
+                  status: (error as { response?: { status?: number } })
+                    ?.response?.status,
+                }
+              : { message: String(error) }
+          console.error("Failed to start appointment:", error)
+          console.error("Error details:", errorDetails)
+          // Fallback: still start timer locally even if API fails
+          const startTime = Date.now()
+          timerStartTimeRef.current = startTime
+          setTimerSeconds(TIMER_DURATION)
+          console.log(
+            "[Doctor] Using fallback timer (local only, patient won't see it)"
+          )
         }
       }
 
-      // Check immediately
-      checkTimer()
-
-      // Check periodically in case doctor starts timer after patient joins
-      const interval = setInterval(checkTimer, 1000)
-
-      return () => clearInterval(interval)
+      startAppointment()
     }
   }, [
     isJoined,
     appointmentId,
     isLoadingSession,
     currentUser,
+    appointmentData?.startedAt,
     timerSeconds,
-    STORAGE_KEY,
   ])
 
   // Initialize Agora client and set up event listeners
@@ -363,9 +381,9 @@ export function AgoraVideo({
     initializeAgora()
   }, [])
 
-  // Timer countdown effect
+  // Timer countdown effect - syncs timer for both doctor and patient
   useEffect(() => {
-    if (timerSeconds === undefined || timerSeconds <= 0) {
+    if (timerSeconds === undefined) {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
         timerIntervalRef.current = null
@@ -373,12 +391,20 @@ export function AgoraVideo({
       return
     }
 
-    // Sync with localStorage periodically to handle page visibility changes
+    // Sync with timerStartTimeRef or appointment startedAt periodically
+    // This ensures both doctor and patient stay in sync, and handles page reloads
     const syncTimer = () => {
-      if (appointmentId && timerStartTimeRef.current) {
-        const elapsed = Math.floor(
-          (Date.now() - timerStartTimeRef.current) / 1000
-        )
+      // First, try to get startTime from ref (primary source)
+      let startTime = timerStartTimeRef.current
+
+      // If ref is not set, try to get from appointment startedAt (for cross-browser sync)
+      if (!startTime && appointmentData?.startedAt) {
+        startTime = new Date(appointmentData.startedAt).getTime()
+        timerStartTimeRef.current = startTime
+      }
+
+      if (appointmentId && startTime) {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000)
         const remaining = TIMER_DURATION - elapsed
 
         if (remaining > 0) {
@@ -402,7 +428,7 @@ export function AgoraVideo({
         timerIntervalRef.current = null
       }
     }
-  }, [timerSeconds, appointmentId])
+  }, [timerSeconds, appointmentId, appointmentData?.startedAt])
 
   // Join channel and setup tracks - only after permissions are handled
   useEffect(() => {
@@ -662,17 +688,53 @@ export function AgoraVideo({
   }
 
   const endCall = useCallback(async () => {
+    // If doctor is manually ending the call, mark appointment as completed if not already done
+    const isDoctor =
+      currentUser?.role === "doctor" || currentUser?.role === "specialist"
+
+    if (
+      isDoctor &&
+      appointmentId &&
+      isJoined &&
+      !hasCompletedAppointmentRef.current &&
+      appointmentData?.status !== "COMPLETED"
+    ) {
+      try {
+        const API_URL = env.NEXT_PUBLIC_APP_URL
+        const REQUEST_PATH = buildRequestUrl(
+          API_URL,
+          `/api/appointment/${appointmentId}/complete`
+        )
+
+        await axios.patch(
+          REQUEST_PATH,
+          {},
+          {
+            withCredentials: true,
+          }
+        )
+
+        console.log(
+          "Appointment marked as completed (manual end call by doctor)"
+        )
+        hasCompletedAppointmentRef.current = true
+
+        // Set flag to show session reason modal after call ends
+        if (!hasShownSessionReasonModalRef.current) {
+          hasShownSessionReasonModalRef.current = true
+        }
+      } catch (error) {
+        console.error("Failed to complete appointment:", error)
+      }
+    }
+
     // Clear timer
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current)
       timerIntervalRef.current = null
     }
 
-    // Clear stored timer data
-    if (appointmentId) {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-
+    // Reset timer ref
     timerStartTimeRef.current = null
     setTimerSeconds(undefined)
 
@@ -707,11 +769,12 @@ export function AgoraVideo({
     localVideoTrack,
     localAudioTrack,
     onEndCall,
+    currentUser,
     appointmentId,
-    STORAGE_KEY,
+    appointmentData?.status,
   ])
 
-  // Complete appointment when timer reaches 0
+  // Complete appointment when timer reaches 0 (works for both doctor and patient)
   useEffect(() => {
     if (
       timerSeconds === 0 &&
@@ -721,38 +784,125 @@ export function AgoraVideo({
     ) {
       hasCompletedAppointmentRef.current = true
 
-      // Clear stored timer data
-      localStorage.removeItem(STORAGE_KEY)
+      // Reset timer ref
       timerStartTimeRef.current = null
 
       const completeAppointment = async () => {
-        try {
-          const API_URL = env.NEXT_PUBLIC_APP_URL
-          const REQUEST_PATH = buildRequestUrl(
-            API_URL,
-            `/api/appointment/${appointmentId}/complete`
-          )
+        const isDoctor =
+          currentUser?.role === "doctor" || currentUser?.role === "specialist"
 
-          await axios.patch(
-            REQUEST_PATH,
-            {},
-            {
-              withCredentials: true,
+        // Only doctor can mark appointment as completed via API
+        if (isDoctor) {
+          try {
+            const API_URL = env.NEXT_PUBLIC_APP_URL
+            const REQUEST_PATH = buildRequestUrl(
+              API_URL,
+              `/api/appointment/${appointmentId}/complete`
+            )
+
+            await axios.patch(
+              REQUEST_PATH,
+              {},
+              {
+                withCredentials: true,
+              }
+            )
+
+            console.log("Appointment marked as completed successfully")
+
+            // Show session reason modal for doctor after appointment completion
+            // Set flag to show modal after call ends
+            if (!hasShownSessionReasonModalRef.current) {
+              hasShownSessionReasonModalRef.current = true
             }
-          )
-
-          console.log("Appointment marked as completed successfully")
-        } catch (error) {
-          console.error("Failed to complete appointment:", error)
+          } catch (error) {
+            console.error("Failed to complete appointment:", error)
+          }
         }
 
-        // End the call after attempting to complete appointment
+        // End the call for both doctor and patient when timer reaches 0
         endCall()
       }
 
       completeAppointment()
     }
-  }, [timerSeconds, appointmentId, isJoined, endCall, STORAGE_KEY])
+  }, [timerSeconds, appointmentId, isJoined, endCall, currentUser])
+
+  // Show session reason modal for doctor after appointment completion and call ends
+  useEffect(() => {
+    if (!appointmentId || isLoadingSession || !currentUser) return
+
+    const isDoctor =
+      currentUser.role === "doctor" || currentUser.role === "specialist"
+
+    if (!isDoctor) return
+
+    // Show modal when:
+    // 1. We've completed the appointment (flag is set)
+    // 2. Call has ended (not joined)
+    // 3. Appointment status is COMPLETED (or we just completed it)
+    // 4. We haven't shown the modal yet
+    if (
+      hasShownSessionReasonModalRef.current &&
+      !isJoined &&
+      (appointmentData?.status === "COMPLETED" ||
+        hasCompletedAppointmentRef.current) &&
+      !showSessionReasonModal
+    ) {
+      console.log("[SessionReasonModal] Conditions met, showing modal:", {
+        hasShownSessionReasonModalRef: hasShownSessionReasonModalRef.current,
+        isJoined,
+        appointmentStatus: appointmentData?.status,
+        hasCompletedAppointmentRef: hasCompletedAppointmentRef.current,
+      })
+      // Small delay to ensure call cleanup is complete
+      const timer = setTimeout(() => {
+        setShowSessionReasonModal(true)
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [
+    appointmentData?.status,
+    isJoined,
+    appointmentId,
+    isLoadingSession,
+    currentUser,
+    showSessionReasonModal,
+  ])
+
+  // Force check when appointment is completed via manual end call
+  // This ensures the modal shows even if appointmentData?.status hasn't updated yet
+  useEffect(() => {
+    if (!appointmentId || isLoadingSession || !currentUser) return
+
+    const isDoctor =
+      currentUser.role === "doctor" || currentUser.role === "specialist"
+
+    if (!isDoctor) return
+
+    // If we completed the appointment and call has ended, show modal
+    // This is a secondary check to catch cases where appointmentData?.status might not be updated yet
+    if (
+      hasCompletedAppointmentRef.current &&
+      hasShownSessionReasonModalRef.current &&
+      !isJoined &&
+      !showSessionReasonModal
+    ) {
+      console.log(
+        "[SessionReasonModal] Secondary check triggered, showing modal"
+      )
+      const timer = setTimeout(() => {
+        setShowSessionReasonModal(true)
+      }, 800) // Slightly longer delay for manual end call
+      return () => clearTimeout(timer)
+    }
+  }, [
+    isJoined,
+    appointmentId,
+    isLoadingSession,
+    currentUser,
+    showSessionReasonModal,
+  ])
 
   const handleRemoteVideoRef = (
     uid: string,
@@ -941,6 +1091,23 @@ export function AgoraVideo({
           onClose={handlePermissionModalClose}
           onPermissionsGranted={handlePermissionsGranted}
           currentPermissions={permissions}
+        />
+      )}
+
+      {/* Session Reason Modal - Show for doctors after appointment completion */}
+      {appointmentId && (
+        <SessionReasonModal
+          open={showSessionReasonModal}
+          onOpenChange={(open) => {
+            setShowSessionReasonModal(open)
+            if (!open) {
+              hasShownSessionReasonModalRef.current = false
+            }
+          }}
+          appointmentId={appointmentId}
+          onSubmitted={() => {
+            hasShownSessionReasonModalRef.current = false
+          }}
         />
       )}
     </div>

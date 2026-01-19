@@ -116,7 +116,7 @@ export default function RatingsPage() {
         actions={actions}
         searchPlaceholder="Search"
         showAllButton={false}
-        title="Rating & Reviews"
+        title="User Data"
         pagination={{
           currentPage,
           totalPages,

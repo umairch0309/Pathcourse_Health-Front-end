@@ -20,7 +20,7 @@ export function Reviews() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-foreground text-base font-medium">
-            Ratings & Reviews
+            User Data
           </CardTitle>
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -31,7 +31,7 @@ export function Reviews() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-background">
             <DropdownMenuItem asChild>
-              <Link href="/patient/ratings">View all</Link>
+              <Link href="/patient/user-data">View all</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

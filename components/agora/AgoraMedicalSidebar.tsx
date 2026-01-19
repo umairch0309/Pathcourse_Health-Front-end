@@ -101,7 +101,10 @@ export function AgoraMedicalSidebar({
     if (!appointment?.patient) return null
 
     const patient = appointment.patient
-    const isAnonymous = patient.isAnonymous && !isViewingOwnData
+    // If name, email, and image are all null/empty, treat as anonymous and show employee code
+    const isAnonymous =
+      (patient.isAnonymous && !isViewingOwnData) ||
+      (!patient.name && !patient.email && !patient.image && !isViewingOwnData)
 
     // If patient is anonymous and doctor is viewing, show employee code
     if (isAnonymous) {
@@ -196,14 +199,6 @@ export function AgoraMedicalSidebar({
                         {patientInfo.name || "—"}
                       </span>
                     </div>
-                    {patientInfo.email && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Email:</span>
-                        <span className="font-medium text-gray-900">
-                          {patientInfo.email}
-                        </span>
-                      </div>
-                    )}
                     {patientInfo.dateOfBirth && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Date of Birth:</span>
@@ -227,22 +222,12 @@ export function AgoraMedicalSidebar({
 
                 {/* Doctor Info - Only show to patients */}
                 {isPatient && appointment?.doctor && (
-                  <>
-                    <div className="flex justify-between mt-4 pt-4 border-t">
-                      <span className="text-gray-600">Doctor:</span>
-                      <span className="font-medium text-gray-900">
-                        {appointment.doctor.name || "—"}
-                      </span>
-                    </div>
-                    {appointment.doctor.email && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Email:</span>
-                        <span className="font-medium text-gray-900">
-                          {appointment.doctor.email}
-                        </span>
-                      </div>
-                    )}
-                  </>
+                  <div className="flex justify-between mt-4 pt-4 border-t">
+                    <span className="text-gray-600">Doctor:</span>
+                    <span className="font-medium text-gray-900">
+                      {appointment.doctor.name || "—"}
+                    </span>
+                  </div>
                 )}
 
                 {appointment?.appointmentFor && (
