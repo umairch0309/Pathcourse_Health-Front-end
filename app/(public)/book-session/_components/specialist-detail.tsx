@@ -1,9 +1,18 @@
 "use client"
-import { CheckCircle2, XCircle } from "lucide-react"
+import {
+  Award,
+  Briefcase,
+  CheckCircle2,
+  Languages,
+  Mail,
+  Phone,
+  Users,
+  XCircle,
+} from "lucide-react"
 import Image from "next/image"
-import { Loader } from "@/components/loader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Typography } from "@/components/ui/typography"
 import { useFetch } from "@/hooks/use-fetch"
 
@@ -68,37 +77,44 @@ export default function SpecialistDetail({
     queryKey: ["doctor", doctorId],
   })
 
-  // Get description from API - use special_interest_area as the description
-  const description =
-    doctorData?.professionalExperience?.special_interest_area || ""
-
-  const services = doctorData?.professionalExperience?.special_interest_area
-    ? doctorData.professionalExperience.special_interest_area
-        .split(",")
-        .map((s) => s.trim())
-    : ["Men's Health", "Women's Health", "Sextual Health", "Skin Care"]
-
   if (isLoading) {
     return (
-      <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
+      <section className="bg-gradient-to-b from-background to-muted/20 min-h-screen pt-24 pb-20 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {/* Page Title */}
-          <Typography variant="h3" className="text-foreground font-bold mb-8">
-            Specialist Details
-          </Typography>
+          <div className="mb-8">
+            <Typography variant="h3" className="text-foreground font-bold mb-2">
+              Specialist Details
+            </Typography>
+            <div className="h-1 w-20 bg-primary rounded-full" />
+          </div>
 
           {/* Loading Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:mb-12">
-            {/* Left Column - Placeholder */}
-            <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1 bg-muted animate-pulse" />
+          <Card className="shadow-lg border-2">
+            <CardContent className="p-6 lg:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column - Placeholder */}
+                <div className="relative w-full h-[400px] lg:h-[500px] rounded-2xl overflow-hidden bg-muted animate-pulse" />
 
-            {/* Right Column - Loading */}
-            <div className="col-span-2 mt-4 lg:mt-0">
-              <div className="flex items-center justify-center py-20">
-                <Loader size="lg" />
+                {/* Right Column - Loading */}
+                <div className="col-span-2 space-y-6">
+                  <div className="space-y-3">
+                    <div className="h-8 w-3/4 bg-muted animate-pulse rounded" />
+                    <div className="h-6 w-1/2 bg-muted animate-pulse rounded" />
+                  </div>
+                  <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
+                  <div className="h-24 w-full bg-muted animate-pulse rounded-lg" />
+                  <div className="space-y-2">
+                    <div className="h-6 w-1/3 bg-muted animate-pulse rounded" />
+                    <div className="flex gap-2">
+                      <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+                      <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     )
@@ -106,195 +122,252 @@ export default function SpecialistDetail({
 
   if (error || !doctorData) {
     return (
-      <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
+      <section className="bg-gradient-to-b from-background to-muted/20 min-h-screen pt-24 pb-20 px-4 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <Typography variant="h3" className="text-foreground font-bold mb-8">
-            Specialist Details
-          </Typography>
-          <div className="text-center py-12">
-            <Typography variant="p" className="text-muted-foreground">
-              Failed to load specialist details. Please try again.
+          <div className="mb-8">
+            <Typography variant="h3" className="text-foreground font-bold mb-2">
+              Specialist Details
             </Typography>
-            {onBack && (
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={onBack}
-                className="mt-4"
-              >
-                Go Back
-              </Button>
-            )}
+            <div className="h-1 w-20 bg-primary rounded-full" />
           </div>
+          <Card className="shadow-lg border-2">
+            <CardContent className="p-12">
+              <div className="text-center">
+                <XCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+                <Typography
+                  variant="h4"
+                  className="text-foreground font-bold mb-2"
+                >
+                  Failed to Load
+                </Typography>
+                <Typography variant="p" className="text-muted-foreground mb-6">
+                  We couldn't load the specialist details. Please try again
+                  later.
+                </Typography>
+                {onBack && (
+                  <Button variant="outline" size="lg" onClick={onBack}>
+                    Go Back
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
+    <section className="bg-gradient-to-b from-background to-muted/20 min-h-screen pt-24 pb-20 px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Page Title */}
-        <Typography variant="h3" className="text-foreground font-bold mb-8">
-          Specialist Details
-        </Typography>
-
-        {/* Main Content - Two Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8 lg:mb-12">
-          {/* Left Column - Specialist Image */}
-          <div className="relative w-full h-[400px] rounded-2xl overflow-hidden col-span-1 bg-muted">
-            {doctorData.user.image ? (
-              <Image
-                src={doctorData.user.image}
-                alt={doctorData.user.name}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <Typography variant="p" className="text-muted-foreground">
-                  No image available
-                </Typography>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column - Specialist Information */}
-          <div className="col-span-2 mt-4 lg:mt-0">
-            {/* Name and Availability Status */}
-            <div className="flex items-start justify-between mb-2">
-              <Typography variant="h4" className="text-foreground font-bold">
-                {doctorData.user.name}
-              </Typography>
-              <div className="flex items-center gap-2">
-                {doctorData.isAvailable ? (
-                  <>
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    <Badge className="bg-green-500/10 text-green-700 border-green-500/20 dark:text-green-400 dark:bg-green-500/20">
-                      Available
-                    </Badge>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5 text-muted-foreground" />
-                    <Badge
-                      variant="outline"
-                      className="bg-muted text-muted-foreground"
-                    >
-                      Unavailable
-                    </Badge>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Description */}
-            {description && (
-              <Typography variant="span" className="text-foreground">
-                {description}
-              </Typography>
-            )}
-
-            {/* Professional Contact */}
-            <div className="mt-2">
-              <Typography variant="span" className="text-muted-foreground">
-                Email:{" "}
-                <span className="text-foreground">
-                  {doctorData.professional_email}
-                </span>
-              </Typography>
-              {doctorData.professional_contact && (
-                <Typography
-                  variant="span"
-                  className="text-muted-foreground ml-4"
-                >
-                  Contact:{" "}
-                  <span className="text-foreground">
-                    {doctorData.professional_contact}
-                  </span>
-                </Typography>
-              )}
-            </div>
-
-            {/* Services / Special Interest Areas */}
-            <div className="mt-4">
-              <Typography
-                variant="p"
-                className="text-muted-foreground font-semibold mb-3"
-              >
-                Special Interest Areas
-              </Typography>
-              <div className="flex flex-wrap gap-2">
-                {services.map((service) => (
-                  <Badge
-                    key={service}
-                    variant="outline"
-                    className="bg-muted text-foreground hover:bg-muted/80 border-border"
-                  >
-                    {service}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="mb-8">
+          <Typography variant="h3" className="text-foreground font-bold mb-2">
+            Specialist Details
+          </Typography>
         </div>
 
-        {/* Other Details Section */}
-        <div className="mb-12 bg-muted p-6 rounded-2xl lg:mt-0 mt-4">
-          <Typography
-            variant="h5"
-            className="text-foreground font-semibold mb-4"
-          >
-            Other Details
-          </Typography>
-          <div className="space-y-3">
-            {doctorData.professionalExperience?.languages &&
-              doctorData.professionalExperience.languages.length > 0 && (
+        {/* Main Content Card */}
+        <Card className="mb-8 shadow-none border-none">
+          <CardContent className="p-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column - Specialist Image */}
+              <div className="lg:col-span-1">
+                <div className="relative w-full h-[400px] lg:h-[450px] rounded-2xl overflow-hidden bg-gradient-to-br from-muted to-muted/50 shadow-xl border-2 border-border/50">
+                  {doctorData.user.image ? (
+                    <Image
+                      src={doctorData.user.image}
+                      alt={doctorData.user.name}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full bg-gradient-to-br from-primary/10 to-primary/5">
+                      <div className="text-center">
+                        <Users className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                        <Typography
+                          variant="p"
+                          className="text-muted-foreground"
+                        >
+                          No image available
+                        </Typography>
+                      </div>
+                    </div>
+                  )}
+                  {/* Availability Badge Overlay */}
+                  <div className="absolute top-4 right-4">
+                    {doctorData.isAvailable ? (
+                      <Badge className="bg-green-500/90 text-white border-0 shadow-lg backdrop-blur-sm">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Available
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-muted-foreground/90 text-white border-0 shadow-lg backdrop-blur-sm">
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Unavailable
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Specialist Information */}
+              <div className="lg:col-span-2 space-y-6 mt-10">
+                {/* Name and Title */}
                 <div>
-                  <Typography variant="span" className="text-muted-foreground">
-                    Languages:{" "}
-                  </Typography>
-                  <Typography variant="span" className="text-foreground">
-                    {doctorData.professionalExperience.languages.join(", ")}
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <Typography
+                        variant="h3"
+                        className="text-foreground font-bold mb-2"
+                      >
+                        {doctorData.user.name}
+                      </Typography>
+                      {doctorData.professionalExperience?.profession && (
+                        <Typography
+                          variant="p"
+                          className="text-muted-foreground text-lg"
+                        >
+                          {doctorData.professionalExperience.profession}
+                        </Typography>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Mail className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <Typography
+                        variant="span"
+                        className="text-xs text-muted-foreground uppercase tracking-wide"
+                      >
+                        Email
+                      </Typography>
+                      <Typography
+                        variant="p"
+                        className="text-foreground font-medium"
+                      >
+                        {doctorData.professional_email}
+                      </Typography>
+                    </div>
+                  </div>
+
+                  {doctorData.professional_contact && (
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Phone className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <Typography
+                          variant="span"
+                          className="text-xs text-muted-foreground uppercase tracking-wide"
+                        >
+                          Contact
+                        </Typography>
+                        <Typography
+                          variant="p"
+                          className="text-foreground font-medium"
+                        >
+                          {doctorData.professional_contact}
+                        </Typography>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Other Details Section */}
+        <Card className="mb-8 shadow-lg border-2">
+          <CardContent className="p-6 lg:p-8">
+            <Typography
+              variant="h4"
+              className="text-foreground font-bold mb-6 flex items-center gap-2"
+            >
+              <Briefcase className="h-6 w-6 text-primary" />
+              Professional Details
+            </Typography>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {doctorData.professionalExperience?.languages &&
+                doctorData.professionalExperience.languages.length > 0 && (
+                  <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Languages className="h-5 w-5 text-primary" />
+                      <Typography
+                        variant="span"
+                        className="text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+                      >
+                        Languages
+                      </Typography>
+                    </div>
+                    <Typography
+                      variant="p"
+                      className="text-foreground font-medium"
+                    >
+                      {doctorData.professionalExperience.languages.join(", ")}
+                    </Typography>
+                  </div>
+                )}
+
+              {doctorData.professionalExperience?.age_group && (
+                <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-5 w-5 text-primary" />
+                    <Typography
+                      variant="span"
+                      className="text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      Age Group
+                    </Typography>
+                  </div>
+                  <Typography
+                    variant="p"
+                    className="text-foreground font-medium"
+                  >
+                    {doctorData.professionalExperience.age_group}
                   </Typography>
                 </div>
               )}
-            {doctorData.professionalExperience?.special_interest_area && (
-              <div>
-                <Typography variant="span" className="text-muted-foreground">
-                  Special interest area:{" "}
-                </Typography>
-                <Typography variant="span" className="text-foreground">
-                  {doctorData.professionalExperience.special_interest_area}
-                </Typography>
-              </div>
-            )}
-            {doctorData.professionalExperience?.age_group && (
-              <div>
-                <Typography variant="span" className="text-muted-foreground">
-                  Age group:{" "}
-                </Typography>
-                <Typography variant="span" className="text-foreground">
-                  {doctorData.professionalExperience.age_group}
-                </Typography>
-              </div>
-            )}
-            {doctorData.professionalExperience?.profession && (
-              <div>
-                <Typography variant="span" className="text-muted-foreground">
-                  Profession:{" "}
-                </Typography>
-                <Typography variant="span" className="text-foreground">
-                  {doctorData.professionalExperience.profession}
-                </Typography>
-              </div>
-            )}
-          </div>
-        </div>
+
+              {doctorData.professionalExperience?.special_interest_area && (
+                <div className="p-4 rounded-xl bg-muted/50 border border-border/50 md:col-span-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Award className="h-5 w-5 text-primary" />
+                    <Typography
+                      variant="span"
+                      className="text-sm font-semibold text-muted-foreground uppercase tracking-wide"
+                    >
+                      Special Interest Area
+                    </Typography>
+                  </div>
+                  <Typography
+                    variant="p"
+                    className="text-foreground font-medium"
+                  >
+                    {doctorData.professionalExperience.special_interest_area}
+                  </Typography>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" size="lg" onClick={onBack}>
+        <div className="flex flex-col sm:flex-row justify-end gap-4">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={onBack}
+            className="w-full sm:w-auto"
+          >
             Back
           </Button>
           <Button
@@ -302,6 +375,7 @@ export default function SpecialistDetail({
             size="lg"
             disabled={!doctorData.isAvailable}
             onClick={onContinue}
+            className="w-full sm:w-auto shadow-lg"
           >
             {doctorData.isAvailable
               ? "Select and Continue"

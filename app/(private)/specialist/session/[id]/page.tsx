@@ -1,10 +1,10 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Typography } from "@/components/ui/typography"
-import { DetailsTabs } from "./_components/tabs"
-import { useFetch } from "@/hooks/use-fetch"
 import { Loader } from "@/components/loader"
+import { Typography } from "@/components/ui/typography"
+import { useFetch } from "@/hooks/use-fetch"
+import { DetailsTabs } from "./_components/tabs"
 
 type AppointmentData = {
   id: string
@@ -18,6 +18,7 @@ type AppointmentData = {
   updatedAt: string
   appointmentFor: "self" | "someone else"
   issue: string | null
+  uploadId?: string | null
   age: number | null
   patientName: string | null
   patientAge: number | null
@@ -52,7 +53,11 @@ export default function Page() {
   const params = useParams()
   const appointmentId = params.id as string
 
-  const { data: appointment, isLoading, error } = useFetch<AppointmentData>({
+  const {
+    data: appointment,
+    isLoading,
+    error,
+  } = useFetch<AppointmentData>({
     path: appointmentId ? `/api/appointment/${appointmentId}/full` : "",
     queryKey: ["appointment", appointmentId, "full"],
     config: {

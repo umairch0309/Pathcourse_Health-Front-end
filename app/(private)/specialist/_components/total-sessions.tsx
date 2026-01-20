@@ -1,8 +1,12 @@
-'use client';
+"use client"
+
 import {
   buildStyles,
   CircularProgressbarWithChildren,
-} from 'react-circular-progressbar';
+} from "react-circular-progressbar"
+import { Loader } from "@/components/loader"
+import { Typography } from "@/components/ui/typography"
+import { useFetch } from "@/hooks/use-fetch"
 import {
   Card,
   CardContent,
@@ -10,74 +14,115 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../../../../components/ui/card';
+} from "../../../../components/ui/card"
+
+type DoctorMonthlyStats = {
+  month: number
+  year: number
+  totalAppointments: number
+  completedAppointments: number
+}
 
 export function TotalSessions() {
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const year = now.getFullYear()
+
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useFetch<DoctorMonthlyStats>({
+    path: `/api/appointments/doctor/stats/monthly?month=${month}&year=${year}`,
+    queryKey: ["doctor", "monthly-stats", month, year],
+  })
+
+  const total = stats?.totalAppointments ?? 0
+  const completed = stats?.completedAppointments ?? 0
+  const completedPercent =
+    total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0
+  const remainingPercent = total > 0 ? 100 - completedPercent : 0
+
   return (
-    <Card className=" w-full lg:h-[350px] bg-background space-y-2 px-6">
+    <Card className="w-full lg:h-[350px] bg-background space-y-2 px-6">
       <CardHeader>
-        <CardTitle className="text-foreground mb-3 font-bold">Sessions</CardTitle>
+        <CardTitle className="text-foreground mb-3 font-bold">
+          Sessions
+        </CardTitle>
         <CardDescription className="text-muted-foreground -mb-6">
-          Total no. of Sessions attended.
+          Total no. of sessions scheduled and completed this month.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="flex justify-center items-center mt-4">
-        <div className="w-[150px] h-[150px] lg:w-[180px] lg:h-[180px] relative">
-          {/* Total ring (light gray background) */}
-          <CircularProgressbarWithChildren
-            value={100}
-            styles={buildStyles({
-              rotation: 0,
-              trailColor: '#f3f4f6',
-              strokeLinecap: 'round',
-              pathColor: '#f3f4f6',
-            })}
-          >
-            {/* Completed segment (light purple) */}
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[150px]">
+            <Loader size="sm" />
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center min-h-[150px]">
+            <Typography variant="p" className="text-muted-foreground text-sm">
+              Failed to load session stats. Please try again.
+            </Typography>
+          </div>
+        ) : (
+          <div className="w-[150px] h-[150px] lg:w-[180px] lg:h-[180px] relative">
+            {/* Total ring (light gray background) */}
             <CircularProgressbarWithChildren
-              value={70}
+              value={100}
               styles={buildStyles({
-                rotation: 0.25,
-                trailColor: 'transparent',
-                strokeLinecap: 'round',
-                pathColor: '#D1B9F2',
+                rotation: 0,
+                trailColor: "#f3f4f6",
+                strokeLinecap: "round",
+                pathColor: "#f3f4f6",
               })}
             >
-              {/* Upcoming segment (dark purple) */}
+              {/* Completed segment (light purple) */}
               <CircularProgressbarWithChildren
-                value={30}
+                value={completedPercent}
                 styles={buildStyles({
-                  rotation: 0.75,
-                  trailColor: 'transparent',
-                  strokeLinecap: 'round',
-                  pathColor: '#6715D3',
+                  rotation: 0.25,
+                  trailColor: "transparent",
+                  strokeLinecap: "round",
+                  pathColor: "#D1B9F2",
                 })}
               >
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground mb-[-2px]">
-                    Total sessions completed this month.
-                  </p>
-                  <p className="text-[24px] sm:text-[28px] font-bold text-foreground">08</p>
-                </div>
+                {/* Remaining segment (dark purple) */}
+                <CircularProgressbarWithChildren
+                  value={completedPercent}
+                  styles={buildStyles({
+                    rotation: 0,
+                    trailColor: "transparent",
+                    strokeLinecap: "round",
+                    // use theme primary (blue) instead of purple
+                    pathColor: "hsl(var(--primary))",
+                  })}
+                >
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground mb-[-2px]">
+                      Sessions completed this month
+                    </p>
+                    <p className="text-[24px] sm:text-[28px] font-bold text-foreground">
+                      {completed}
+                    </p>
+                  </div>
+                </CircularProgressbarWithChildren>
               </CircularProgressbarWithChildren>
             </CircularProgressbarWithChildren>
-          </CircularProgressbarWithChildren>
-        </div>
+          </div>
+        )}
       </CardContent>
 
       <CardFooter className="flex flex-wrap justify-center gap-2 sm:gap-3 mt-2">
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span className="w-2 h-2 rounded-full bg-muted" />
-          {' '}
-          Total
+          <span className="w-2 h-2 rounded-full bg-muted" /> Total appointments
+          this month ({total})
         </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span className="w-2 h-2 rounded-full bg-primary" />
-          {' '}
-          This Month
+          <span className="w-2 h-2 rounded-full bg-primary" /> Completed
+          sessions ({completed})
         </div>
       </CardFooter>
     </Card>
-  );
+  )
 }

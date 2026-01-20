@@ -192,7 +192,7 @@ export default function SessionsPage() {
           className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
           onClick={() => {
             router.push(
-              `/specialist/session/join-session?appointmentId=${row.id}`
+              `/specialist/session/join-session/video-call?appointmentId=${row.id}`
             )
           }}
         >

@@ -1,5 +1,6 @@
 "use client"
 
+import { useQueryClient } from "@tanstack/react-query"
 import type {
   IAgoraRTCClient,
   ICameraVideoTrack,
@@ -116,7 +117,10 @@ export function AgoraVideo({
   const [hasRequestedInitialPermissions, setHasRequestedInitialPermissions] =
     useState(false)
   const [showSessionReasonModal, setShowSessionReasonModal] = useState(false)
+  const showSessionReasonModalRef = useRef(false)
   const hasShownSessionReasonModalRef = useRef(false)
+  const hasTriggeredModalRef = useRef(false)
+  const [hasCompletedAppointment, setHasCompletedAppointment] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState<number | undefined>(
     undefined
   )
@@ -128,6 +132,8 @@ export function AgoraVideo({
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const hasCompletedAppointmentRef = useRef(false)
   const timerStartTimeRef = useRef<number | null>(null)
+  const timerSecondsRef = useRef<number | undefined>(undefined)
+  const modalTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const TIMER_DURATION = 900 // 15 minutes in seconds
 
   // Fetch current user session to determine role
@@ -147,8 +153,12 @@ export function AgoraVideo({
     fetchSession()
   }, [])
 
+  const queryClient = useQueryClient()
+  const aggressivePollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const hasDetectedStartedAtRef = useRef(false)
+
   // Fetch appointment data to get startedAt timestamp (works across browsers/devices)
-  const { data: appointmentData } = useFetch<{
+  const { data: appointmentData, refetch: refetchAppointment } = useFetch<{
     id?: string
     startedAt: string | null
     status: string
@@ -158,33 +168,183 @@ export function AgoraVideo({
     config: {
       enabled: !!appointmentId && !isLoadingSession,
       refetchOnWindowFocus: false,
-      // Refetch every 2 seconds to sync startedAt between doctor and patient
+      // Refetch every 2 seconds normally, but we'll add aggressive polling for patients waiting
       refetchInterval: 2000,
     },
   })
 
-  // Initialize timer from appointment startedAt (works across browsers/devices)
-  // Only initialize when user is joined to prevent timer starting on page reload before joining
+  // Aggressive polling for patients waiting for doctor to join
+  // This polls every 300ms when patient is waiting for startedAt
   useEffect(() => {
-    if (!appointmentData?.startedAt || !appointmentId || !isJoined) {
-      // Timer not started yet or user not joined
+    if (!appointmentId || isLoadingSession || !currentUser || !isJoined) {
       return
     }
 
-    const startTime = new Date(appointmentData.startedAt).getTime()
-    const elapsed = Math.floor((Date.now() - startTime) / 1000)
-    const remaining = TIMER_DURATION - elapsed
+    const isDoctor =
+      currentUser.role === "doctor" || currentUser.role === "specialist"
 
-    if (remaining > 0) {
-      // Timer is still valid
-      setTimerSeconds(remaining)
-      timerStartTimeRef.current = startTime
-    } else {
-      // Timer has expired
-      setTimerSeconds(0)
-      timerStartTimeRef.current = startTime
+    // Only for patients who are waiting (no startedAt yet)
+    if (isDoctor || appointmentData?.startedAt) {
+      // Clear aggressive polling if doctor or startedAt exists
+      if (aggressivePollIntervalRef.current) {
+        clearInterval(aggressivePollIntervalRef.current)
+        aggressivePollIntervalRef.current = null
+      }
+      hasDetectedStartedAtRef.current = true
+      return
     }
-  }, [appointmentData?.startedAt, appointmentId, isJoined])
+
+    // If we already detected startedAt, don't start polling again
+    if (hasDetectedStartedAtRef.current) {
+      return
+    }
+
+    // Patient is waiting - start aggressive polling
+    console.log(
+      "[Patient] Starting aggressive polling for startedAt (every 300ms)"
+    )
+
+    const pollForStartedAt = async () => {
+      try {
+        const API_URL = env.NEXT_PUBLIC_APP_URL
+        const REQUEST_PATH = buildRequestUrl(
+          API_URL,
+          `/api/appointment/${appointmentId}`
+        )
+
+        const response = await axios.get(REQUEST_PATH, {
+          withCredentials: true,
+        })
+
+        const data = response.data?.data || response.data
+        if (data?.startedAt && !hasDetectedStartedAtRef.current) {
+          console.log(
+            "[Patient] ⚡ Got startedAt from aggressive polling:",
+            data.startedAt
+          )
+          // Mark as detected to prevent multiple refetches
+          hasDetectedStartedAtRef.current = true
+
+          // Clear aggressive polling immediately to stop further requests
+          if (aggressivePollIntervalRef.current) {
+            clearInterval(aggressivePollIntervalRef.current)
+            aggressivePollIntervalRef.current = null
+          }
+
+          // Invalidate query to trigger React Query refetch (only once)
+          queryClient.invalidateQueries({
+            queryKey: ["appointment-timer", appointmentId],
+          })
+
+          // Single refetch - React Query will handle the rest
+          await refetchAppointment()
+        }
+      } catch (error) {
+        console.error("[Patient] Error in aggressive polling:", error)
+      }
+    }
+
+    // Start polling immediately, then every 500ms (reduced frequency to avoid too many requests)
+    pollForStartedAt()
+    aggressivePollIntervalRef.current = setInterval(pollForStartedAt, 500)
+
+    return () => {
+      if (aggressivePollIntervalRef.current) {
+        clearInterval(aggressivePollIntervalRef.current)
+        aggressivePollIntervalRef.current = null
+      }
+    }
+  }, [
+    appointmentId,
+    isLoadingSession,
+    currentUser,
+    isJoined,
+    appointmentData?.startedAt,
+    queryClient,
+    refetchAppointment,
+  ])
+
+  // Initialize timer when patient joins - show fixed 15 minutes but don't start counting
+  // Timer only starts counting when doctor joins and startedAt is set
+  useEffect(() => {
+    if (!appointmentId || !isJoined || isLoadingSession || !currentUser) {
+      return
+    }
+
+    const isDoctor =
+      currentUser.role === "doctor" || currentUser.role === "specialist"
+
+    // For patients: Show fixed 15-minute timer immediately when they join (but paused)
+    if (!isDoctor && timerSecondsRef.current === undefined) {
+      console.log(
+        "[Timer] Patient joined - showing fixed 15-minute timer (paused)"
+      )
+      setTimerSeconds(TIMER_DURATION)
+      timerSecondsRef.current = TIMER_DURATION
+      // Don't set timerStartTimeRef yet - timer is paused until doctor joins
+      timerStartTimeRef.current = null
+      return
+    }
+
+    // When startedAt becomes available (doctor joins), start the timer from actual start time
+    if (appointmentData?.startedAt) {
+      const startTime = new Date(appointmentData.startedAt).getTime()
+
+      // If timer is already synced with this start time, don't re-sync
+      // BUT: Always allow sync if timerStartTimeRef was null (patient was waiting for doctor)
+      const wasWaitingForDoctor = timerStartTimeRef.current === null
+      if (
+        !wasWaitingForDoctor &&
+        timerStartTimeRef.current === startTime &&
+        timerSecondsRef.current !== undefined
+      ) {
+        console.log("[Timer] Already synced with this start time, skipping")
+        return
+      }
+
+      // Special case: Patient was waiting (timerStartTimeRef is null) and startedAt just became available
+      // This is when doctor joins and patient needs to sync - FORCE SYNC
+      if (wasWaitingForDoctor && !isDoctor) {
+        console.log(
+          "[Timer] ⚡ Patient was waiting, now syncing with doctor's startedAt - timer will start!"
+        )
+      }
+
+      // Start timer from actual startedAt (this happens when doctor joins)
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      const remaining = TIMER_DURATION - elapsed
+
+      console.log("[Timer] Doctor joined - starting timer from startedAt:", {
+        startedAt: appointmentData.startedAt,
+        elapsed,
+        remaining,
+        isDoctor,
+        currentTimerSeconds: timerSecondsRef.current,
+        previousStartTime: timerStartTimeRef.current,
+        newStartTime: startTime,
+      })
+
+      if (remaining > 0) {
+        // Timer is still valid - start counting from actual start time
+        setTimerSeconds(remaining)
+        timerSecondsRef.current = remaining
+        timerStartTimeRef.current = startTime
+        console.log("[Timer] Timer started successfully:", remaining)
+      } else {
+        // Timer has expired
+        setTimerSeconds(0)
+        timerSecondsRef.current = 0
+        timerStartTimeRef.current = startTime
+        console.log("[Timer] Timer expired, setting to 0")
+      }
+    }
+  }, [
+    appointmentData?.startedAt,
+    appointmentId,
+    isJoined,
+    currentUser,
+    isLoadingSession,
+  ])
 
   // Start timer when doctor joins the call (only doctor can start timer)
   // Updates appointment startedAt via API so patient can sync across browsers/devices
@@ -240,7 +400,21 @@ export function AgoraVideo({
           // Set timer locally using the same timestamp
           const startTime = new Date(startedAtISO).getTime()
           timerStartTimeRef.current = startTime
+          timerSecondsRef.current = TIMER_DURATION
           setTimerSeconds(TIMER_DURATION)
+
+          // Invalidate and refetch appointment data to trigger sync on patient side
+          // This ensures patient picks up startedAt immediately
+          console.log("[Doctor] Invalidating query cache for appointment-timer")
+          queryClient.invalidateQueries({
+            queryKey: ["appointment-timer", appointmentId],
+          })
+
+          // Also manually refetch to ensure immediate update
+          await refetchAppointment()
+          console.log(
+            "[Doctor] Query invalidated and refetched, patient should sync timer now"
+          )
         } catch (error) {
           const errorDetails =
             error instanceof Error
@@ -258,6 +432,7 @@ export function AgoraVideo({
           // Fallback: still start timer locally even if API fails
           const startTime = Date.now()
           timerStartTimeRef.current = startTime
+          timerSecondsRef.current = TIMER_DURATION
           setTimerSeconds(TIMER_DURATION)
           console.log(
             "[Doctor] Using fallback timer (local only, patient won't see it)"
@@ -274,6 +449,8 @@ export function AgoraVideo({
     currentUser,
     appointmentData?.startedAt,
     timerSeconds,
+    refetchAppointment,
+    queryClient,
   ])
 
   // Initialize Agora client and set up event listeners
@@ -382,8 +559,42 @@ export function AgoraVideo({
   }, [])
 
   // Timer countdown effect - syncs timer for both doctor and patient
+  // This effect runs the countdown interval once timerSeconds is set AND startedAt is available
   useEffect(() => {
+    // If timer is not set, don't run interval
     if (timerSeconds === undefined) {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+        timerIntervalRef.current = null
+      }
+      return
+    }
+
+    // If timerStartTimeRef is null but startedAt is available, sync it first
+    // This handles the case when patient was waiting and doctor just joined
+    if (!timerStartTimeRef.current && appointmentData?.startedAt) {
+      const startTime = new Date(appointmentData.startedAt).getTime()
+      timerStartTimeRef.current = startTime
+      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      const remaining = TIMER_DURATION - elapsed
+      if (remaining > 0) {
+        setTimerSeconds(remaining)
+        timerSecondsRef.current = remaining
+        console.log(
+          "[Timer] ⚡ Countdown effect: Synced timerStartTimeRef from startedAt, starting countdown:",
+          remaining
+        )
+      } else {
+        setTimerSeconds(0)
+        timerSecondsRef.current = 0
+        console.log("[Timer] Countdown effect: Timer expired")
+      }
+      // Continue to set up interval below - timer will now count down
+    }
+
+    // If timerStartTimeRef is still null and no startedAt, timer is paused (patient waiting for doctor)
+    if (!timerStartTimeRef.current && !appointmentData?.startedAt) {
+      console.log("[Timer] Timer paused - waiting for doctor to join")
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current)
         timerIntervalRef.current = null
@@ -408,19 +619,35 @@ export function AgoraVideo({
         const remaining = TIMER_DURATION - elapsed
 
         if (remaining > 0) {
+          timerSecondsRef.current = remaining
           setTimerSeconds(remaining)
         } else {
+          timerSecondsRef.current = 0
           setTimerSeconds(0)
         }
       }
     }
 
+    // Clear any existing interval before creating a new one
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current)
+      timerIntervalRef.current = null
+    }
+
+    // Initial sync immediately
+    syncTimer()
+
+    // Set up interval for countdown
     timerIntervalRef.current = setInterval(() => {
       syncTimer()
     }, 1000)
 
-    // Initial sync
-    syncTimer()
+    console.log(
+      "[Timer] Countdown interval started, timerSeconds:",
+      timerSeconds,
+      "startTime:",
+      timerStartTimeRef.current
+    )
 
     return () => {
       if (timerIntervalRef.current) {
@@ -718,10 +945,17 @@ export function AgoraVideo({
           "Appointment marked as completed (manual end call by doctor)"
         )
         hasCompletedAppointmentRef.current = true
+        setHasCompletedAppointment(true)
+
+        // Refetch appointment data to get updated status
+        await refetchAppointment()
 
         // Set flag to show session reason modal after call ends
         if (!hasShownSessionReasonModalRef.current) {
           hasShownSessionReasonModalRef.current = true
+          console.log(
+            "[SessionReasonModal] Flag set to show modal after cleanup"
+          )
         }
       } catch (error) {
         console.error("Failed to complete appointment:", error)
@@ -736,6 +970,7 @@ export function AgoraVideo({
 
     // Reset timer ref
     timerStartTimeRef.current = null
+    timerSecondsRef.current = undefined
     setTimerSeconds(undefined)
 
     try {
@@ -762,7 +997,47 @@ export function AgoraVideo({
       console.error("Error during cleanup:", error)
     }
 
-    onEndCall?.()
+    // If doctor manually ended the call and completed the appointment, ensure modal shows
+    // The useEffect will handle it, but we also trigger a direct check after a delay
+    console.log(
+      "[SessionReasonModal] endCall cleanup complete, useEffect will handle modal display"
+    )
+
+    // Additional direct trigger after cleanup to ensure modal shows
+    if (
+      isDoctor &&
+      hasCompletedAppointmentRef.current &&
+      hasShownSessionReasonModalRef.current &&
+      !hasTriggeredModalRef.current
+    ) {
+      console.log(
+        "[SessionReasonModal] Direct trigger from endCall - setting modal immediately"
+      )
+      hasTriggeredModalRef.current = true
+      showSessionReasonModalRef.current = true
+      // Use setTimeout to ensure state update happens after cleanup
+      setTimeout(() => {
+        console.log(
+          "[SessionReasonModal] Actually setting modal state from endCall"
+        )
+        setShowSessionReasonModal(true)
+      }, 100)
+    }
+
+    // Only trigger external onEndCall immediately when:
+    // - there's no appointment flow, or
+    // - the user is not a doctor/specialist (patients should navigate away right after call end)
+    //
+    // For doctors with an appointment, navigation is deferred until the
+    // SessionReasonModal is submitted or skipped.
+    if (
+      !appointmentId ||
+      !isDoctor ||
+      !hasCompletedAppointmentRef.current ||
+      !hasShownSessionReasonModalRef.current
+    ) {
+      onEndCall?.()
+    }
   }, [
     client,
     isJoined,
@@ -772,6 +1047,8 @@ export function AgoraVideo({
     currentUser,
     appointmentId,
     appointmentData?.status,
+    refetchAppointment,
+    // Don't include showSessionReasonModal - it causes unnecessary re-renders
   ])
 
   // Complete appointment when timer reaches 0 (works for both doctor and patient)
@@ -783,6 +1060,7 @@ export function AgoraVideo({
       !hasCompletedAppointmentRef.current
     ) {
       hasCompletedAppointmentRef.current = true
+      setHasCompletedAppointment(true)
 
       // Reset timer ref
       timerStartTimeRef.current = null
@@ -810,10 +1088,16 @@ export function AgoraVideo({
 
             console.log("Appointment marked as completed successfully")
 
+            // Refetch appointment data to get updated status
+            await refetchAppointment()
+
             // Show session reason modal for doctor after appointment completion
             // Set flag to show modal after call ends
             if (!hasShownSessionReasonModalRef.current) {
               hasShownSessionReasonModalRef.current = true
+              console.log(
+                "[SessionReasonModal] Flag set to show modal after timer expiry"
+              )
             }
           } catch (error) {
             console.error("Failed to complete appointment:", error)
@@ -826,7 +1110,14 @@ export function AgoraVideo({
 
       completeAppointment()
     }
-  }, [timerSeconds, appointmentId, isJoined, endCall, currentUser])
+  }, [
+    timerSeconds,
+    appointmentId,
+    isJoined,
+    endCall,
+    currentUser,
+    refetchAppointment,
+  ])
 
   // Show session reason modal for doctor after appointment completion and call ends
   useEffect(() => {
@@ -841,25 +1132,43 @@ export function AgoraVideo({
     // 1. We've completed the appointment (flag is set)
     // 2. Call has ended (not joined)
     // 3. Appointment status is COMPLETED (or we just completed it)
-    // 4. We haven't shown the modal yet
+    // 4. Modal is not already open and we haven't already triggered it
     if (
       hasShownSessionReasonModalRef.current &&
       !isJoined &&
       (appointmentData?.status === "COMPLETED" ||
         hasCompletedAppointmentRef.current) &&
-      !showSessionReasonModal
+      !showSessionReasonModalRef.current &&
+      !hasTriggeredModalRef.current
     ) {
       console.log("[SessionReasonModal] Conditions met, showing modal:", {
         hasShownSessionReasonModalRef: hasShownSessionReasonModalRef.current,
         isJoined,
         appointmentStatus: appointmentData?.status,
         hasCompletedAppointmentRef: hasCompletedAppointmentRef.current,
+        showSessionReasonModalRef: showSessionReasonModalRef.current,
       })
-      // Small delay to ensure call cleanup is complete
-      const timer = setTimeout(() => {
-        setShowSessionReasonModal(true)
-      }, 500)
-      return () => clearTimeout(timer)
+
+      // Clear any existing timeout
+      if (modalTimeoutRef.current) {
+        clearTimeout(modalTimeoutRef.current)
+        modalTimeoutRef.current = null
+      }
+
+      // Mark that we've triggered the modal to prevent multiple triggers
+      hasTriggeredModalRef.current = true
+      showSessionReasonModalRef.current = true
+
+      // Set modal immediately
+      console.log(
+        "[SessionReasonModal] Setting modal to open (primary) - immediate"
+      )
+
+      // Set state directly - no cleanup function to interfere
+      setShowSessionReasonModal(true)
+
+      // Also update ref to match
+      showSessionReasonModalRef.current = true
     }
   }, [
     appointmentData?.status,
@@ -867,11 +1176,12 @@ export function AgoraVideo({
     appointmentId,
     isLoadingSession,
     currentUser,
-    showSessionReasonModal,
+    // Don't include showSessionReasonModal or refs in deps - refs don't trigger re-renders
   ])
 
   // Force check when appointment is completed via manual end call
   // This ensures the modal shows even if appointmentData?.status hasn't updated yet
+  // Use a state variable to track completion so the effect re-runs when it changes
   useEffect(() => {
     if (!appointmentId || isLoadingSession || !currentUser) return
 
@@ -883,25 +1193,50 @@ export function AgoraVideo({
     // If we completed the appointment and call has ended, show modal
     // This is a secondary check to catch cases where appointmentData?.status might not be updated yet
     if (
-      hasCompletedAppointmentRef.current &&
+      hasCompletedAppointment &&
       hasShownSessionReasonModalRef.current &&
       !isJoined &&
-      !showSessionReasonModal
+      !showSessionReasonModalRef.current &&
+      !hasTriggeredModalRef.current
     ) {
       console.log(
-        "[SessionReasonModal] Secondary check triggered, showing modal"
+        "[SessionReasonModal] Secondary check triggered, showing modal",
+        {
+          hasCompletedAppointment,
+          hasShownSessionReasonModalRef: hasShownSessionReasonModalRef.current,
+          isJoined,
+          showSessionReasonModalRef: showSessionReasonModalRef.current,
+        }
       )
-      const timer = setTimeout(() => {
-        setShowSessionReasonModal(true)
-      }, 800) // Slightly longer delay for manual end call
-      return () => clearTimeout(timer)
+
+      // Clear any existing timeout
+      if (modalTimeoutRef.current) {
+        clearTimeout(modalTimeoutRef.current)
+        modalTimeoutRef.current = null
+      }
+
+      // Mark that we've triggered the modal to prevent multiple triggers
+      hasTriggeredModalRef.current = true
+      showSessionReasonModalRef.current = true
+
+      // Set modal immediately
+      console.log(
+        "[SessionReasonModal] Setting modal to open (secondary) - immediate"
+      )
+
+      // Set state directly - no cleanup function to interfere
+      setShowSessionReasonModal(true)
+
+      // Also update ref to match
+      showSessionReasonModalRef.current = true
     }
   }, [
+    hasCompletedAppointment,
     isJoined,
     appointmentId,
     isLoadingSession,
     currentUser,
-    showSessionReasonModal,
+    // Don't include showSessionReasonModal in deps - it causes the effect to re-run
   ])
 
   const handleRemoteVideoRef = (
@@ -1099,14 +1434,26 @@ export function AgoraVideo({
         <SessionReasonModal
           open={showSessionReasonModal}
           onOpenChange={(open) => {
+            console.log("[SessionReasonModal] onOpenChange called:", open)
             setShowSessionReasonModal(open)
+            showSessionReasonModalRef.current = open
             if (!open) {
+              console.log("[SessionReasonModal] Modal closed, resetting flags")
               hasShownSessionReasonModalRef.current = false
+              hasTriggeredModalRef.current = false
             }
           }}
           appointmentId={appointmentId}
           onSubmitted={() => {
+            console.log("[SessionReasonModal] Submitted, closing modal")
+            setShowSessionReasonModal(false)
+            showSessionReasonModalRef.current = false
             hasShownSessionReasonModalRef.current = false
+            hasTriggeredModalRef.current = false
+
+            // After the doctor has submitted or skipped the reason,
+            // trigger the external onEndCall to allow navigation.
+            onEndCall?.()
           }}
         />
       )}
