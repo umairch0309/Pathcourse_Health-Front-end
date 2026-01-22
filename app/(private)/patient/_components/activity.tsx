@@ -21,7 +21,6 @@ type WeeklyActivityStats = {
 const chartConfig = {
   activity: {
     label: "Activity",
-    color: "hsl(201.99 70.31% 44.90%)",
   },
 } satisfies ChartConfig
 
@@ -32,10 +31,16 @@ export function ActivityChart() {
   })
 
   const chartData =
-    data?.days.map((d) => ({
-      day: d.weekday,
-      activity: d.count,
-    })) || []
+    data?.days.map((d) => {
+      const count = d.count || 0
+      return {
+        day: d.weekday,
+        activity: count,
+        fill: count > 0 
+          ? "hsl(201.99 70.31% 44.90%)" 
+          : "hsl(203.41 71.43% 93.73%)",
+      }
+    }) || []
 
   return (
     <Card className="w-full bg-background space-y-2 px-6">
@@ -58,9 +63,13 @@ export function ActivityChart() {
         ) : (
           <ChartContainer
             config={chartConfig}
-            className="min-h-[200px] w-full mt-20"
+            className="min-h-[200px] w-full mt-6"
           >
-            <BarChart accessibilityLayer data={chartData}>
+            <BarChart
+              accessibilityLayer
+              data={chartData}
+              margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
+            >
               <XAxis
                 dataKey="day"
                 tickLine={false}
@@ -68,16 +77,14 @@ export function ActivityChart() {
                 className="text-xs text-muted"
                 tick={{ fontSize: 12 }}
               />
-              <Bar dataKey="activity" radius={[6, 6, 0, 0]}>
-                {chartData.map((entry) => (
-                  <Cell
-                    key={entry.day}
-                    fill={
-                      entry.day === "Thu"
-                        ? "hsl(201.99 70.31% 44.90%)"
-                        : "hsl(203.41 71.43% 93.73%)"
-                    }
-                  />
+              <Bar
+                dataKey="activity"
+                radius={[6, 6, 0, 0]}
+                minPointSize={2}
+                isAnimationActive={false}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Bar>
             </BarChart>

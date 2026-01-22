@@ -2,6 +2,7 @@
 import { MoreVertical } from "lucide-react"
 import Link from "next/link"
 import { Loader } from "@/components/loader"
+import EmptyCard from "@/components/empty-card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -89,20 +90,10 @@ export function AppointmentsTable() {
         </DropdownMenu>
       </div>
       <div className="overflow-x-auto">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader size="sm" />
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="flex items-center justify-center py-8">
             <Typography variant="p" className="text-muted-foreground text-sm">
               Failed to load session history. Please try again.
-            </Typography>
-          </div>
-        ) : !sessions || sessions.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <Typography variant="p" className="text-muted-foreground text-sm">
-              No completed sessions found yet.
             </Typography>
           </div>
         ) : (
@@ -115,49 +106,65 @@ export function AppointmentsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sessions.map((session) => {
-                const dateText = session.scheduledAt
-                  ? new Date(session.scheduledAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : new Date(session.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="p-0">
+                    <div className="flex items-center justify-center py-8">
+                      <Loader size="sm" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : !sessions || sessions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="p-0">
+                    <EmptyCard message="No completed sessions found yet." />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sessions.map((session) => {
+                  const dateText = session.scheduledAt
+                    ? new Date(session.scheduledAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : new Date(session.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
 
-                const initials = session.doctor.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)
+                  const initials = session.doctor.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)
 
-                return (
-                  <TableRow key={session.id}>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="flex items-center truncate gap-2">
-                        <Avatar className="h-7 w-7">
-                          <AvatarImage
-                            src={session.doctor.image ?? undefined}
-                            alt={session.doctor.name}
-                          />
-                          <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate">{session.doctor.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {session.appointmentFor || "N/A"}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {dateText}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                  return (
+                    <TableRow key={session.id}>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center truncate gap-2">
+                          <Avatar className="h-7 w-7">
+                            <AvatarImage
+                              src={session.doctor.image ?? undefined}
+                              alt={session.doctor.name}
+                            />
+                            <AvatarFallback>{initials}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{session.doctor.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {session.appointmentFor || "N/A"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {dateText}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
         )}

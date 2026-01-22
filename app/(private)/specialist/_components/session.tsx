@@ -3,6 +3,7 @@
 import { MoreVertical } from "lucide-react"
 import Link from "next/link"
 import { Loader } from "@/components/loader"
+import EmptyCard from "@/components/empty-card"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -92,20 +93,10 @@ export function AppointmentsTable() {
         </DropdownMenu>
       </div>
       <div className="overflow-x-auto px-8">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader size="sm" />
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="flex items-center justify-center py-8">
             <Typography variant="p" className="text-muted-foreground text-sm">
               Failed to load session history. Please try again.
-            </Typography>
-          </div>
-        ) : !sessions || sessions.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <Typography variant="p" className="text-muted-foreground text-sm">
-              No completed sessions found yet.
             </Typography>
           </div>
         ) : (
@@ -121,53 +112,69 @@ export function AppointmentsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sessions.map((session) => {
-                const dateText = session.scheduledAt
-                  ? new Date(session.scheduledAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "-"
-                const timeText = session.scheduledAt
-                  ? new Date(session.scheduledAt).toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : ""
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="p-0">
+                    <div className="flex items-center justify-center py-8">
+                      <Loader size="sm" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : !sessions || sessions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="p-0">
+                    <EmptyCard message="No completed sessions found yet." />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                sessions.map((session) => {
+                  const dateText = session.scheduledAt
+                    ? new Date(session.scheduledAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "-"
+                  const timeText = session.scheduledAt
+                    ? new Date(session.scheduledAt).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : ""
 
-                const isAnonymous =
-                  !session.patient?.name &&
-                  !session.patient?.email &&
-                  !!session.patient?.employeeCode
-                const userDisplay = isAnonymous
-                  ? session.patient?.employeeCode || ""
-                  : session.patient?.name || session.patientName || "Unknown"
+                  const isAnonymous =
+                    !session.patient?.name &&
+                    !session.patient?.email &&
+                    !!session.patient?.employeeCode
+                  const userDisplay = isAnonymous
+                    ? session.patient?.employeeCode || ""
+                    : session.patient?.name || session.patientName || "Unknown"
 
-                const sessionFor =
-                  session.appointmentFor ||
-                  session.patientName ||
-                  session.patient?.name ||
-                  "N/A"
+                  const sessionFor =
+                    session.appointmentFor ||
+                    session.patientName ||
+                    session.patient?.name ||
+                    "N/A"
 
-                return (
-                  <TableRow key={session.id}>
-                    <TableCell className="whitespace-nowrap">
-                      {userDisplay}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {sessionFor}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap capitalize">
-                      {session.status.toLowerCase()}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {dateText}
-                      {timeText && ` • ${timeText}`}
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
+                  return (
+                    <TableRow key={session.id}>
+                      <TableCell className="whitespace-nowrap">
+                        {userDisplay}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {sessionFor}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap capitalize">
+                        {session.status.toLowerCase()}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {dateText}
+                        {timeText && ` • ${timeText}`}
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
+              )}
             </TableBody>
           </Table>
         )}
