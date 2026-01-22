@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     position: "bottom-right",
   },
   typedRoutes: true,
+  output: "standalone",
   images: {
     remotePatterns: [
       {
