@@ -139,7 +139,7 @@ export default function SessionsPage() {
     },
   ]
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<Appointment>[] = [
     {
       label: "View Details",
       onClick: (row) => {
@@ -151,13 +151,6 @@ export default function SessionsPage() {
       onClick: (row) => {
         // TODO: Navigate to prescription page
         console.log("View Prescription", row.id)
-      },
-    },
-    {
-      label: "Submit Review",
-      onClick: (row) => {
-        // TODO: Open review modal
-        console.log("Submit Review", row.id)
       },
     },
   ]

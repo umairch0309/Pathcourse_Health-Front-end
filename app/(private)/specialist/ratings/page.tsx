@@ -66,7 +66,7 @@ export default function RatingsPage() {
   )
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<SpecialistRating>[] = [
     {
       label: "View Details",
       onClick: (row) => {

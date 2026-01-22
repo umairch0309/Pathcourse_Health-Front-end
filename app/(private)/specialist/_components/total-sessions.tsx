@@ -67,47 +67,24 @@ export function TotalSessions() {
           </div>
         ) : (
           <div className="w-[150px] h-[150px] lg:w-[180px] lg:h-[180px] relative">
-            {/* Total ring (light gray background) */}
             <CircularProgressbarWithChildren
-              value={100}
+              value={completedPercent}
               styles={buildStyles({
                 rotation: 0,
-                trailColor: "#f3f4f6",
                 strokeLinecap: "round",
-                pathColor: "#f3f4f6",
+                // Match --primary from globals.css
+                pathColor: "hsl(201.99 70.31% 44.90%)",
+                trailColor: "#e5e7eb",
               })}
             >
-              {/* Completed segment (light purple) */}
-              <CircularProgressbarWithChildren
-                value={completedPercent}
-                styles={buildStyles({
-                  rotation: 0.25,
-                  trailColor: "transparent",
-                  strokeLinecap: "round",
-                  pathColor: "#D1B9F2",
-                })}
-              >
-                {/* Remaining segment (dark purple) */}
-                <CircularProgressbarWithChildren
-                  value={completedPercent}
-                  styles={buildStyles({
-                    rotation: 0,
-                    trailColor: "transparent",
-                    strokeLinecap: "round",
-                    // use theme primary (blue) instead of purple
-                    pathColor: "hsl(var(--primary))",
-                  })}
-                >
-                  <div className="text-center">
-                    <p className="text-xs text-muted-foreground mb-[-2px]">
-                      Sessions completed this month
-                    </p>
-                    <p className="text-[24px] sm:text-[28px] font-bold text-foreground">
-                      {completed}
-                    </p>
-                  </div>
-                </CircularProgressbarWithChildren>
-              </CircularProgressbarWithChildren>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-[-2px]">
+                  Completed this month
+                </p>
+                <p className="text-[24px] sm:text-[28px] font-bold text-foreground">
+                  {completed}
+                </p>
+              </div>
             </CircularProgressbarWithChildren>
           </div>
         )}

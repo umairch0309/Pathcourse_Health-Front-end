@@ -200,7 +200,7 @@ export default function UserDataPage() {
     return copy
   }, [rows])
 
-  const actions: ActionMenuItem[] = []
+  const actions: ActionMenuItem<SessionReasonRow>[] = []
 
   return (
     <div className="w-full space-y-4">

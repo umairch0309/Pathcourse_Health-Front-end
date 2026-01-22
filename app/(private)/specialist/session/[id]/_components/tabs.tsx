@@ -160,7 +160,7 @@ export function DetailsTabs({
             <ChatWindow />
           </TabsContent>
           <TabsContent value="notes" className="space-y-4 px-1 sm:px-0">
-            <Notes />
+            <Notes appointment={appointment} />
           </TabsContent>
         </div>
       </Tabs>

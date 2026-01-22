@@ -1,0 +1,72 @@
+name: Backend CI Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - development
+
+jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Verify .env file (optional)
+      - name: Verify .env file
+        run: |
+          echo "Checking if .env file exists:"
+          if [ -f .env ]; then
+            echo "✓ .env file found"
+            cat .env | sed 's/=.*/=***/'
+          else
+            echo "⚠️ .env file not found, continuing..."
+          fi
+        continue-on-error: true
+
+      # Step 3: Configure AWS credentials (✅ use latest version)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 4: Set ECR repo and tag
+      - name: Set ECR repo and tag
+        id: ecr-info
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "repo=${{ secrets.ECR_REPOSITORY }}" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          else
+            echo "repo=${{ secrets.ECR_REPOSITORY }}" >> $GITHUB_OUTPUT
+            echo "tag=dev" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 5: Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 6: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Step 7: Build and push Docker image to Amazon ECR
+      - name: Build and Push Docker Image to ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-info.outputs.repo }}:${{ steps.ecr-info.outputs.tag }}
+          build-args: |
+            NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}

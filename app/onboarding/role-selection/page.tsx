@@ -1,47 +1,47 @@
-'use client';
+"use client"
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Typography } from '@/components/ui/typography';
-import { Loader } from '@/components/loader';
-import useApi from '@/hooks/use-api';
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { Loader } from "@/components/loader"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Typography } from "@/components/ui/typography"
+import useApi from "@/hooks/use-api"
 
-type RoleType = 'practitioner' | 'patient';
-type ApiRoleType = 'doctor' | 'patient';
+type RoleType = "practitioner" | "patient"
+type ApiRoleType = "doctor" | "patient"
 
 export default function RoleSelectionPage() {
-  const router = useRouter();
-  const [selectedRole, setSelectedRole] = useState<RoleType | null>(null);
-  
+  const router = useRouter()
+  const [selectedRole, setSelectedRole] = useState<RoleType | null>(null)
+
   const { onRequest, isPending } = useApi<{ role: ApiRoleType }>({
-    key: 'select-role',
+    key: "select-role",
     showSuccessToast: true,
     showErrorToast: true,
-  });
+  })
 
   const handleContinue = () => {
     if (selectedRole) {
       // Map practitioner to doctor for API
-      const apiRole: ApiRoleType = selectedRole === 'practitioner' ? 'doctor' : 'patient';
-      
+      const apiRole: ApiRoleType =
+        selectedRole === "practitioner" ? "doctor" : "patient"
+
       onRequest({
-        path: '/api/user/select-role',
+        path: "/api/user/select-role",
         data: { role: apiRole },
         onSuccess: () => {
           // Navigate to extra-info with role parameter on success
-          // @ts-expect-error - Next.js route type inference issue
-          router.push(`/onboarding/extra-info?role=${selectedRole}`);
+          router.push(`/onboarding/extra-info?role=${selectedRole}`)
         },
         onError: (error) => {
-          console.error('Error selecting role:', error);
+          console.error("Error selecting role:", error)
         },
-      });
+      })
     }
-  };
+  }
 
   return (
     <div className="relative flex flex-col min-h-screen">
@@ -64,11 +64,20 @@ export default function RoleSelectionPage() {
         <div className="w-full max-w-4xl space-y-8">
           {/* Header */}
           <div className="text-center space-y-3">
-            <Typography as="h4" variant="h4" className="font-bold text-foreground">
+            <Typography
+              as="h4"
+              variant="h4"
+              className="font-bold text-foreground"
+            >
               Select Your Account Type
             </Typography>
-            <Typography variant="span" className="text-foreground max-w-2xl mx-auto">
-              Choose whether you're setting up a Specialist or User account. This helps us personalise your experience and show the right tools for your needs.
+            <Typography
+              variant="span"
+              className="text-foreground max-w-2xl mx-auto"
+            >
+              Choose whether you're setting up a Specialist or User account.
+              This helps us personalise your experience and show the right tools
+              for your needs.
             </Typography>
           </div>
 
@@ -78,13 +87,14 @@ export default function RoleSelectionPage() {
             <Card
               className={`
                 w-full sm:w-[280px] lg:w-[320px] p-6 transition-all duration-300
-                ${selectedRole === 'practitioner'
-                  ? 'ring-2 ring-primary shadow-lg border-primary'
-                  : 'border-border hover:shadow-md'
+                ${
+                  selectedRole === "practitioner"
+                    ? "ring-2 ring-primary shadow-lg border-primary"
+                    : "border-border hover:shadow-md"
                 }
-                ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                ${isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
               `}
-              onClick={() => !isPending && setSelectedRole('practitioner')}
+              onClick={() => !isPending && setSelectedRole("practitioner")}
             >
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] relative flex items-center justify-center">
@@ -96,24 +106,27 @@ export default function RoleSelectionPage() {
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <Typography variant="h5" className="text-foreground font-semibold text-lg">
+                <Typography
+                  variant="h5"
+                  className="text-foreground font-semibold text-lg"
+                >
                   Specialist
                 </Typography>
               </div>
             </Card>
-            
 
             {/* Patient Card */}
             <Card
               className={`
                 w-full sm:w-[280px] lg:w-[320px] p-6 transition-all duration-300
-                ${selectedRole === 'patient'
-                  ? 'ring-2 ring-primary shadow-lg border-primary'
-                  : 'border-border hover:shadow-md'
+                ${
+                  selectedRole === "patient"
+                    ? "ring-2 ring-primary shadow-lg border-primary"
+                    : "border-border hover:shadow-md"
                 }
-                ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                ${isPending ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
               `}
-              onClick={() => !isPending && setSelectedRole('patient')}
+              onClick={() => !isPending && setSelectedRole("patient")}
             >
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] relative flex items-center justify-center">
@@ -125,7 +138,10 @@ export default function RoleSelectionPage() {
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <Typography variant="h5" className="text-foreground font-semibold text-lg">
+                <Typography
+                  variant="h5"
+                  className="text-foreground font-semibold text-lg"
+                >
                   User
                 </Typography>
               </div>
@@ -142,16 +158,20 @@ export default function RoleSelectionPage() {
             >
               {isPending ? (
                 <>
-                  <Loader size="sm" variant="default" color="white" className="mr-2" />
+                  <Loader
+                    size="sm"
+                    variant="default"
+                    color="white"
+                    className="mr-2"
+                  />
                 </>
               ) : (
-                'Continue'
+                "Continue"
               )}
             </Button>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
-

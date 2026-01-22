@@ -184,7 +184,7 @@ export default function SpecialistsPage() {
     }))
   }, [doctorRequestsData])
 
-  const registeredActions: ActionMenuItem[] = [
+  const registeredActions: ActionMenuItem<Specialist>[] = [
     {
       label: "View Details",
       onClick: (row) => {
@@ -193,7 +193,7 @@ export default function SpecialistsPage() {
     },
   ]
 
-  const newRequestsActions: ActionMenuItem[] = [
+  const newRequestsActions: ActionMenuItem<Specialist>[] = [
     {
       label: "View Details",
       onClick: (row) => {

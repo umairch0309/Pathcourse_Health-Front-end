@@ -56,7 +56,7 @@ export default function UsersPage() {
   const totalPages = 5
   const router = useRouter()
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<User>[] = [
     {
       label: "View Details",
       onClick: (row) => {

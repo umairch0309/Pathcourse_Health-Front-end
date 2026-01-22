@@ -1,9 +1,9 @@
 "use client"
 
 import { MoreVertical } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
 import { Loader } from "@/components/loader"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -130,7 +130,6 @@ export function Reviews() {
             const primaryText = isAnonymous
               ? patient.employeeCode || ""
               : patient.name || "Unknown patient"
-            const secondaryText = isAnonymous ? "" : patient.email || ""
             const endedAtText = endedAt
               ? new Date(endedAt).toLocaleDateString("en-US", {
                   month: "short",
@@ -145,19 +144,15 @@ export function Reviews() {
                 className="flex gap-3 border-b-1 border-muted-foreground p-2"
               >
                 <div className="w-12 flex-shrink-0 flex items-center justify-center">
-                  {patient.image ? (
-                    <Image
-                      src={patient.image}
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage
+                      src={patient.image ?? undefined}
                       alt={primaryText || "Patient"}
-                      width={36}
-                      height={36}
-                      className="rounded-full object-cover"
                     />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-foreground">
+                    <AvatarFallback className="text-xs font-medium">
                       {(primaryText || "P").charAt(0).toUpperCase()}
-                    </div>
-                  )}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
 
                 <div className="text-sm flex-1 min-w-0 space-y-1">

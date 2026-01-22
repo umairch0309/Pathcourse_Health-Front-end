@@ -43,7 +43,7 @@ export default function SessionsPage() {
   const totalPages = 5
   const router = useRouter()
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<AdminSession>[] = [
     {
       label: "View Details",
       onClick: (row) => {

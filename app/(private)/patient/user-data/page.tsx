@@ -102,7 +102,7 @@ export default function RatingsPage() {
   const [selectedReview, setSelectedReview] = useState<Rating | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<Rating>[] = [
     {
       label: "View Details",
       onClick: (row) => {

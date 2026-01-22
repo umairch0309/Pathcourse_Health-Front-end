@@ -6,7 +6,7 @@ import { DetailsTabs } from "./_components/tabs"
 import { useFetch } from "@/hooks/use-fetch"
 import { Loader } from "@/components/loader"
 
-type AppointmentData = {
+export type AppointmentData = {
   id: string
   doctorId: string
   patientId: string
@@ -22,6 +22,7 @@ type AppointmentData = {
   patientName: string | null
   patientAge: number | null
   relationWithPatient: string | null
+  uploadId?: string | null
   doctor: {
     id: string
     name: string
@@ -29,9 +30,32 @@ type AppointmentData = {
     image: string | null
     role: string
     doctor: {
-      professional_email: string
       professional_contact: string
-      about: string | null
+      professional_email: string
+      isAvailable: boolean
+      isInMeeting: boolean
+      documents: {
+        resume: string | null
+        medicalLicense: string | null
+        introductionVideo: string | null
+      } | null
+      education: {
+        id: string
+        doctorId: string
+        degree: string
+        startYear: string
+        endYear: string | null
+        document: string | null
+        institution_name: string
+      }[]
+      professionalExperience: {
+        id: string
+        doctorId: string
+        age_group: string
+        languages: string[]
+        profession: string
+        special_interest_area: string
+      } | null
     }
   }
   patient: {
@@ -40,14 +64,16 @@ type AppointmentData = {
     email: string | null
     image: string | null
     role: string
-    userInfo: {
+    isAnonymous: boolean
+    employeeCode: string | null
+    userInfo?: {
       id: string
       userId: string
       gender: string | null
       dateOfBirth: string | null
       phone: string | null
       address: string | null
-    }
+    } | null
   }
 }
 

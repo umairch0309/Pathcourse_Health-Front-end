@@ -318,7 +318,7 @@ export default function SessionsPage() {
     },
   ]
 
-  const availableActions: ActionMenuItem[] = [
+  const availableActions: ActionMenuItem<Appointment>[] = [
     {
       label: "View Details",
       onClick: (row) => {
@@ -327,7 +327,7 @@ export default function SessionsPage() {
     },
   ]
 
-  const attendedActions: ActionMenuItem[] = [
+  const attendedActions: ActionMenuItem<Appointment>[] = [
     {
       label: "View Details",
       onClick: (row) => {
@@ -336,7 +336,7 @@ export default function SessionsPage() {
     },
   ]
 
-  const noShowActions: ActionMenuItem[] = [
+  const noShowActions: ActionMenuItem<Appointment>[] = [
     {
       label: "View Details",
       onClick: (row) => {

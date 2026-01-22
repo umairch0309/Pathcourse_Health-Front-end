@@ -118,7 +118,7 @@ export default function EnterprisesPage() {
     })
   }
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<Enterprise>[] = [
     {
       label: "Edit",
       icon: <Edit className="h-4 w-4" />,
@@ -130,7 +130,7 @@ export default function EnterprisesPage() {
       label: "Delete",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: (row) => {
-        handleDelete(row as Enterprise)
+        handleDelete(row)
       },
     },
   ]

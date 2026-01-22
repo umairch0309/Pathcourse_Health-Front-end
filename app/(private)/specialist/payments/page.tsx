@@ -54,7 +54,7 @@ export default function PaymentsPage() {
   const totalPages = 5
   const router = useRouter()
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<SpecialistPayment>[] = [
     {
       label: "View Details",
       onClick: (row, index) => {

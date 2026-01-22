@@ -52,7 +52,6 @@ export default async function ProtectedLayout({
         console.log(
           `User with WAITING_FOR_ADMIN stage, redirecting from ${pathname} to /onboarding/waiting-for-admin`
         )
-        // @ts-expect-error - Next.js route type inference issue
         redirect("/onboarding/waiting-for-admin")
       }
       // Allow them to stay on waiting-for-admin page
@@ -70,7 +69,6 @@ export default async function ProtectedLayout({
         console.log(
           `User with REJECTED stage, redirecting from ${pathname} to /onboarding/rejected`
         )
-        // @ts-expect-error - Next.js route type inference issue
         redirect("/onboarding/rejected")
       }
       // Allow them to stay on rejected or update-profile page
@@ -89,7 +87,6 @@ export default async function ProtectedLayout({
         console.log(
           `Doctor with DOCTOR_INFO stage, redirecting from ${pathname} to /onboarding/update-profile`
         )
-        // @ts-expect-error - Next.js route type inference issue
         redirect("/onboarding/update-profile")
       }
       // Allow them to stay on update-profile page
@@ -115,8 +112,7 @@ export default async function ProtectedLayout({
       console.log(
         `User onboarding not completed (stage: ${onboardingStage}), redirecting from ${pathname} to ${redirectRoute}`
       )
-      // @ts-expect-error - Next.js route type inference issue
-      redirect(redirectRoute)
+      redirect(redirectRoute as never)
     }
 
     // Check role-based access

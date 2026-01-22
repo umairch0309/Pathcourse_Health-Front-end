@@ -91,11 +91,11 @@ export default function ServicesPage() {
     setViewModalOpen(true);
   };
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<TableService>[] = [
     {
       label: 'View Details',
       onClick: (row, index) => {
-        handleViewDetails(row as TableService);
+        handleViewDetails(row);
       },
     },
   ];

@@ -47,7 +47,7 @@ export default function UserInquiriesPage() {
   const totalPages = 5
   const router = useRouter()
 
-  const actions: ActionMenuItem[] = [
+  const actions: ActionMenuItem<UserInquiry>[] = [
     {
       label: "View Details",
       onClick: (row) => {
