@@ -355,12 +355,12 @@ export function AgoraMedicalSidebar({
         {/* Sidebar Content */}
         <ScrollArea className="flex-1 p-4">
           {activeTab === "details" && (
-            <div className="space-y-4">
-              <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
-                <h3 className="font-semibold mb-3 text-gray-900">
-                  Appointment Details
-                </h3>
-                <div className="space-y-3 text-sm">
+          <div className="space-y-4">
+            <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
+              <h3 className="font-semibold mb-3 text-gray-900">
+                Appointment Details
+              </h3>
+              <div className="space-y-3 text-sm">
                 {/* Patient Info */}
                 {patientInfo && (
                   <>
@@ -437,49 +437,49 @@ export function AgoraMedicalSidebar({
                     </span>
                   </div>
                 )}
-                </div>
+              </div>
+            </Card>
+
+            {appointment?.description && (
+              <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
+                <h3 className="font-semibold mb-3 text-gray-900">
+                  Description
+                </h3>
+                <p className="text-sm text-gray-700">
+                  {appointment.description}
+                </p>
               </Card>
+            )}
 
-              {appointment?.description && (
-                <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
-                  <h3 className="font-semibold mb-3 text-gray-900">
-                    Description
-                  </h3>
-                  <p className="text-sm text-gray-700">
-                    {appointment.description}
-                  </p>
-                </Card>
-              )}
-
-              {appointment?.uploadId && appointment.uploadId !== "-" && (
-                <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
-                  <h3 className="font-semibold mb-3 text-gray-900">
-                    Uploaded File
-                  </h3>
-                  <div
-                    className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity ${
-                      isLoadingFile ? "opacity-50" : ""
-                    }`}
-                    onClick={handleFilePreview}
-                  >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                      <FileText className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
+            {appointment?.uploadId && appointment.uploadId !== "-" && (
+              <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
+                <h3 className="font-semibold mb-3 text-gray-900">
+                  Uploaded File
+                </h3>
+                <div
+                  className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity ${
+                    isLoadingFile ? "opacity-50" : ""
+                  }`}
+                  onClick={handleFilePreview}
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                    <FileText className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="flex-1">
                       <div className="text-sm text-gray-600">
                         Uploaded file ID:
                       </div>
-                      <div className="font-medium text-gray-900 truncate">
-                        {getFileName(appointment.uploadId)}
-                      </div>
+                    <div className="font-medium text-gray-900 truncate">
+                      {getFileName(appointment.uploadId)}
                     </div>
-                    {isLoadingFile && (
-                      <div className="text-sm text-gray-500">Loading...</div>
-                    )}
                   </div>
-                </Card>
-              )}
-            </div>
+                  {isLoadingFile && (
+                    <div className="text-sm text-gray-500">Loading...</div>
+                  )}
+                </div>
+              </Card>
+            )}
+          </div>
           )}
 
           {activeTab === "notes" && isDoctor && appointmentId && (

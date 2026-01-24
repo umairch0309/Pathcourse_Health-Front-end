@@ -2,8 +2,8 @@
 
 import { MoreVertical } from "lucide-react"
 import Link from "next/link"
-import { Loader } from "@/components/loader"
 import EmptyCard from "@/components/empty-card"
+import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -66,7 +66,7 @@ export function AppointmentsTable() {
   })
 
   return (
-    <div className="bg-background border rounded-md p-2 lg:h-[300px] w-full shadow-md">
+    <div className="bg-background border rounded-md p-2 w-full shadow-md">
       <div className="flex items-center justify-between p-2">
         <Typography
           variant="span"
@@ -129,17 +129,23 @@ export function AppointmentsTable() {
               ) : (
                 sessions.map((session) => {
                   const dateText = session.scheduledAt
-                    ? new Date(session.scheduledAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
+                    ? new Date(session.scheduledAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )
                     : "-"
                   const timeText = session.scheduledAt
-                    ? new Date(session.scheduledAt).toLocaleTimeString("en-US", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                    ? new Date(session.scheduledAt).toLocaleTimeString(
+                        "en-US",
+                        {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
                     : ""
 
                   const isAnonymous =

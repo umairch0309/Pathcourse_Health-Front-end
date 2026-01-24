@@ -41,7 +41,6 @@ export function TotalSessions() {
   const completed = stats?.completedAppointments ?? 0
   const completedPercent =
     total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0
-  const remainingPercent = total > 0 ? 100 - completedPercent : 0
 
   return (
     <Card className="w-full lg:h-[350px] bg-background space-y-2 px-6">

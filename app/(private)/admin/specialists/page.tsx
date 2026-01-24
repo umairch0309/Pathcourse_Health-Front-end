@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
-import { specialists } from "@/app/data/specialists-table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +20,73 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useFetch } from "@/hooks/use-fetch"
 
-type Specialist = (typeof specialists)[0]
+type ApprovedDoctor = {
+  id: string
+  userid: string
+  professional_contact: string
+  professional_email: string
+  secondary_contact: string | null
+  isAvailable: boolean
+  isInMeeting: boolean
+  createdAt: string
+  updatedAt: string
+  user: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+    role: string
+    phone: string | null
+    banned: boolean
+    banReason: string | null
+    banExpires: string | null
+    onboardingStage: string
+    createdAt: string
+  }
+  documents: {
+    id: string
+    resume: string | null
+    medicalLicense: string | null
+    introductionVideo: string | null
+  } | null
+  education: Array<{
+    id: string
+    degree: string
+    institution_name: string
+    startYear: string
+    endYear: string
+    document: string | null
+  }>
+  professionalExperience: {
+    id: string
+    profession: string
+    special_interest_area: string
+    age_group: string
+    languages: string[]
+  } | null
+}
+
+type ApprovedDoctorsResponse = {
+  doctors: ApprovedDoctor[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}
+
+type Specialist = {
+  id: string
+  specialist: {
+    name: string
+    image: string
+  }
+  email: string
+  contactNo: string
+  specialistIn: string
+  addedOn: string
+}
 
 type DoctorRequest = {
   id: string
@@ -117,15 +182,6 @@ const columns: Column<Specialist>[] = [
 
 const filters: FilterConfig[] = [
   {
-    label: "By service",
-    key: "service",
-    options: [
-      { label: "Open Ear", value: "open ear" },
-      { label: "Hearing Test", value: "hearing test" },
-      { label: "Consultation", value: "consultation" },
-    ],
-  },
-  {
     label: "Sort by",
     key: "sort",
     options: [
@@ -142,6 +198,23 @@ export default function SpecialistsPage() {
   const [activeTab, setActiveTab] = useState("registered")
   const [filterValues, setFilterValues] = useState<Record<string, string>>({})
   const router = useRouter()
+
+  // Fetch approved doctors for Registered tab
+  const approvedDoctorsPath = useMemo(() => {
+    const params = new URLSearchParams()
+    params.append("page", currentPage.toString())
+    params.append("limit", "10")
+    return `/api/admin/doctors/approved?${params.toString()}`
+  }, [currentPage])
+
+  const { data: approvedDoctorsData, isLoading: isLoadingApproved } =
+    useFetch<ApprovedDoctorsResponse>({
+      path: approvedDoctorsPath,
+      queryKey: ["approved-doctors", currentPage],
+      config: {
+        enabled: activeTab === "registered",
+      },
+    })
 
   // Fetch doctor requests for New Requests tab
   const doctorRequestsPath = useMemo(() => {
@@ -163,6 +236,26 @@ export default function SpecialistsPage() {
   const handleFilterChange = (key: string, value: string) => {
     setFilterValues((prev) => ({ ...prev, [key]: value }))
   }
+
+  // Transform approved doctors to table format
+  const transformedApprovedDoctors = useMemo(() => {
+    if (!approvedDoctorsData?.doctors) return []
+    return approvedDoctorsData.doctors.map((doctor) => ({
+      id: doctor.id,
+      specialist: {
+        name: doctor.user.name,
+        image: doctor.user.image || "/doc-1.svg",
+      },
+      email: doctor.user.email,
+      contactNo: doctor.professional_contact || "-",
+      specialistIn: doctor.professionalExperience?.profession || "-",
+      addedOn: new Date(doctor.createdAt).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    }))
+  }, [approvedDoctorsData])
 
   // Transform doctor requests to table format
   const transformedDoctorRequests = useMemo(() => {
@@ -257,7 +350,7 @@ export default function SpecialistsPage() {
 
         <TabsContent value="registered" className="mt-0">
           <DataTable
-            data={specialists}
+            data={transformedApprovedDoctors}
             columns={columns}
             filters={filters}
             actions={registeredActions}
@@ -274,11 +367,16 @@ export default function SpecialistsPage() {
                 Add Specialist
               </Button>
             }
-            pagination={{
-              currentPage,
-              totalPages: 5,
-              onPageChange: (page) => setCurrentPage(page),
-            }}
+            isLoading={isLoadingApproved}
+            pagination={
+              approvedDoctorsData?.pagination
+                ? {
+                    currentPage: approvedDoctorsData.pagination.page,
+                    totalPages: approvedDoctorsData.pagination.totalPages,
+                    onPageChange: (page) => setCurrentPage(page),
+                  }
+                : undefined
+            }
           />
         </TabsContent>
 

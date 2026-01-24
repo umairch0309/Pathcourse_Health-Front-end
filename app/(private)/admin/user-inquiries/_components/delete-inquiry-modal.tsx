@@ -14,6 +14,8 @@ import {
 type UserQuery = {
   id: string;
   message: string;
+  organizationName?: string;
+  organizationEmail?: string;
   name: string;
   number: string;
   email: string;
@@ -41,7 +43,7 @@ export function DeleteInquiryModal({ open, onOpenChange, inquiry, onConfirm, isD
         <DialogHeader>
           <DialogTitle>Delete Inquiry</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the inquiry from &quot;{inquiry.name}&quot;? This action cannot be undone.
+            Are you sure you want to delete the inquiry from &quot;{inquiry.organizationName || inquiry.name}&quot;? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

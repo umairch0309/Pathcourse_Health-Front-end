@@ -36,9 +36,8 @@ export function ActivityChart() {
       return {
         day: d.weekday,
         activity: count,
-        fill: count > 0 
-          ? "hsl(201.99 70.31% 44.90%)" 
-          : "hsl(203.41 71.43% 93.73%)",
+        fill:
+          count > 0 ? "hsl(201.99 70.31% 44.90%)" : "hsl(203.41 71.43% 93.73%)",
       }
     }) || []
 
@@ -83,8 +82,8 @@ export function ActivityChart() {
                 minPointSize={2}
                 isAnimationActive={false}
               >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                {chartData.map((entry) => (
+                  <Cell key={entry.day} fill={entry.fill} />
                 ))}
               </Bar>
             </BarChart>

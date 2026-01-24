@@ -1,10 +1,12 @@
-/* eslint-disable unused-imports/no-unused-vars */
 "use client"
 import { Mail, MoveUpRight } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import type { UseFormReturn } from "react-hook-form"
 import { z } from "zod"
+import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
 import FormModified from "@/components/ui/form-modified"
+import useApi from "@/hooks/use-api"
 
 // Contact form schema
 const contactSchema = z.object({
@@ -24,9 +26,28 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>
 
+type CreateUserQueryRequest = {
+  message: string
+  organizationName: string
+  organizationEmail: string
+}
+
+const defaultFormValues = {
+  organizationName: "",
+  organizationEmail: "",
+  message: "",
+}
+
 export default function ContactSection() {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState("")
+  const formMethodsRef = useRef<UseFormReturn<ContactFormData> | null>(null)
+
+  const { onRequest: createQuery, isPending } = useApi<CreateUserQueryRequest>({
+    key: "create-user-query",
+    showSuccessToast: true,
+    showErrorToast: true,
+    method: "post",
+  })
 
   return (
     <section className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-30 bg-white">
@@ -64,57 +85,81 @@ export default function ContactSection() {
           <div className="bg-muted rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10">
             <FormModified
               schema={contactSchema}
-              onSubmit={async (values) => {}}
-              defaultValues={{
-                organizationName: "",
-                organizationEmail: "",
-                message: "",
+              onSubmit={async (values: ContactFormData) => {
+                setIsSubmitting(true)
+                createQuery({
+                  path: "/api/user-queries",
+                  data: {
+                    message: values.message,
+                    organizationName: values.organizationName,
+                    organizationEmail: values.organizationEmail,
+                  },
+                  onSuccess: () => {
+                    setIsSubmitting(false)
+                    // Reset form to default values
+                    if (formMethodsRef.current) {
+                      formMethodsRef.current.reset(defaultFormValues)
+                    }
+                  },
+                  onError: () => {
+                    setIsSubmitting(false)
+                  },
+                })
               }}
-              disabled={isSubmitting}
+              defaultValues={defaultFormValues}
+              disabled={isSubmitting || isPending}
             >
-              {({ methods, components }) => (
-                <div className="space-y-2">
-                  {/* Organization Name Field */}
-                  <components.Input
-                    name="organizationName"
-                    label="Organization Name"
-                    placeholder="Organization name"
-                    labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
-                    className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300"
-                  />
+              {({ components, methods }) => {
+                // Store methods reference for form reset
+                formMethodsRef.current = methods
+                return (
+                  <div className="space-y-2">
+                    {/* Organization Name Field */}
+                    <components.Input
+                      name="organizationName"
+                      label="Organization Name"
+                      placeholder="Organization name"
+                      labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
+                      className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300"
+                    />
 
-                  {/* Organization Email Field */}
-                  <components.Input
-                    name="organizationEmail"
-                    label="Organization Email"
-                    type="email"
-                    placeholder="Organization email"
-                    labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
-                    className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300"
-                  />
+                    {/* Organization Email Field */}
+                    <components.Input
+                      name="organizationEmail"
+                      label="Organization Email"
+                      type="email"
+                      placeholder="Organization email"
+                      labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
+                      className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300"
+                    />
 
-                  {/* Message Field */}
-                  <components.Input
-                    name="message"
-                    label="Message"
-                    placeholder="Write message"
-                    labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
-                    className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300 resize-none"
-                  />
+                    {/* Message Field */}
+                    <components.Input
+                      name="message"
+                      label="Message"
+                      placeholder="Message"
+                      labelClassName="text-xs sm:text-sm font-medium text-muted-foreground tracking-wider"
+                      className="w-full px-0 py-2 sm:py-3 text-base sm:text-lg text-gray-900 placeholder-black bg-transparent border-0 border-b-2 border-gray-200 rounded-none focus:border-primary focus-visible:ring-0 focus-visible:outline-0 transition-colors duration-300"
+                    />
 
-                  {/* Submit Button */}
-                  <div className="mt-12 sm:mt-16 md:mt-20">
-                    <Button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="w-full sm:w-auto"
-                    >
-                      {isSubmitting ? "Sending..." : "Send Message"}
-                      <MoveUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                    </Button>
+                    {/* Submit Button */}
+                    <div className="mt-12 sm:mt-16 md:mt-20">
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting || isPending}
+                        className="w-full sm:w-auto"
+                      >
+                        {isSubmitting || isPending ? (
+                          <Loader size="lg" color="white" />
+                        ) : (
+                          "Send Message"
+                        )}
+                        <MoveUpRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              }}
             </FormModified>
           </div>
         </div>

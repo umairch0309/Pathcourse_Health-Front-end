@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Typography } from '@/components/ui/typography';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-modified';
-import { ChangePassword } from './_components/change-password';
-import ProfileSettings from './_components/profile-settings';
-import ManageAccount from './_components/manage-account';
+import { ChangePassword } from "./_components/change-password"
+import ProfileSettings from "./_components/profile-settings"
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
@@ -25,18 +24,14 @@ export default function SettingsPage() {
 
   const getTabTitle = (value: string) => {
     switch (value) {
-      case 'profile':
-        return 'Profile Settings';
-      case 'medical':
-        return 'Medical Info';
-      case 'password':
-        return 'Change Password';
-      case 'account':
-        return 'Manage Account';
+      case "profile":
+        return "Profile Settings"
+      case "password":
+        return "Change Password"
       default:
-        return 'Settings';
+        return "Settings"
     }
-  };
+  }
 
   return (
     <div className="w-full">
@@ -61,16 +56,9 @@ export default function SettingsPage() {
               <TabsTrigger
                 value="password"
                 className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
-                onClick={() => handleTabClick('password')}
+                onClick={() => handleTabClick("password")}
               >
                 Change Password
-              </TabsTrigger>
-              <TabsTrigger
-                value="account"
-                className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
-                onClick={() => handleTabClick('account')}
-              >
-                Manage Account
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -105,11 +93,6 @@ export default function SettingsPage() {
             </TabsContent>
             <TabsContent value="password">
               <ChangePassword />
-            </TabsContent>
-            <TabsContent value="account">
-              <div className="p-6 bg-background rounded-lg">
-                <ManageAccount />
-              </div>
             </TabsContent>
           </Tabs>
         </div>

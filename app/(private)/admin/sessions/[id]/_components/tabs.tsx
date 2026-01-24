@@ -1,28 +1,93 @@
-'use client';
-import { Menu } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+"use client"
+import { Menu } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-modified';
-import SessionInfo from './session-info';
-import UserInfo from './user-info';
+} from "@/components/ui/dropdown-menu"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs-modified"
+import SessionInfo from "./session-info"
+import UserInfo from "./user-info"
 
-type TabValue = 'session' | 'user';
+type Appointment = {
+  id: string
+  doctorId: string
+  patientId: string
+  status: "BOOKED" | "COMPLETED" | "NO_SHOW"
+  scheduledAt: string | null
+  startedAt: string | null
+  endedAt: string | null
+  createdAt: string
+  updatedAt: string
+  chatroomExpiry: string | null
+  age: number | null
+  appointmentFor: string
+  issue: string
+  uploadId: string | null
+  relationWithPatient: string | null
+  patientName: string | null
+  patientAge: number | null
+  doctor: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+    phone: string | null
+    role: string | null
+    isAnonymous: boolean | null
+    employeeCode: string | null
+    enterpriseCode: string | null
+    banned: boolean | null
+    onboardingStage: string | null
+    createdAt: string
+  }
+  patient: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+    phone: string | null
+    role: string | null
+    isAnonymous: boolean | null
+    employeeCode: string | null
+    enterpriseCode: string | null
+    banned: boolean | null
+    onboardingStage: string | null
+    createdAt: string
+  }
+  appointmentNotes: {
+    id: string
+    appointmentId: string
+    doctorId: string
+    notes: string
+    createdAt: string
+    updatedAt: string
+  } | null
+  sessionReason: {
+    id: string
+    appointmentId: string
+    reason: string
+    createdAt: string
+    updatedAt: string
+  } | null
+}
+
+type TabValue = "session" | "user"
 
 const tabsConfig = [
-  { value: 'session' as TabValue, label: 'Session Info' },
-  { value: 'user' as TabValue, label: 'User Info' },
-];
+  { value: "session" as TabValue, label: "Session Info" },
+  { value: "user" as TabValue, label: "User Info" },
+]
 
 export function DetailsTabs({
-  defaultTab = 'session',
+  defaultTab = "session",
+  appointment,
 }: {
-  defaultTab?: TabValue;
+  defaultTab?: TabValue
+  appointment: Appointment
 }) {
   const [activeTab, setActiveTab] = useState<TabValue>(defaultTab);
 
@@ -86,10 +151,10 @@ export function DetailsTabs({
 
         <div>
           <TabsContent value="session" className="space-y-4 px-1 sm:px-0">
-            <SessionInfo />
+            <SessionInfo appointment={appointment} />
           </TabsContent>
           <TabsContent value="user" className="space-y-4 px-1 sm:px-0">
-            <UserInfo />
+            <UserInfo appointment={appointment} />
           </TabsContent>
         </div>
       </Tabs>

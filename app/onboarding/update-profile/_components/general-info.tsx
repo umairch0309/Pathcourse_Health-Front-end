@@ -311,7 +311,7 @@ export default function GeneralInfo() {
               Upload Documents
             </Typography>
 
-            <div className="space-y-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="space-y-6 grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Typography
                   variant="p"

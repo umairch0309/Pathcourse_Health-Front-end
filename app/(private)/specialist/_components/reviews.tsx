@@ -2,6 +2,7 @@
 
 import { MoreVertical } from "lucide-react"
 import Link from "next/link"
+import EmptyCard from "@/components/empty-card"
 import { Loader } from "@/components/loader"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -116,11 +117,7 @@ export function Reviews() {
             </Typography>
           </div>
         ) : !sessionReasons || sessionReasons.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <Typography variant="p" className="text-muted-foreground text-sm">
-              No recent session reasons found.
-            </Typography>
-          </div>
+          <EmptyCard message="No recent session reasons found." />
         ) : (
           sessionReasons.map((item) => {
             const { patient, sessionReason, endedAt } = item
