@@ -17,9 +17,11 @@ COPY . .
 
 # ✅ Accept build-time env vars (from GitHub Actions)
 ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_SOCKET_URL
 
 # ✅ Make them available to Next.js build
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_SOCKET_URL=$NEXT_PUBLIC_SOCKET_URL
 
 RUN npm install -g pnpm
 RUN pnpm run build

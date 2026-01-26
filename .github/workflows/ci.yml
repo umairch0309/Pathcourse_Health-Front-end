@@ -70,3 +70,4 @@ jobs:
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-info.outputs.repo }}:${{ steps.ecr-info.outputs.tag }}
           build-args: |
             NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_SOCKET_URL=${{ secrets.NEXT_PUBLIC_SOCKET_URL }}

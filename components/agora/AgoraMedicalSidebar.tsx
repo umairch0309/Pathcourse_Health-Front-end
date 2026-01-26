@@ -6,9 +6,11 @@ import {
   FileText,
   FileTextIcon,
   Loader,
+  MessageSquare,
   Stethoscope,
 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { AgoraChat } from "@/components/agora/AgoraChat"
 import DocumentPreview from "@/components/document-preview"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -89,7 +91,9 @@ export function AgoraMedicalSidebar({
   const [fileUrl, setFileUrl] = useState<string>("")
   const [fileName, setFileName] = useState<string>("")
   const [isLoadingFile, setIsLoadingFile] = useState(false)
-  const [activeTab, setActiveTab] = useState<"details" | "notes">("details")
+  const [activeTab, setActiveTab] = useState<"details" | "notes" | "chat">(
+    "details"
+  )
   const [notesDraft, setNotesDraft] = useState("")
 
   // Fetch current user session to determine role
@@ -144,13 +148,14 @@ export function AgoraMedicalSidebar({
       setNotesDraft(notesData.notes)
     } else if (
       notesError &&
-      (notesError as any)?.response?.status === 404 &&
+      (notesError as { response?: { status?: number } })?.response?.status ===
+        404 &&
       !notesDraft
     ) {
       // No notes yet - keep draft empty
       setNotesDraft("")
     }
-  }, [notesData, notesError])
+  }, [notesData, notesError, notesDraft])
 
   const { onRequest: saveNotes, isPending: isSavingNotes } = useApi<{
     notes: string
@@ -331,17 +336,17 @@ export function AgoraMedicalSidebar({
             </Button>
           </div>
 
-          {isDoctor && (
-            <div className="flex gap-2 mt-2">
-              <Button
-                type="button"
-                size="sm"
-                variant={activeTab === "details" ? "default" : "outline"}
-                className="h-8 text-xs"
-                onClick={() => setActiveTab("details")}
-              >
-                Info
-              </Button>
+          <div className="flex gap-2 mt-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={activeTab === "details" ? "default" : "outline"}
+              className="h-8 text-xs"
+              onClick={() => setActiveTab("details")}
+            >
+              Info
+            </Button>
+            {isDoctor && (
               <Button
                 type="button"
                 size="sm"
@@ -352,13 +357,31 @@ export function AgoraMedicalSidebar({
                 <FileTextIcon className="w-3 h-3" />
                 Notes
               </Button>
-            </div>
-          )}
+            )}
+            <Button
+              type="button"
+              size="sm"
+              variant={activeTab === "chat" ? "default" : "outline"}
+              className="h-8 text-xs flex items-center gap-1"
+              onClick={() => setActiveTab("chat")}
+            >
+              <MessageSquare className="w-3 h-3" />
+              Chat
+            </Button>
+          </div>
         </div>
 
         {/* Sidebar Content */}
         <ScrollArea className="flex-1 p-4">
-          {activeTab === "details" && (
+          {activeTab === "chat" && appointmentId && currentUser?.id ? (
+            <div className="h-full flex flex-col -m-4">
+              <AgoraChat
+                appointmentId={appointmentId}
+                userId={currentUser.id}
+                role={isDoctor ? ("doctor" as const) : ("patient" as const)}
+              />
+            </div>
+          ) : activeTab === "details" ? (
             <div className="space-y-4">
               <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
                 <h3 className="font-semibold mb-3 text-gray-900">
@@ -461,8 +484,9 @@ export function AgoraMedicalSidebar({
                   <h3 className="font-semibold mb-3 text-gray-900">
                     Uploaded File
                   </h3>
-                  <div
-                    className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity ${
+                  <button
+                    type="button"
+                    className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity w-full text-left ${
                       isLoadingFile ? "opacity-50" : ""
                     }`}
                     onClick={handleFilePreview}
@@ -481,13 +505,11 @@ export function AgoraMedicalSidebar({
                     {isLoadingFile && (
                       <div className="text-sm text-gray-500">Loading...</div>
                     )}
-                  </div>
+                  </button>
                 </Card>
               )}
             </div>
-          )}
-
-          {activeTab === "notes" && isDoctor && appointmentId && (
+          ) : activeTab === "notes" && isDoctor && appointmentId ? (
             <div className="space-y-4">
               <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
                 <h3 className="font-semibold mb-3 text-gray-900">
@@ -505,7 +527,8 @@ export function AgoraMedicalSidebar({
                     Loading notes...
                   </Typography>
                 ) : notesError &&
-                  (notesError as any)?.response?.status !== 404 ? (
+                  (notesError as { response?: { status?: number } })?.response
+                    ?.status !== 404 ? (
                   <Typography variant="p" className="text-red-500 text-sm mb-2">
                     Failed to load notes. You can still create new notes below.
                   </Typography>
@@ -535,7 +558,7 @@ export function AgoraMedicalSidebar({
                 </div>
               </Card>
             </div>
-          )}
+          ) : null}
         </ScrollArea>
       </div>
 
