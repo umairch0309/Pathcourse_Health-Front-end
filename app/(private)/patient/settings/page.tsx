@@ -1,84 +1,96 @@
-'use client';
+"use client"
 
-import { ArrowLeft } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
-import { cn } from '@/lib/utils';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs-modified';
-import { ChangePassword } from './_components/change-password';
-import ProfileSettings from './_components/profile-settings';
-import ManageAccount from './_components/manage-account';
-import PrivacySettings from './_components/privacy-settings';
+import { ArrowLeft } from "lucide-react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
+import { cn } from "@/lib/utils"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs-modified"
+import { ChangePassword } from "./_components/change-password"
+import ProfileSettings from "./_components/profile-settings"
+import ManageAccount from "./_components/manage-account"
+import PrivacySettings from "./_components/privacy-settings"
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState('profile');
-  const [showTabContent, setShowTabContent] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile")
+  const [showTabContent, setShowTabContent] = useState(false)
 
   const handleTabClick = (value: string) => {
-    setActiveTab(value);
-    setShowTabContent(true);
-  };
+    setActiveTab(value)
+    setShowTabContent(true)
+  }
 
   const handleBackToTabs = () => {
-    setShowTabContent(false);
-  };
+    setShowTabContent(false)
+  }
 
   const getTabTitle = (value: string) => {
     switch (value) {
-      case 'profile':
-        return 'Profile Settings';
-      case 'medical':
-        return 'Medical Info';
-      case 'privacy':
-        return 'Privacy Settings';
-      case 'password':
-        return 'Change Password';
-      case 'account':
-        return 'Manage Account';
+      case "profile":
+        return "Profile Settings"
+      case "medical":
+        return "Medical Info"
+      case "privacy":
+        return "Privacy Settings"
+      case "password":
+        return "Change Password"
+      case "account":
+        return "Manage Account"
       default:
-        return 'Settings';
+        return "Settings"
     }
-  };
+  }
 
   return (
     <div className="w-full">
-      <Typography variant="h5" className="p-1 text-foreground font-bold" >Settings</Typography>
+      <Typography variant="h5" className="p-1 text-foreground font-bold">
+        Settings
+      </Typography>
 
       <div className="flex gap-2">
         {/* Tab List - Hidden on mobile when content is shown */}
-        <div className={cn(
-          'w-full lg:w-[400px] p-6 bg-background rounded-lg shadow shadow-lg border border-border',
-          showTabContent && 'hidden lg:block',
-        )}
+        <div
+          className={cn(
+            "w-full lg:w-[400px] p-6 bg-background rounded-lg shadow shadow-lg border border-border",
+            showTabContent && "hidden lg:block"
+          )}
         >
-          <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            orientation="vertical"
+          >
             <TabsList className="flex flex-col space-y-4">
               <TabsTrigger
                 value="profile"
                 className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
-                onClick={() => handleTabClick('profile')}
+                onClick={() => handleTabClick("profile")}
               >
                 Profile Settings
               </TabsTrigger>
               <TabsTrigger
                 value="privacy"
                 className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
-                onClick={() => handleTabClick('privacy')}
+                onClick={() => handleTabClick("privacy")}
               >
                 Privacy Settings
               </TabsTrigger>
               <TabsTrigger
                 value="password"
                 className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
-                onClick={() => handleTabClick('password')}
+                onClick={() => handleTabClick("password")}
               >
                 Change Password
               </TabsTrigger>
               <TabsTrigger
                 value="account"
                 className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
-                onClick={() => handleTabClick('account')}
+                onClick={() => handleTabClick("account")}
               >
                 Manage Account
               </TabsTrigger>
@@ -87,11 +99,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Tab Content - Hidden on mobile when tabs are shown */}
-        <div className={cn(
-          'flex-1',
-          !showTabContent && 'hidden lg:block',
-        )}
-        >
+        <div className={cn("flex-1", !showTabContent && "hidden lg:block")}>
           {/* Mobile Header */}
           <div className="lg:hidden mb-4">
             <div className="flex items-center gap-3 p-4 bg-background rounded-lg">
@@ -109,7 +117,11 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            orientation="vertical"
+          >
             <TabsContent value="profile">
               <ProfileSettings />
             </TabsContent>
@@ -128,5 +140,5 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

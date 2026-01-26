@@ -22,34 +22,48 @@ export default function DocumentPreview({
   fileName,
   label,
 }: DocumentPreviewProps) {
-  const getFileType = (url: string): "pdf" | "image" | "video" | "unknown" => {
+  const getFileType = (
+    url: string,
+    fileName: string
+  ): "pdf" | "image" | "video" | "unknown" => {
     const lowerUrl = url.toLowerCase()
-    if (lowerUrl.includes(".pdf") || lowerUrl.includes("application/pdf")) {
+    const lowerFileName = fileName.toLowerCase()
+
+    // Check PDF by file extension or URL
+    if (
+      lowerUrl.includes(".pdf") ||
+      lowerUrl.includes("application/pdf") ||
+      lowerFileName.endsWith(".pdf")
+    ) {
       return "pdf"
     }
+    // Check image by extension or URL
     if (
       lowerUrl.includes(".jpg") ||
       lowerUrl.includes(".jpeg") ||
       lowerUrl.includes(".png") ||
       lowerUrl.includes(".gif") ||
       lowerUrl.includes(".webp") ||
-      lowerUrl.includes("image/")
+      lowerUrl.includes("image/") ||
+      lowerFileName.match(/\.(jpg|jpeg|png|gif|webp)$/)
     ) {
       return "image"
     }
+    // Check video by extension or URL
     if (
       lowerUrl.includes(".mp4") ||
       lowerUrl.includes(".mov") ||
       lowerUrl.includes(".avi") ||
       lowerUrl.includes(".webm") ||
-      lowerUrl.includes("video/")
+      lowerUrl.includes("video/") ||
+      lowerFileName.match(/\.(mp4|mov|avi|webm)$/)
     ) {
       return "video"
     }
     return "unknown"
   }
 
-  const fileType = getFileType(fileUrl)
+  const fileType = getFileType(fileUrl, fileName)
 
   if (!open) return null
 
@@ -62,13 +76,16 @@ export default function DocumentPreview({
           "translate-x-0 translate-y-0"
         )}
       >
-        <div className="flex-1 overflow-auto p-10">
+        <div className="flex-1 overflow-auto p-4 md:p-10">
           {fileType === "pdf" && (
-            <iframe
-              src={fileUrl}
-              className="w-full h-full min-h-[600px] border rounded-lg"
-              title={fileName}
-            />
+            <div className="w-full h-full min-h-[600px]">
+              <iframe
+                src={`${fileUrl}#toolbar=1`}
+                className="w-full h-full min-h-[600px] border rounded-lg"
+                title={fileName}
+                allow="fullscreen"
+              />
+            </div>
           )}
           {fileType === "image" && (
             <div className="flex items-center justify-center h-full min-h-[600px] relative w-full">

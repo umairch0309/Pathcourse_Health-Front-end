@@ -62,7 +62,10 @@ const useApi = <T,>({
       case "put":
         return axios.put<ApiResponse<any>>(REQUEST_PATH, data, config)
       case "delete":
-        return axios.delete<ApiResponse<any>>(REQUEST_PATH, { headers, withCredentials: true })
+        return axios.delete<ApiResponse<any>>(REQUEST_PATH, {
+          headers,
+          withCredentials: true,
+        })
       case "patch":
         return axios.patch<ApiResponse<any>>(REQUEST_PATH, data, config)
       default:
@@ -80,7 +83,6 @@ const useApi = <T,>({
     isPaused,
     failureCount,
     failureReason,
-
   } = useMutation({
     mutationFn: postRequest,
     mutationKey: [key], // in our case post request

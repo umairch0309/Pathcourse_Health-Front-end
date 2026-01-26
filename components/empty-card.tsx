@@ -9,21 +9,24 @@ import { InboxIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface EmptyCardProps {
-  className?: string;
-  message?: string;
+  className?: string
+  message?: string
 }
 
-export default function EmptyCard({ className, message = "No data available" }: EmptyCardProps) {
+export default function EmptyCard({
+  className,
+  message = "No data available",
+}: EmptyCardProps) {
   return (
-    <div className={cn("w-full flex items-center justify-center py-12", className)}>
+    <div
+      className={cn("w-full flex items-center justify-center py-12", className)}
+    >
       <div className="flex flex-col items-center justify-center text-center space-y-3">
         <div className="rounded-full bg-muted/50 p-4">
           <InboxIcon className="size-10 text-primary font-bold" />
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-medium text-foreground">
-            {message}
-          </p>
+          <p className="text-sm font-medium text-foreground">{message}</p>
           <p className="text-xs text-muted-foreground">
             Try adjusting your search or filters
           </p>

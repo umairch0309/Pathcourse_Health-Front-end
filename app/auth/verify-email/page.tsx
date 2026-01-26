@@ -1,28 +1,32 @@
-'use client';
+"use client"
 
-import { Suspense, useCallback, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
-import { Typography } from '@/components/ui/typography';
-import { Button } from '@/components/ui/button';
+import { Suspense, useCallback, useMemo, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
+import { Typography } from "@/components/ui/typography"
+import { Button } from "@/components/ui/button"
 
 function VerifyEmailContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const role = useMemo(() => {
-    const r = searchParams.get('role');
-    return r === 'doctor' ? 'doctor' : 'patient';
-  }, [searchParams]);
+    const r = searchParams.get("role")
+    return r === "doctor" ? "doctor" : "patient"
+  }, [searchParams])
 
-  const [otp, setOtp] = useState('');
-  const isOtpComplete = otp.trim().length === 4;
+  const [otp, setOtp] = useState("")
+  const isOtpComplete = otp.trim().length === 4
 
   const handleVerify = useCallback(() => {
     if (!isOtpComplete) {
-      return;
+      return
     }
-    router.push('/auth/new-password');
-  }, [isOtpComplete, role, router]);
+    router.push("/auth/new-password")
+  }, [isOtpComplete, role, router])
 
   return (
     <div className="w-full p-4 flex items-center justify-center">
@@ -32,15 +36,19 @@ function VerifyEmailContent() {
         </Typography>
 
         <div className="space-y-1">
-          <Typography variant="span" className="text-muted-foreground text-center">
-            A 4 digit OTP has been sent to your email address
-            {' '}
-            <span className="text-primary">laslie.alexander@gmail.com</span>
-            . This code is valid for only 30 minutes.
+          <Typography
+            variant="span"
+            className="text-muted-foreground text-center"
+          >
+            A 4 digit OTP has been sent to your email address{" "}
+            <span className="text-primary">laslie.alexander@gmail.com</span>.
+            This code is valid for only 30 minutes.
           </Typography>
         </div>
 
-        <Button variant="link" className=" font-semibold text-black">Change Email</Button>
+        <Button variant="link" className=" font-semibold text-black">
+          Change Email
+        </Button>
 
         <InputOTP
           maxLength={4}
@@ -63,11 +71,13 @@ function VerifyEmailContent() {
             If you didn’t receive the code then click on the button below.
           </Typography>
 
-        <Button variant="link" className=" font-semibold text-black">Resend Code</Button>
+          <Button variant="link" className=" font-semibold text-black">
+            Resend Code
+          </Button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function VerifyEmailPage() {
@@ -75,5 +85,5 @@ export default function VerifyEmailPage() {
     <Suspense fallback={null}>
       <VerifyEmailContent />
     </Suspense>
-  );
+  )
 }

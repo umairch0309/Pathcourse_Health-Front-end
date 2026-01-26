@@ -9,8 +9,11 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
     <div className="relative w-full overflow-auto">
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom border-b text-sm border-collapse", className)}
-        style={{ minWidth: '100%' }}
+        className={cn(
+          "w-full caption-bottom border-b text-sm border-collapse",
+          className
+        )}
+        style={{ minWidth: "100%" }}
         {...props}
       />
     </div>

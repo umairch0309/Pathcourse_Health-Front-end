@@ -1,55 +1,55 @@
-'use client';
+"use client"
 
-import { OTPInput, OTPInputContext } from 'input-otp';
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+import { OTPInput, OTPInputContext } from "input-otp"
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
 function InputOTP({
   className,
   containerClassName,
   ...props
 }: React.ComponentProps<typeof OTPInput> & {
-  containerClassName?: string;
+  containerClassName?: string
 }) {
   return (
     <OTPInput
-      containerClassName={cn('flex items-center gap-3', containerClassName)}
-      className={cn('disabled:cursor-not-allowed', className)}
+      containerClassName={cn("flex items-center gap-3", containerClassName)}
+      className={cn("disabled:cursor-not-allowed", className)}
       {...props}
     />
-  );
+  )
 }
 
-function InputOTPGroup({ className, ...props }: React.ComponentProps<'div'>) {
+function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="input-otp-group"
-      className={cn('flex items-center gap-3', className)}
+      className={cn("flex items-center gap-3", className)}
       {...props}
     />
-  );
+  )
 }
 
 function InputOTPSlot({
   index,
   className,
   ...props
-}: React.ComponentProps<'div'> & {
-  index: number;
+}: React.ComponentProps<"div"> & {
+  index: number
 }) {
-  const inputOTPContext = React.use(OTPInputContext);
-  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index];
+  const inputOTPContext = React.use(OTPInputContext)
+  const { char, hasFakeCaret, isActive } = inputOTPContext.slots[index]
 
   return (
     <div
       data-slot="input-otp-slot"
       data-active={isActive}
       className={cn(
-        'w-14 h-14 border-b border-input bg-white text-center text-lg font-medium text-foreground',
-        'flex items-center justify-center relative transition-all',
+        "w-14 h-14 border-b border-input bg-white text-center text-lg font-medium text-foreground",
+        "flex items-center justify-center relative transition-all",
         // 'outline-none ring-0 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
         // 'data-[active=true]:ring-2 data-[active=true]:ring-primary',
-        className,
+        className
       )}
       {...props}
     >
@@ -60,11 +60,11 @@ function InputOTPSlot({
         </div>
       )}
     </div>
-  );
+  )
 }
 
-function InputOTPSeparator({ ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="input-otp-separator" role="separator" {...props} />;
+function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
+  return <div data-slot="input-otp-separator" role="separator" {...props} />
 }
 
-export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot };
+export { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot }

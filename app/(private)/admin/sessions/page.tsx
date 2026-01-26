@@ -113,7 +113,10 @@ const columns: Column<TableAppointment>[] = [
       return (
         <div className="flex items-center gap-2">
           <Avatar className="size-8">
-            <AvatarImage src={row.user.image || undefined} alt={row.user.name} />
+            <AvatarImage
+              src={row.user.image || undefined}
+              alt={row.user.name}
+            />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <span>{row.user.name}</span>
@@ -134,7 +137,10 @@ const columns: Column<TableAppointment>[] = [
       return (
         <div className="flex items-center gap-2">
           <Avatar className="size-8">
-            <AvatarImage src={row.doctor.image || undefined} alt={row.doctor.name} />
+            <AvatarImage
+              src={row.doctor.image || undefined}
+              alt={row.doctor.name}
+            />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <span>{row.doctor.name}</span>
@@ -160,7 +166,9 @@ const columns: Column<TableAppointment>[] = [
         NO_SHOW: "bg-red-100 text-red-800",
       }
       return (
-        <Badge className={statusColors[row.status] || "bg-gray-100 text-gray-800"}>
+        <Badge
+          className={statusColors[row.status] || "bg-gray-100 text-gray-800"}
+        >
           {row.status.replace("_", " ")}
         </Badge>
       )

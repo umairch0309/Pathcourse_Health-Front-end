@@ -1,4 +1,4 @@
-import { Copyright } from 'lucide-react';
+import { Copyright } from "lucide-react"
 
 export default function Footer() {
   return (
@@ -10,6 +10,5 @@ export default function Footer() {
         </p>
       </div>
     </div>
-  );
+  )
 }
-

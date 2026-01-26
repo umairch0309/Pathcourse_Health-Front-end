@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Path Course Health",
-  description: "Path Course Health is a platform for healthcare professionals and patients to connect and manage their healthcare sessions.",
+  description:
+    "Path Course Health is a platform for healthcare professionals and patients to connect and manage their healthcare sessions.",
   icons: {
     icon: "/logo.svg",
     shortcut: "/logo.svg",
@@ -30,7 +31,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${raleway.variable} ${geistMono.variable} antialiased font-sans`}>
+    <html
+      lang="en"
+      className={`${raleway.variable} ${geistMono.variable} antialiased font-sans`}
+    >
       <body>
         <NuqsAdapter>
           <Provider>{children}</Provider>

@@ -1,6 +1,6 @@
 "use client"
 import { Menu } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -46,7 +46,14 @@ export function DetailsTabs({
   defaultTab = "session",
   appointment,
 }: DetailsTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabValue>(defaultTab)
+  const [activeTab, setActiveTab] = useState<TabValue>(defaultTab as TabValue)
+
+  // Update active tab when defaultTab prop changes (e.g., from URL query param)
+  useEffect(() => {
+    if (defaultTab) {
+      setActiveTab(defaultTab as TabValue)
+    }
+  }, [defaultTab])
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as TabValue)

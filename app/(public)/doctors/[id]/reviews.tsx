@@ -1,28 +1,28 @@
 /* eslint-disable unicorn/no-new-array */
-'use client';
-import { ArrowLeft, ArrowRight, Star } from 'lucide-react';
-import Image from 'next/image';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { testimonials } from '@/app/data/testimonials';
+"use client"
+import { ArrowLeft, ArrowRight, Star } from "lucide-react"
+import Image from "next/image"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { testimonials } from "@/app/data/testimonials"
 
-const ITEMS_PER_SLIDE = 5;
+const ITEMS_PER_SLIDE = 5
 
 export default function Testimonial() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0)
 
-  const totalSlides = Math.ceil(testimonials.length / ITEMS_PER_SLIDE);
+  const totalSlides = Math.ceil(testimonials.length / ITEMS_PER_SLIDE)
 
   const nextSlide = () => {
-    setCurrentIndex(prev => (prev + 1) % totalSlides);
-  };
+    setCurrentIndex((prev) => (prev + 1) % totalSlides)
+  }
 
   const prevSlide = () => {
-    setCurrentIndex(prev => (prev - 1 + totalSlides) % totalSlides);
-  };
+    setCurrentIndex((prev) => (prev - 1 + totalSlides) % totalSlides)
+  }
 
-  const start = currentIndex * ITEMS_PER_SLIDE;
-  const visibleTestimonials = testimonials.slice(start, start + ITEMS_PER_SLIDE);
+  const start = currentIndex * ITEMS_PER_SLIDE
+  const visibleTestimonials = testimonials.slice(start, start + ITEMS_PER_SLIDE)
 
   return (
     <section className="py-16 px-4 sm:px-8 bg-white mb-10">
@@ -30,13 +30,10 @@ export default function Testimonial() {
         {/* Heading */}
         <div className="flex justify-between items-center mb-10">
           <h2 className="text-3xl sm:text-6xl font-medium text-gray-900">
-            Listen to
-            {' '}
+            Listen to{" "}
             <span className="font-bold ">
               what
-              <br />
-              {' '}
-              they say
+              <br /> they say
             </span>
           </h2>
 
@@ -61,11 +58,8 @@ export default function Testimonial() {
 
         {/* Testimonials */}
         <div className="space-y-6">
-          {visibleTestimonials.map(testimonial => (
-            <div
-              key={testimonial.id}
-              className="border-b pb-6"
-            >
+          {visibleTestimonials.map((testimonial) => (
+            <div key={testimonial.id} className="border-b pb-6">
               {/* Avatar and Name Row */}
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex-shrink-0">
@@ -79,7 +73,9 @@ export default function Testimonial() {
                     <div className="w-12 h-12 rounded-full bg-gray-300" />
                   )}
                 </div>
-                <h4 className="text-foreground font-bold">{testimonial.name}</h4>
+                <h4 className="text-foreground font-bold">
+                  {testimonial.name}
+                </h4>
               </div>
 
               {/* Stars Row */}
@@ -96,5 +92,5 @@ export default function Testimonial() {
         </div>
       </div>
     </section>
-  );
+  )
 }

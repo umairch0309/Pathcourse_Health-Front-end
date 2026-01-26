@@ -198,16 +198,19 @@ export default function NotificationsDropdown({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p
-                          className={`text-sm ${
+                          className={`text-sm break-words whitespace-pre-wrap ${
                             !notification.isRead ? "font-semibold" : ""
                           }`}
                         >
                           {notification.message}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {formatDistanceToNow(new Date(notification.createdAt), {
-                            addSuffix: true,
-                          })}
+                          {formatDistanceToNow(
+                            new Date(notification.createdAt),
+                            {
+                              addSuffix: true,
+                            }
+                          )}
                         </p>
                       </div>
                       {!notification.isRead && (

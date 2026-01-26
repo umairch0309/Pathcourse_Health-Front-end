@@ -1,8 +1,8 @@
-import Footer from "../footer";
-import Header from "../header";
-import PoliciesSection from "../policies";
-import AllDoctors from "./all-doctors";
-import Banner from "./doctor-banner";
+import Footer from "../footer"
+import Header from "../header"
+import PoliciesSection from "../policies"
+import AllDoctors from "./all-doctors"
+import Banner from "./doctor-banner"
 
 export default function Page() {
   return (
@@ -13,5 +13,5 @@ export default function Page() {
       <PoliciesSection />
       <Footer />
     </div>
-  );
+  )
 }

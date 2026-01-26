@@ -7,11 +7,11 @@ import auth from "@/lib/auth"
 export const getCachedSession = cache(async () => {
   try {
     const headersList = await headers()
-    
+
     // Create abort controller for timeout
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-    
+
     try {
       const session = await auth.getSession({
         fetchOptions: {

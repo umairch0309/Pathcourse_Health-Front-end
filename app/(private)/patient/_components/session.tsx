@@ -123,11 +123,14 @@ export function AppointmentsTable() {
               ) : (
                 sessions.map((session) => {
                   const dateText = session.scheduledAt
-                    ? new Date(session.scheduledAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
+                    ? new Date(session.scheduledAt).toLocaleDateString(
+                        "en-US",
+                        {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )
                     : new Date(session.createdAt).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -152,7 +155,9 @@ export function AppointmentsTable() {
                             />
                             <AvatarFallback>{initials}</AvatarFallback>
                           </Avatar>
-                          <span className="truncate">{session.doctor.name}</span>
+                          <span className="truncate">
+                            {session.doctor.name}
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">

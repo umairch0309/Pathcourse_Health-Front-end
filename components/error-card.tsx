@@ -85,10 +85,12 @@ export default function ErrorCard({
           <AlertCircle className="size-10 text-destructive font-bold" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">Something went wrong</h3>
+          <h3 className="text-sm font-semibold text-foreground">
+            Something went wrong
+          </h3>
           <p className="text-xs text-muted-foreground">{message}</p>
         </div>
-        
+
         {/* Show different buttons depending on the error */}
         {isUnauthorized(error) ? (
           <Button

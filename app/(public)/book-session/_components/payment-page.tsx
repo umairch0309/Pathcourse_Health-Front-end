@@ -1,21 +1,24 @@
-'use client';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
+"use client"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
 
 type PaymentPageProps = {
-  onBack?: () => void;
-  onContinue?: () => void;
-};
+  onBack?: () => void
+  onContinue?: () => void
+}
 
 // Default consultation fee
-const DEFAULT_CONSULTATION_FEE = 55;
+const DEFAULT_CONSULTATION_FEE = 55
 
 export default function PaymentPage({ onBack, onContinue }: PaymentPageProps) {
   return (
     <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Title */}
-        <Typography variant="h3" className="text-foreground font-bold mb-8 text-center">
+        <Typography
+          variant="h3"
+          className="text-foreground font-bold mb-8 text-center"
+        >
           Confirm Payment
         </Typography>
 
@@ -33,13 +36,20 @@ export default function PaymentPage({ onBack, onContinue }: PaymentPageProps) {
             </Typography>
           </div>
           <div className="border-t border-border pt-4 space-y-3">
-            <Typography variant="p" className="text-foreground text-center text-sm">
-              Payment processing will be handled securely through Stripe. Your payment
-              information will be encrypted and processed in a secure environment.
+            <Typography
+              variant="p"
+              className="text-foreground text-center text-sm"
+            >
+              Payment processing will be handled securely through Stripe. Your
+              payment information will be encrypted and processed in a secure
+              environment.
             </Typography>
-            <Typography variant="span" className="text-foreground text-center text-sm block">
-              Click "Pay Now" to proceed with the booking. You will be redirected to complete
-              the payment process.
+            <Typography
+              variant="span"
+              className="text-foreground text-center text-sm block"
+            >
+              Click "Pay Now" to proceed with the booking. You will be
+              redirected to complete the payment process.
             </Typography>
           </div>
         </div>
@@ -55,6 +65,5 @@ export default function PaymentPage({ onBack, onContinue }: PaymentPageProps) {
         </div>
       </div>
     </section>
-  );
+  )
 }
-

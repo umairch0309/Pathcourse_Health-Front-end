@@ -1,20 +1,25 @@
 "use client"
 
-import { ChevronRight, FileText, FileTextIcon, Stethoscope } from "lucide-react"
-import { useEffect, useState } from "react"
 import axios from "axios"
-import { env } from "@/env"
-import { buildRequestUrl } from "@/lib/utils"
+import {
+  ChevronRight,
+  FileText,
+  FileTextIcon,
+  Loader,
+  Stethoscope,
+} from "lucide-react"
+import { useEffect, useState } from "react"
+import DocumentPreview from "@/components/document-preview"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Textarea } from "@/components/ui/textarea"
 import { Typography } from "@/components/ui/typography"
-import DocumentPreview from "@/components/document-preview"
-import { useFetch } from "@/hooks/use-fetch"
+import { env } from "@/env"
 import useApi from "@/hooks/use-api"
+import { useFetch } from "@/hooks/use-fetch"
 import auth from "@/lib/auth"
-import { cn } from "@/lib/utils"
+import { buildRequestUrl, cn } from "@/lib/utils"
 
 type AgoraMedicalSidebarProps = {
   isOpen: boolean
@@ -147,10 +152,9 @@ export function AgoraMedicalSidebar({
     }
   }, [notesData, notesError])
 
-  const {
-    onRequest: saveNotes,
-    isPending: isSavingNotes,
-  } = useApi<{ notes: string }>({
+  const { onRequest: saveNotes, isPending: isSavingNotes } = useApi<{
+    notes: string
+  }>({
     key: "appointment-notes",
     method: "post",
     showSuccessToast: true,
@@ -355,131 +359,132 @@ export function AgoraMedicalSidebar({
         {/* Sidebar Content */}
         <ScrollArea className="flex-1 p-4">
           {activeTab === "details" && (
-          <div className="space-y-4">
-            <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
-              <h3 className="font-semibold mb-3 text-gray-900">
-                Appointment Details
-              </h3>
-              <div className="space-y-3 text-sm">
-                {/* Patient Info */}
-                {patientInfo && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Patient:</span>
+            <div className="space-y-4">
+              <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
+                <h3 className="font-semibold mb-3 text-gray-900">
+                  Appointment Details
+                </h3>
+                <div className="space-y-3 text-sm">
+                  {/* Patient Info */}
+                  {patientInfo && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Patient:</span>
+                        <span className="font-medium text-gray-900">
+                          {patientInfo.name || "—"}
+                        </span>
+                      </div>
+                      {patientInfo.dateOfBirth && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Date of Birth:</span>
+                          <span className="font-medium text-gray-900">
+                            {new Date(
+                              patientInfo.dateOfBirth
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {patientInfo.gender && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Gender:</span>
+                          <span className="font-medium text-gray-900">
+                            {patientInfo.gender}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Doctor Info - Only show to patients */}
+                  {isPatient && appointment?.doctor && (
+                    <div className="flex justify-between mt-4 pt-4 border-t">
+                      <span className="text-gray-600">Doctor:</span>
                       <span className="font-medium text-gray-900">
-                        {patientInfo.name || "—"}
+                        {appointment.doctor.name || "—"}
                       </span>
                     </div>
-                    {patientInfo.dateOfBirth && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Date of Birth:</span>
-                        <span className="font-medium text-gray-900">
-                          {new Date(
-                            patientInfo.dateOfBirth
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-                    )}
-                    {patientInfo.gender && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Gender:</span>
-                        <span className="font-medium text-gray-900">
-                          {patientInfo.gender}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
+                  )}
 
-                {/* Doctor Info - Only show to patients */}
-                {isPatient && appointment?.doctor && (
-                  <div className="flex justify-between mt-4 pt-4 border-t">
-                    <span className="text-gray-600">Doctor:</span>
-                    <span className="font-medium text-gray-900">
-                      {appointment.doctor.name || "—"}
-                    </span>
-                  </div>
-                )}
-
-                {appointment?.appointmentFor && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Appointment For:</span>
-                    <span className="font-medium text-gray-900 capitalize">
-                      {appointment.appointmentFor.replace("_", " ")}
-                    </span>
-                  </div>
-                )}
-                {(appointment?.appointmentDate || appointment?.scheduledAt) && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Date:</span>
-                    <span className="font-medium text-gray-900">
-                      {new Date(
-                        appointment.appointmentDate ||
-                          appointment.scheduledAt ||
-                          ""
-                      ).toLocaleDateString()}
-                    </span>
-                  </div>
-                )}
-                {appointment?.appointmentTime && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Time:</span>
-                    <span className="font-medium text-gray-900">
-                      {appointment.appointmentTime}
-                    </span>
-                  </div>
-                )}
-                {appointment?.status && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
-                    <span className="font-medium text-gray-900">
-                      {appointment.status}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </Card>
-
-            {appointment?.description && (
-              <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
-                <h3 className="font-semibold mb-3 text-gray-900">
-                  Description
-                </h3>
-                <p className="text-sm text-gray-700">
-                  {appointment.description}
-                </p>
-              </Card>
-            )}
-
-            {appointment?.uploadId && appointment.uploadId !== "-" && (
-              <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
-                <h3 className="font-semibold mb-3 text-gray-900">
-                  Uploaded File
-                </h3>
-                <div
-                  className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity ${
-                    isLoadingFile ? "opacity-50" : ""
-                  }`}
-                  onClick={handleFilePreview}
-                >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                      <div className="text-sm text-gray-600">
-                        Uploaded file ID:
-                      </div>
-                    <div className="font-medium text-gray-900 truncate">
-                      {getFileName(appointment.uploadId)}
+                  {appointment?.appointmentFor && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Appointment For:</span>
+                      <span className="font-medium text-gray-900 capitalize">
+                        {appointment.appointmentFor.replace("_", " ")}
+                      </span>
                     </div>
-                  </div>
-                  {isLoadingFile && (
-                    <div className="text-sm text-gray-500">Loading...</div>
+                  )}
+                  {(appointment?.appointmentDate ||
+                    appointment?.scheduledAt) && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date:</span>
+                      <span className="font-medium text-gray-900">
+                        {new Date(
+                          appointment.appointmentDate ||
+                            appointment.scheduledAt ||
+                            ""
+                        ).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                  {appointment?.appointmentTime && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Time:</span>
+                      <span className="font-medium text-gray-900">
+                        {appointment.appointmentTime}
+                      </span>
+                    </div>
+                  )}
+                  {appointment?.status && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Status:</span>
+                      <span className="font-medium text-gray-900">
+                        {appointment.status}
+                      </span>
+                    </div>
                   )}
                 </div>
               </Card>
-            )}
-          </div>
+
+              {appointment?.description && (
+                <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
+                  <h3 className="font-semibold mb-3 text-gray-900">
+                    Description
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    {appointment.description}
+                  </p>
+                </Card>
+              )}
+
+              {appointment?.uploadId && appointment.uploadId !== "-" && (
+                <Card className="p-4 bg-white/50 backdrop-blur-sm border-gray-200/50">
+                  <h3 className="font-semibold mb-3 text-gray-900">
+                    Uploaded File
+                  </h3>
+                  <div
+                    className={`flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity ${
+                      isLoadingFile ? "opacity-50" : ""
+                    }`}
+                    onClick={handleFilePreview}
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100">
+                      <FileText className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-600">
+                        Uploaded file ID:
+                      </div>
+                      <div className="font-medium text-gray-900 truncate">
+                        {getFileName(appointment.uploadId)}
+                      </div>
+                    </div>
+                    {isLoadingFile && (
+                      <div className="text-sm text-gray-500">Loading...</div>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </div>
           )}
 
           {activeTab === "notes" && isDoctor && appointmentId && (
@@ -501,10 +506,7 @@ export function AgoraMedicalSidebar({
                   </Typography>
                 ) : notesError &&
                   (notesError as any)?.response?.status !== 404 ? (
-                  <Typography
-                    variant="p"
-                    className="text-red-500 text-sm mb-2"
-                  >
+                  <Typography variant="p" className="text-red-500 text-sm mb-2">
                     Failed to load notes. You can still create new notes below.
                   </Typography>
                 ) : null}
@@ -520,20 +522,15 @@ export function AgoraMedicalSidebar({
                 <div className="flex justify-end gap-2 mt-4">
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isSavingNotes || !notesDraft.trim()}
-                    onClick={() => setNotesDraft(notesData?.notes || "")}
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
+                    size="lg"
                     disabled={isSavingNotes || !notesDraft.trim()}
                     onClick={handleSaveNotes}
                   >
-                    {isSavingNotes ? "Saving..." : "Save Notes"}
+                    {isSavingNotes ? (
+                      <Loader size="sm" color="white" />
+                    ) : (
+                      "Save Notes"
+                    )}
                   </Button>
                 </div>
               </Card>

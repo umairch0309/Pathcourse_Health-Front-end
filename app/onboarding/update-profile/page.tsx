@@ -1,68 +1,96 @@
-'use client';
+"use client"
 
-import { LogOut, User } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperStatusLabel, StepperTitle, StepperTrigger, useStepper } from '@/components/ui/stepper';
-import { Typography } from '@/components/ui/typography';
-import { Button } from '@/components/ui/button';
-import auth from '@/lib/auth';
-import ContactInfo from './_components/contact-info';
-import EducationalInfo from './_components/education-info';
-import GeneralInfo from './_components/general-info';
+import { LogOut, User } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperStatusLabel,
+  StepperTitle,
+  StepperTrigger,
+  useStepper,
+} from "@/components/ui/stepper"
+import { Typography } from "@/components/ui/typography"
+import { Button } from "@/components/ui/button"
+import auth from "@/lib/auth"
+import ContactInfo from "./_components/contact-info"
+import EducationalInfo from "./_components/education-info"
+import GeneralInfo from "./_components/general-info"
 
 const steps = [
-  { id: 0, title: 'Contact info' },
-  { id: 1, title: 'Educational info' },
-  { id: 2, title: 'Professional exp.' },
-];
+  { id: 0, title: "Contact info" },
+  { id: 1, title: "Educational info" },
+  { id: 2, title: "Professional exp." },
+]
 
 function StepContent() {
-  const { activeStep } = useStepper();
+  const { activeStep } = useStepper()
 
   switch (activeStep) {
     case 0:
-      return <ContactInfo />;
+      return <ContactInfo />
     case 1:
-      return <EducationalInfo />;
+      return <EducationalInfo />
     case 2:
-      return <GeneralInfo />;
+      return <GeneralInfo />
     default:
-      return null;
+      return null
   }
 }
 
 export default function UpdateProfile() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setDropdownOpen(false)
       }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   return (
     <div className="relative min-h-screen">
       {/* Logo in top-left corner */}
       <Link href="/" className="absolute top-4 left-4 z-50 cursor-pointer">
-        <Image src="/logo.svg" alt="Logo" width={80} height={80} className="object-cover" />
+        <Image
+          src="/logo.svg"
+          alt="Logo"
+          width={80}
+          height={80}
+          className="object-cover"
+        />
       </Link>
 
       {/* User icon and logout dropdown in top-right corner */}
       <div className="absolute top-4 right-4 z-50" ref={dropdownRef}>
         <div className="relative">
-          <User className="w-6 h-6 text-foreground cursor-pointer" onClick={() => setDropdownOpen(prev => !prev)} />
+          <User
+            className="w-6 h-6 text-foreground cursor-pointer"
+            onClick={() => setDropdownOpen((prev) => !prev)}
+          />
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-40 bg-background border rounded shadow-md z-50">
-              <Button variant="secondary" className="w-full flex items-center gap-2" onClick={async () => {await auth.signOut(); router.push('/auth/login')}}>
+              <Button
+                variant="secondary"
+                className="w-full flex items-center gap-2"
+                onClick={async () => {
+                  await auth.signOut()
+                  router.push("/auth/login")
+                }}
+              >
                 <LogOut className="w-4 h-4" />
                 Logout
               </Button>
@@ -72,7 +100,10 @@ export default function UpdateProfile() {
       </div>
 
       <div className="space-y-8 lg:py-10 py-4 mx-auto max-w-7xl px-2">
-        <Typography variant="h5" className="font-bold text-center text-foreground">
+        <Typography
+          variant="h5"
+          className="font-bold text-center text-foreground"
+        >
           Update Your Profile
         </Typography>
 
@@ -106,6 +137,5 @@ export default function UpdateProfile() {
         </div>
       </div>
     </div>
-  );
+  )
 }
-

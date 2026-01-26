@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams } from "next/navigation"
+import { useParams, useSearchParams } from "next/navigation"
 import { Typography } from "@/components/ui/typography"
 import { DetailsTabs } from "./_components/tabs"
 import { useFetch } from "@/hooks/use-fetch"
@@ -79,9 +79,19 @@ export type AppointmentData = {
 
 export default function Page() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const appointmentId = params.id as string
 
-  const { data: appointment, isLoading, error } = useFetch<AppointmentData>({
+  // Get tab from query parameter and map "chat" to "conversations"
+  const tabParam = searchParams.get("tab")
+  const defaultTab =
+    tabParam === "chat" ? "conversations" : tabParam || "session"
+
+  const {
+    data: appointment,
+    isLoading,
+    error,
+  } = useFetch<AppointmentData>({
     path: appointmentId ? `/api/appointment/${appointmentId}/full` : "",
     queryKey: ["appointment", appointmentId, "full"],
     config: {
@@ -107,7 +117,7 @@ export default function Page() {
           </Typography>
         </div>
       ) : (
-        <DetailsTabs appointment={appointment} />
+        <DetailsTabs appointment={appointment} defaultTab={defaultTab as any} />
       )}
     </main>
   )

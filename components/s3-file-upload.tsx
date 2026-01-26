@@ -104,7 +104,10 @@ function truncateFileName(fileName: string, maxLength: number = 30): string {
   if (fileName.length <= maxLength) return fileName
   const extension = fileName.split(".").pop()
   const nameWithoutExt = fileName.slice(0, fileName.lastIndexOf("."))
-  const truncatedName = nameWithoutExt.slice(0, maxLength - extension!.length - 4) // -4 for "..."
+  const truncatedName = nameWithoutExt.slice(
+    0,
+    maxLength - extension!.length - 4
+  ) // -4 for "..."
   return `${truncatedName}...${extension}`
 }
 

@@ -1,4 +1,4 @@
-import { Typography } from '@/components/ui/typography';
+import { Typography } from "@/components/ui/typography"
 
 type Doctor = {
   professionalExperience: {
@@ -13,7 +13,9 @@ type ProfessionalExperienceProps = {
   doctor: Doctor
 }
 
-export default function ProfessionalExperience({ doctor }: ProfessionalExperienceProps) {
+export default function ProfessionalExperience({
+  doctor,
+}: ProfessionalExperienceProps) {
   if (!doctor.professionalExperience) {
     return (
       <div>
@@ -46,7 +48,9 @@ export default function ProfessionalExperience({ doctor }: ProfessionalExperienc
         </div>
       </div>
       <div className="mt-4">
-        <div className="text-sm text-muted-foreground">Special Interest area</div>
+        <div className="text-sm text-muted-foreground">
+          Special Interest area
+        </div>
         <div className="text-md text-foreground">
           {special_interest_area || "-"}
         </div>

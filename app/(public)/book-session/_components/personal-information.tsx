@@ -89,7 +89,10 @@ const calculateAge = (dateOfBirth: string | null): number | null => {
   const today = new Date()
   let age = today.getFullYear() - birthDate.getFullYear()
   const monthDiff = today.getMonth() - birthDate.getMonth()
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
     age--
   }
   return age
@@ -98,11 +101,13 @@ const calculateAge = (dateOfBirth: string | null): number | null => {
 export default function PersonalInformation({
   onContinue,
   onBack,
-  doctorId = '',
+  doctorId = "",
 }: PersonalInformationProps) {
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(false)
   const [formData, setFormData] = useState<PersonalInfoFormData | null>(null)
-  const [user, setUser] = useState<{ name?: string; email?: string } | null>(null)
+  const [user, setUser] = useState<{ name?: string; email?: string } | null>(
+    null
+  )
   const [isLoadingSession, setIsLoadingSession] = useState(true)
   const [sessionFor, setSessionFor] = useState<string>("")
 
@@ -145,8 +150,8 @@ export default function PersonalInformation({
   }
 
   const { data: doctorData } = useFetch<DoctorData>({
-    path: doctorId ? `/api/doctor/${doctorId}` : '',
-    queryKey: ['doctor', doctorId],
+    path: doctorId ? `/api/doctor/${doctorId}` : "",
+    queryKey: ["doctor", doctorId],
     config: {
       enabled: !!doctorId && !isLoadingSession,
       retry: false,
@@ -221,11 +226,16 @@ export default function PersonalInformation({
             // Pre-fill contact info always (regardless of "me" or "someone else")
             useEffect(() => {
               if (user?.email) methods.setValue("email", user.email)
-              if (userInfoData?.phone) methods.setValue("phone", userInfoData.phone || "")
-              if (userInfoData?.address) methods.setValue("address", userInfoData.address || "")
-              if (userInfoData?.country) methods.setValue("country", userInfoData.country || "")
-              if (userInfoData?.city) methods.setValue("city", userInfoData.city || "")
-              if (userInfoData?.zipCode) methods.setValue("zipCode", userInfoData.zipCode || "")
+              if (userInfoData?.phone)
+                methods.setValue("phone", userInfoData.phone || "")
+              if (userInfoData?.address)
+                methods.setValue("address", userInfoData.address || "")
+              if (userInfoData?.country)
+                methods.setValue("country", userInfoData.country || "")
+              if (userInfoData?.city)
+                methods.setValue("city", userInfoData.city || "")
+              if (userInfoData?.zipCode)
+                methods.setValue("zipCode", userInfoData.zipCode || "")
             }, [user, userInfoData, methods])
 
             // Update form when sessionFor changes
@@ -443,7 +453,7 @@ export default function PersonalInformation({
                     fileType="documents"
                     maxSize={50 * 1024 * 1024} // 50MB
                     placeholder="Upload ID document (PDF, DOC, DOCX, JPG, JPEG, PNG)"
-                      />
+                  />
                 </div>
 
                 {/* Navigation Buttons */}

@@ -1,8 +1,8 @@
-'use client';
+"use client"
 
-import { Suspense } from 'react';
-import { Typography } from '@/components/ui/typography';
-import { Button } from '@/components/ui/button';
+import { Suspense } from "react"
+import { Typography } from "@/components/ui/typography"
+import { Button } from "@/components/ui/button"
 
 function VerifyEmailContent() {
   return (
@@ -14,14 +14,21 @@ function VerifyEmailContent() {
 
         <div className="space-y-1">
           <Typography variant="span" className="text-gray-600 text-center">
-          A verification link has been sent to your email address. Please click on that link to verify your identity to continue using Path Course Health services.
+            A verification link has been sent to your email address. Please
+            click on that link to verify your identity to continue using Path
+            Course Health services.
           </Typography>
         </div>
 
-        <Button variant="link" className=" font-semibold text-primary text-black">Resend Email</Button>
+        <Button
+          variant="link"
+          className=" font-semibold text-primary text-black"
+        >
+          Resend Email
+        </Button>
       </div>
     </div>
-  );
+  )
 }
 
 export default function VerifyEmailPage() {
@@ -29,5 +36,5 @@ export default function VerifyEmailPage() {
     <Suspense fallback={null}>
       <VerifyEmailContent />
     </Suspense>
-  );
+  )
 }

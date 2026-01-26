@@ -43,7 +43,9 @@ function InfoItem({ icon: Icon, label, value }: InfoItemProps) {
       </div>
       <div className="grid min-w-0 gap-0.5">
         <div className="text-xs text-muted-foreground sm:text-sm">{label}</div>
-        <div className="break-words text-sm font-medium sm:text-base">{value}</div>
+        <div className="break-words text-sm font-medium sm:text-base">
+          {value}
+        </div>
       </div>
     </div>
   )
@@ -82,11 +84,17 @@ export default function SessionInfo({ appointment }: SessionInfoProps) {
   return (
     <Card className="w-full bg-background">
       <CardHeader className="px-4 pb-3 sm:px-6 sm:pb-4">
-        <CardTitle className="text-base font-semibold sm:text-lg">Overview</CardTitle>
+        <CardTitle className="text-base font-semibold sm:text-lg">
+          Overview
+        </CardTitle>
       </CardHeader>
       <CardContent className="mb-4 grid gap-4 px-4 pb-4 sm:mb-6 sm:gap-6 sm:px-6 sm:pb-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
-          <InfoItem icon={FileText} label="Session ID:" value={appointment.id} />
+          <InfoItem
+            icon={FileText}
+            label="Session ID:"
+            value={appointment.id}
+          />
           <InfoItem icon={Calendar} label="Date of Session:" value={dateStr} />
           <InfoItem icon={Clock} label="Time of Session:" value={timeStr} />
           <InfoItem
@@ -94,7 +102,10 @@ export default function SessionInfo({ appointment }: SessionInfoProps) {
             label="Status:"
             value={
               <Badge
-                className={statusColors[appointment.status] || "bg-gray-100 text-gray-800"}
+                className={
+                  statusColors[appointment.status] ||
+                  "bg-gray-100 text-gray-800"
+                }
               >
                 {appointment.status.replace("_", " ")}
               </Badge>
@@ -103,7 +114,9 @@ export default function SessionInfo({ appointment }: SessionInfoProps) {
           <InfoItem
             icon={MessageSquare}
             label="Appointment For:"
-            value={appointment.appointmentFor === "self" ? "Self" : "Someone Else"}
+            value={
+              appointment.appointmentFor === "self" ? "Self" : "Someone Else"
+            }
           />
           {appointment.appointmentNotes && (
             <InfoItem
@@ -111,7 +124,9 @@ export default function SessionInfo({ appointment }: SessionInfoProps) {
               label="Doctor Notes:"
               value={
                 <div className="max-w-md">
-                  <p className="text-sm">{appointment.appointmentNotes.notes}</p>
+                  <p className="text-sm">
+                    {appointment.appointmentNotes.notes}
+                  </p>
                 </div>
               }
             />
@@ -137,4 +152,3 @@ export default function SessionInfo({ appointment }: SessionInfoProps) {
     </Card>
   )
 }
-

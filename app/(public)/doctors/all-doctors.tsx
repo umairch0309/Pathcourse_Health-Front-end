@@ -1,29 +1,30 @@
-'use client';
+"use client"
 
-import { ChevronDown, Search } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useMemo, useState } from 'react';
-import { Typography } from '@/components/ui/typography';
-import { doctors } from '@/app/data/doctors';
+import { ChevronDown, Search } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { Suspense, useMemo, useState } from "react"
+import { Typography } from "@/components/ui/typography"
+import { doctors } from "@/app/data/doctors"
 
 function AllDoctorsContent() {
-  const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('search') ?? '';
-  const [searchTerm, setSearchTerm] = useState(initialQuery);
+  const searchParams = useSearchParams()
+  const initialQuery = searchParams.get("search") ?? ""
+  const [searchTerm, setSearchTerm] = useState(initialQuery)
 
   const filteredDoctors = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
+    const q = searchTerm.trim().toLowerCase()
     if (!q) {
-      return doctors;
+      return doctors
     }
-    return doctors.filter(d =>
-      d.name.toLowerCase().includes(q)
-      || d.specialty.toLowerCase().includes(q)
-      || (d.description ?? '').toLowerCase().includes(q),
-    );
-  }, [searchTerm]);
+    return doctors.filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.specialty.toLowerCase().includes(q) ||
+        (d.description ?? "").toLowerCase().includes(q)
+    )
+  }, [searchTerm])
 
   return (
     <section className="py-16 bg-white">
@@ -36,7 +37,7 @@ function AllDoctorsContent() {
               type="text"
               placeholder="Search"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-3 w-full rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
             />
           </div>
@@ -80,28 +81,26 @@ function AllDoctorsContent() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {filteredDoctors.map(doctor => (
+          {filteredDoctors.map((doctor) => (
             <Link href={`/doctors/${doctor.id}`} key={doctor.id}>
-              <div key={doctor.id} className="bg-muted rounded-2xl py-6 px-8 text-center items-center shadow-sm">
+              <div
+                key={doctor.id}
+                className="bg-muted rounded-2xl py-6 px-8 text-center items-center shadow-sm"
+              >
                 {/* Doctor Image with Decorative Border */}
                 <div className="relative mb-6 mx-auto size-50 flex items-center justify-center">
                   {/* Top dot */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex items-center gap-1">
                     <div className="w-2" />
-                    <Image
-                      src="/dot.svg"
-                      alt=""
-                      width={10}
-                      height={10}
-                    />
+                    <Image src="/dot.svg" alt="" width={10} height={10} />
                     <div className="w-2" />
                   </div>
-                  
+
                   {/* Circular border */}
                   <div className="w-full h-full rounded-full border-2 border-secondary/50 p-3">
                     <div className="w-full h-full rounded-full overflow-hidden bg-accent">
                       <Image
-                        src={doctor.image || '/placeholder.svg'}
+                        src={doctor.image || "/placeholder.svg"}
                         alt={doctor.name}
                         width={200}
                         height={200}
@@ -109,53 +108,61 @@ function AllDoctorsContent() {
                       />
                     </div>
                   </div>
-                  
+
                   {/* Bottom dot */}
                   <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 z-10 flex items-center gap-1">
                     <div className="w-2" />
-                    <Image
-                      src="/dot.svg"
-                      alt=""
-                      width={10}
-                      height={10}
-                    />
+                    <Image src="/dot.svg" alt="" width={10} height={10} />
                     <div className="w-2" />
                   </div>
                 </div>
 
-                <Typography as="h3" variant="h4" className="text-center font-bold text-foreground">
+                <Typography
+                  as="h3"
+                  variant="h4"
+                  className="text-center font-bold text-foreground"
+                >
                   {doctor.name}
                 </Typography>
 
-                <Typography variant="p" className="font-semibold text-center text-secondary">
+                <Typography
+                  variant="p"
+                  className="font-semibold text-center text-secondary"
+                >
                   {doctor.specialty}
                 </Typography>
 
-                <Typography variant="span" className="text-foreground text-center">
+                <Typography
+                  variant="span"
+                  className="text-foreground text-center"
+                >
                   {doctor.description}
                 </Typography>
               </div>
             </Link>
           ))}
         </div>
-
       </div>
     </section>
-  );
+  )
 }
 
 export default function AllDoctors() {
   return (
-    <Suspense fallback={
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-4">
-          <div className="text-center">
-            <Typography variant="p" className="text-foreground">Loading...</Typography>
+    <Suspense
+      fallback={
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 mt-4 mb-4">
+            <div className="text-center">
+              <Typography variant="p" className="text-foreground">
+                Loading...
+              </Typography>
+            </div>
           </div>
-        </div>
-      </section>
-    }>
+        </section>
+      }
+    >
       <AllDoctorsContent />
     </Suspense>
-  );
+  )
 }

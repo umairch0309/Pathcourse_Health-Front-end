@@ -1,16 +1,18 @@
-'use client';
-import { MoveUpRight } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
+"use client"
+import { MoveUpRight } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
 
 export default function InfoSection() {
-  const router = useRouter();
+  const router = useRouter()
   return (
     <section className="bg-muted py-8 sm:py-12 lg:py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-start` }>
+        <div
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-start`}
+        >
           {/* Left side - Images */}
           <div className="space-y-4 sm:space-y-6">
             {/* Top image - Medical professional with mask */}
@@ -37,10 +39,16 @@ export default function InfoSection() {
               {/* Purple overlay with experience badge */}
               <div className="absolute inset-0 rounded-xl sm:rounded-2xl flex items-center justify-center sm:ml-16 lg:ml-20">
                 <div className="bg-secondary text-primary-foreground px-4 sm:px-6 py-3 sm:py-4 rounded-lg sm:rounded-xl text-left">
-                  <Typography variant="h2" className="text-2xl sm:text-3xl lg:text-4xl text-background">
+                  <Typography
+                    variant="h2"
+                    className="text-2xl sm:text-3xl lg:text-4xl text-background"
+                  >
                     20
                   </Typography>
-                  <Typography variant="p" className="text-xs sm:text-sm text-background">
+                  <Typography
+                    variant="p"
+                    className="text-xs sm:text-sm text-background"
+                  >
                     Years Experience
                   </Typography>
                 </div>
@@ -49,13 +57,19 @@ export default function InfoSection() {
           </div>
 
           {/* Right side - Content */}
-          <div className={`space-y-6 pt-0` }>
-            <Typography as="h1" variant="h1" className={`text-balance text-3xl lg:text-5xl text-foreground`}>
-            We Are Always <br /> Ensure Best Therapy Treatment
+          <div className={`space-y-6 pt-0`}>
+            <Typography
+              as="h1"
+              variant="h1"
+              className={`text-balance text-3xl lg:text-5xl text-foreground`}
+            >
+              We Are Always <br /> Ensure Best Therapy Treatment
             </Typography>
 
             <Typography variant="span" className="text-lg text-foreground">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam hendrerit metus ex, id ullamcorper massa accumsan volutpat. Etiam viverra pharetra dui, nec aliquet nisi consequat sit amet. 
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam
+              hendrerit metus ex, id ullamcorper massa accumsan volutpat. Etiam
+              viverra pharetra dui, nec aliquet nisi consequat sit amet. 
             </Typography>
 
             {/* Profile images and testimonial */}
@@ -80,18 +94,35 @@ export default function InfoSection() {
 
               {/* Quote */}
               <blockquote className="space-y-3 mt-2">
-                <p className="text-foreground italic leading-relaxed">““Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam hendrerit metus ex, id ullamcorper massa accumsan volutpat. Etiam viverra pharetra dui, nec aliquet nisi consequat sit amet.””</p>
+                <p className="text-foreground italic leading-relaxed">
+                  ““Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  Etiam hendrerit metus ex, id ullamcorper massa accumsan
+                  volutpat. Etiam viverra pharetra dui, nec aliquet nisi
+                  consequat sit amet.””
+                </p>
 
                 {/* Role */}
                 <div className="flex items-center gap-2">
-                 <Image src='/info-vector.svg' alt='info-vector' width={30} height={30} className='w-8 h-8' />
-                  <span className="text-sm font-medium text-primary hover:underline cursor-pointer">Vice Director of Wellness <br /> Hospital</span>
+                  <Image
+                    src="/info-vector.svg"
+                    alt="info-vector"
+                    width={30}
+                    height={30}
+                    className="w-8 h-8"
+                  />
+                  <span className="text-sm font-medium text-primary hover:underline cursor-pointer">
+                    Vice Director of Wellness <br /> Hospital
+                  </span>
                 </div>
               </blockquote>
             </div>
 
-            <Button variant="outline" className="mt-6 border-primary bg-transparent" onClick={() => router.push('/about')}>
-                More About Us
+            <Button
+              variant="outline"
+              className="mt-6 border-primary bg-transparent"
+              onClick={() => router.push("/about")}
+            >
+              More About Us
               <Image
                 src="/MoveUp.svg"
                 alt=""
@@ -104,5 +135,5 @@ export default function InfoSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }

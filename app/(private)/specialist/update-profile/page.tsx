@@ -1,29 +1,38 @@
-'use client';
+"use client"
 
-import { Stepper, StepperIndicator, StepperItem, StepperSeparator, StepperStatusLabel, StepperTitle, StepperTrigger, useStepper } from '@/components/ui/stepper';
-import { Typography } from '@/components/ui/typography';
-import ContactInfo from './_components/contact-info';
-import EducationalInfo from './_components/education-info';
-import GeneralInfo from './_components/general-info';
+import {
+  Stepper,
+  StepperIndicator,
+  StepperItem,
+  StepperSeparator,
+  StepperStatusLabel,
+  StepperTitle,
+  StepperTrigger,
+  useStepper,
+} from "@/components/ui/stepper"
+import { Typography } from "@/components/ui/typography"
+import ContactInfo from "./_components/contact-info"
+import EducationalInfo from "./_components/education-info"
+import GeneralInfo from "./_components/general-info"
 
 const steps = [
-  { id: 0, title: 'Contact info' },
-  { id: 1, title: 'Educational info' },
-  { id: 2, title: 'Professional exp.' },
-];
+  { id: 0, title: "Contact info" },
+  { id: 1, title: "Educational info" },
+  { id: 2, title: "Professional exp." },
+]
 
 function StepContent() {
-  const { activeStep } = useStepper();
+  const { activeStep } = useStepper()
 
   switch (activeStep) {
     case 0:
-      return <ContactInfo />;
+      return <ContactInfo />
     case 1:
-      return <EducationalInfo />;
+      return <EducationalInfo />
     case 2:
-      return <GeneralInfo />;
+      return <GeneralInfo />
     default:
-      return null;
+      return null
   }
 }
 
@@ -63,5 +72,5 @@ export default function UpdateProfile() {
         </Stepper>
       </div>
     </div>
-  );
+  )
 }

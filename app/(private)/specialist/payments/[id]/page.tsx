@@ -1,7 +1,7 @@
-import Image from 'next/image';
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import Image from "next/image"
+import React from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Table,
   TableBody,
@@ -9,13 +9,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Typography } from '@/components/ui/typography';
+} from "@/components/ui/table"
+import { Typography } from "@/components/ui/typography"
 
 export default function InvoiceComponent() {
   return (
     <div className="w-full">
-      <Typography variant="h5" className="font-bold text-foreground mb-2">Payment Invoice</Typography>
+      <Typography variant="h5" className="font-bold text-foreground mb-2">
+        Payment Invoice
+      </Typography>
 
       <div className="flex flex-col lg:flex-row lg:gap-70 bg-background rounded-lg p-4 gap-2">
         <div className="lg:flex-row w-full">
@@ -29,27 +31,31 @@ export default function InvoiceComponent() {
                   <div className="absolute -bottom-20 -left-20 h-36 w-36 rounded-full bg-secondary/40" />
                 </div>
                 <div className="lg:mb-14">
-                  <Image src="/logo-invoice.svg" alt="Logo" width={120} height={120} />
+                  <Image
+                    src="/logo-invoice.svg"
+                    alt="Logo"
+                    width={120}
+                    height={120}
+                  />
                 </div>
 
                 <div className="space-y-2 text-sm">
-                  <div>
-                    Date: 12 Nov, 2023
-                  </div>
-                  <div>
-                    Said By: High Tech User
-                  </div>
-                  <div>
-                    Location: Business address City, State, IN
-                  </div>
+                  <div>Date: 12 Nov, 2023</div>
+                  <div>Said By: High Tech User</div>
+                  <div>Location: Business address City, State, IN</div>
                 </div>
               </CardContent>
             </Card>
-            
-          <div className="bg-muted rounded-lg lg:h-[260px] p-4 lg:w-[350px] w-full">
+
+            <div className="bg-muted rounded-lg lg:h-[260px] p-4 lg:w-[350px] w-full">
               <div className="flex flex-col">
                 <div className="bg-background rounded-lg p-2">
-                  <Typography variant="span" className='text-foreground font-semibold'>Bill To</Typography>
+                  <Typography
+                    variant="span"
+                    className="text-foreground font-semibold"
+                  >
+                    Bill To
+                  </Typography>
                   <div className="text-xs text-foreground leading-relaxed">
                     Parkway Good
                     <br />
@@ -62,7 +68,12 @@ export default function InvoiceComponent() {
                 </div>
 
                 <div className=" rounded-lg p-2">
-                  <Typography variant="span" className='text-foreground font-semibold'>Ship To</Typography>
+                  <Typography
+                    variant="span"
+                    className="text-foreground font-semibold"
+                  >
+                    Ship To
+                  </Typography>
                   <div className="text-xs text-foreground leading-relaxed">
                     Parkway Good
                     <br />
@@ -76,7 +87,6 @@ export default function InvoiceComponent() {
               </div>
             </div>
           </div>
-
 
           <div className="bg-background rounded-lg mb-6 mt-4 overflow-x-auto border-b">
             <Table>
@@ -120,22 +130,32 @@ export default function InvoiceComponent() {
 
           <div className="border-t border-dashed border-muted pt-8">
             <div className="">
-              <Typography variant="p" className="font-bold text-foreground mb-6">Signature</Typography>
+              <Typography
+                variant="p"
+                className="font-bold text-foreground mb-6"
+              >
+                Signature
+              </Typography>
               <div className="text-muted-foreground text-xs">
-                Lorem ipsum dolor sit amet consectetur adipiscing elit Ut et massa mi. Aliquam in hendrerit urna.
-                Pellentesque sit amet sapien fringilla, mattis ligula consectetur, ultrices mauris. Maecenas vitae
-                mattis tellus. Nullam quis imperdiet augue. Vestibulum auctor ornare leo, non suscipit magna interdum eu.
+                Lorem ipsum dolor sit amet consectetur adipiscing elit Ut et
+                massa mi. Aliquam in hendrerit urna. Pellentesque sit amet
+                sapien fringilla, mattis ligula consectetur, ultrices mauris.
+                Maecenas vitae mattis tellus. Nullam quis imperdiet augue.
+                Vestibulum auctor ornare leo, non suscipit magna interdum eu.
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-4 lg:mt-0">
-          <Button variant="default" className="w-full lg:w-auto text-background">
+          <Button
+            variant="default"
+            className="w-full lg:w-auto text-background"
+          >
             Download Invoice
           </Button>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,14 +1,14 @@
-'use client';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
+"use client"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
 
 export default function PaymentSuccess() {
-  const router = useRouter();
+  const router = useRouter()
 
   const handleJoinCall = () => {
-    router.push('/join-session');
-  };
+    router.push("/join-session")
+  }
 
   return (
     <section className="bg-background min-h-screen pt-24 pb-20 px-4 lg:px-8">
@@ -19,7 +19,8 @@ export default function PaymentSuccess() {
             Your payment was successful
           </Typography>
           <Typography variant="p" className="text-foreground text-sm">
-            Your booking has been confirmed. You can now join the video call to start your consultation.
+            Your booking has been confirmed. You can now join the video call to
+            start your consultation.
           </Typography>
         </div>
 
@@ -31,6 +32,5 @@ export default function PaymentSuccess() {
         </div>
       </div>
     </section>
-  );
+  )
 }
-

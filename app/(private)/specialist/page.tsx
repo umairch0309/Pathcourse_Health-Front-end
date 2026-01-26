@@ -11,9 +11,8 @@ export default function SpecialistPage() {
         Dashboard
       </Typography>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-      <Availability />
+        <Availability />
         <TotalSessions />
-
       </div>
 
       <div className="mt-4">
@@ -21,7 +20,7 @@ export default function SpecialistPage() {
       </div>
 
       <div className="mt-4">
-      <Reviews />
+        <Reviews />
       </div>
     </div>
   )

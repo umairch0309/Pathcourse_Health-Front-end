@@ -11,7 +11,10 @@ interface SwitchProps {
 }
 
 const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
-  ({ className, checked = false, onCheckedChange, disabled, ...props }, ref) => {
+  (
+    { className, checked = false, onCheckedChange, disabled, ...props },
+    ref
+  ) => {
     return (
       <button
         type="button"
@@ -30,7 +33,9 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
         <span
           className={cn(
             "pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0 transition-transform",
-            checked ? "bg-secondary translate-x-5" : "bg-background translate-x-0"
+            checked
+              ? "bg-secondary translate-x-5"
+              : "bg-background translate-x-0"
           )}
         />
       </button>
@@ -40,4 +45,3 @@ const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
 Switch.displayName = "Switch"
 
 export { Switch }
-

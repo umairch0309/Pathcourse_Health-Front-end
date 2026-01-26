@@ -1,19 +1,19 @@
-'use client';
+"use client"
 
-import type React from 'react';
-import { usePathname } from 'next/navigation';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import Footer from './footer';
-import Header from './header';
-import { PatientSidebar } from './sidebar';
+import type React from "react"
+import { usePathname } from "next/navigation"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import Footer from "./footer"
+import Header from "./header"
+import { PatientSidebar } from "./sidebar"
 
 export default function DoctorLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const pathname = usePathname();
-  const hideSidebar = pathname === '/doctor/update-profile';
+  const pathname = usePathname()
+  const hideSidebar = pathname === "/doctor/update-profile"
 
   return (
     <div>
@@ -32,5 +32,5 @@ export default function DoctorLayout({
         </SidebarProvider>
       </div>
     </div>
-  );
+  )
 }

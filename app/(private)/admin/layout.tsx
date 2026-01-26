@@ -1,19 +1,19 @@
-'use client';
+"use client"
 
-import type React from 'react';
-import { usePathname } from 'next/navigation';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import Footer from './footer';
-import Header from './header';
-import { AdminSidebar } from './sidebar';
+import type React from "react"
+import { usePathname } from "next/navigation"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import Footer from "./footer"
+import Header from "./header"
+import { AdminSidebar } from "./sidebar"
 
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const pathname = usePathname();
-  const hideSidebar = pathname === '/admin/update-profile';
+  const pathname = usePathname()
+  const hideSidebar = pathname === "/admin/update-profile"
 
   return (
     <div>
@@ -32,6 +32,5 @@ export default function AdminLayout({
         </SidebarProvider>
       </div>
     </div>
-  );
+  )
 }
-

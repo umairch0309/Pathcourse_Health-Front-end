@@ -16,7 +16,13 @@ import {
   useDayPicker,
 } from "react-day-picker"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 
 export type CalendarProps = DayPickerProps & {
@@ -74,7 +80,9 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const [navView, setNavView] = React.useState<NavView>("days")
-  const [currentMonth, setCurrentMonth] = React.useState<Date>(props.defaultMonth || new Date())
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(
+    props.defaultMonth || new Date()
+  )
   const [displayYears, setDisplayYears] = React.useState<{
     from: number
     to: number
@@ -423,10 +431,20 @@ function CaptionLabel({
   setCurrentMonth: React.Dispatch<React.SetStateAction<Date>>
 } & React.HTMLAttributes<HTMLSpanElement>) {
   const { goToMonth } = useDayPicker()
-  
+
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ]
 
   // Generate year range (100 years back and forward from current year)
@@ -434,7 +452,11 @@ function CaptionLabel({
   const years = Array.from({ length: 200 }, (_, i) => currentYear - 100 + i)
 
   const handleMonthChange = (monthIndex: string) => {
-    const newDate = new Date(currentMonth.getFullYear(), parseInt(monthIndex), 1)
+    const newDate = new Date(
+      currentMonth.getFullYear(),
+      parseInt(monthIndex),
+      1
+    )
     if (startMonth && newDate < startMonth) return
     if (endMonth && newDate > endMonth) return
     setCurrentMonth(newDate)
@@ -448,17 +470,17 @@ function CaptionLabel({
     setCurrentMonth(newDate)
     goToMonth(newDate)
   }
-  
+
   // Update currentMonth when calendar navigation changes
   React.useEffect(() => {
     // Parse children to get current month if available
-    if (typeof children === 'string') {
+    if (typeof children === "string") {
       // Try to extract month/year from formatted string
       const dateMatch = children.match(/(\w+)\s+(\d{4})/)
       if (dateMatch) {
         const monthName = dateMatch[1]
         const year = parseInt(dateMatch[2])
-        const monthIndex = monthNames.findIndex(m => m.startsWith(monthName))
+        const monthIndex = monthNames.findIndex((m) => m.startsWith(monthName))
         if (monthIndex !== -1) {
           const newDate = new Date(year, monthIndex, 1)
           if (newDate.getTime() !== currentMonth.getTime()) {
@@ -480,7 +502,9 @@ function CaptionLabel({
         className="h-7 w-full truncate text-sm font-medium"
         variant="ghost"
         size="sm"
-        onClick={() => setNavView((prev) => (prev === "days" ? "years" : "days"))}
+        onClick={() =>
+          setNavView((prev) => (prev === "days" ? "years" : "days"))
+        }
       >
         {`${displayYears.from} - ${displayYears.to}`}
       </Button>

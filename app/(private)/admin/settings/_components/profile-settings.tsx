@@ -136,7 +136,9 @@ export default function ProfileSettings() {
               <Avatar className="size-24 lg:size-30">
                 <AvatarImage
                   src={
-                    previewUrl ?? user?.image ?? "/avatar.svg?height=96&width=96"
+                    previewUrl ??
+                    user?.image ??
+                    "/avatar.svg?height=96&width=96"
                   }
                   alt="Profile photo"
                 />
@@ -273,4 +275,3 @@ export default function ProfileSettings() {
     </>
   )
 }
-

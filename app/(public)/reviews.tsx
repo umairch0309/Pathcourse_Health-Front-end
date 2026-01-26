@@ -1,21 +1,21 @@
-'use client';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Typography } from '@/components/ui/typography';
-import { reviews } from '@/app/data/reviews';
+"use client"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
+import { useState } from "react"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Typography } from "@/components/ui/typography"
+import { reviews } from "@/app/data/reviews"
 
 export default function ReviewsSection() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? reviews.length - 3 : prev - 1));
-  };
+    setCurrentIndex((prev) => (prev === 0 ? reviews.length - 3 : prev - 1))
+  }
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev >= reviews.length - 3 ? 0 : prev + 1));
-  };
+    setCurrentIndex((prev) => (prev >= reviews.length - 3 ? 0 : prev + 1))
+  }
 
   return (
     <section className="bg-background py-12 md:py-16 px-4 md:px-8 lg:px-12">
@@ -72,7 +72,7 @@ export default function ReviewsSection() {
               <div className="flex items-start gap-3 mb-4">
                 {/* Avatar Placeholder */}
                 <div className="size-14 bg-muted-foreground/90 rounded-md flex-shrink-0" />
-                
+
                 {/* Name and Stars */}
                 <div className="flex-1">
                   <Typography
@@ -94,8 +94,6 @@ export default function ReviewsSection() {
                 </div>
               </div>
 
-              
-
               {/* Review Text */}
               <Typography
                 as="span"
@@ -109,6 +107,5 @@ export default function ReviewsSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }
-

@@ -66,7 +66,11 @@ export default function AppointmentInfo({ appointment }: AppointmentInfoProps) {
       </CardHeader>
       <CardContent className="mb-4 grid gap-4 border-b px-4 pb-4 sm:mb-6 sm:gap-6 sm:px-6 sm:pb-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-3">
-          <InfoItem icon={FileText} label="Session ID:" value={appointment.id} />
+          <InfoItem
+            icon={FileText}
+            label="Session ID:"
+            value={appointment.id}
+          />
           <InfoItem
             icon={Calendar}
             label="Date of Session:"

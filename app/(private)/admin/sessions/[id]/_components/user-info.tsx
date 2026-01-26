@@ -50,12 +50,22 @@ export default function UserInfo({ appointment }: UserInfoProps) {
   return (
     <Card className="bg-background w-full">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold">Patient Overview</CardTitle>
+        <CardTitle className="text-lg font-semibold">
+          Patient Overview
+        </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-6 border-b pb-6 mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <InfoItem icon={User} label="Patient name:" value={appointment.patient.name} />
-          <InfoItem icon={User} label="Patient ID:" value={appointment.patient.id} />
+          <InfoItem
+            icon={User}
+            label="Patient name:"
+            value={appointment.patient.name}
+          />
+          <InfoItem
+            icon={User}
+            label="Patient ID:"
+            value={appointment.patient.id}
+          />
           <InfoItem
             icon={Calendar}
             label="Account Created:"
@@ -66,12 +76,20 @@ export default function UserInfo({ appointment }: UserInfoProps) {
             })}
           />
           {appointment.appointmentFor === "self" && appointment.age && (
-            <InfoItem icon={User} label="Age:" value={`${appointment.age} years`} />
+            <InfoItem
+              icon={User}
+              label="Age:"
+              value={`${appointment.age} years`}
+            />
           )}
           {appointment.appointmentFor === "someone else" && (
             <>
               {appointment.patientName && (
-                <InfoItem icon={User} label="Patient Name:" value={appointment.patientName} />
+                <InfoItem
+                  icon={User}
+                  label="Patient Name:"
+                  value={appointment.patientName}
+                />
               )}
               {appointment.patientAge && (
                 <InfoItem
@@ -112,12 +130,19 @@ export default function UserInfo({ appointment }: UserInfoProps) {
       <CardContent className="grid gap-6 pb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {appointment.patient.phone && (
-            <InfoItem icon={Phone} label="Contact no.:" value={appointment.patient.phone} />
+            <InfoItem
+              icon={Phone}
+              label="Contact no.:"
+              value={appointment.patient.phone}
+            />
           )}
-          <InfoItem icon={Mail} label="Contact email:" value={appointment.patient.email} />
+          <InfoItem
+            icon={Mail}
+            label="Contact email:"
+            value={appointment.patient.email}
+          />
         </div>
       </CardContent>
     </Card>
   )
 }
-
