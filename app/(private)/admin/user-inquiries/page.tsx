@@ -2,7 +2,7 @@
 
 import { useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   type ActionMenuItem,
   type Column,
@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/data-table"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 import { DeleteInquiryModal } from "./_components/delete-inquiry-modal"
 
 type UserQuery = {
@@ -95,6 +97,25 @@ export default function UserInquiriesPage() {
   )
   const router = useRouter()
   const queryClient = useQueryClient()
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user?.id) {
+          setUserId(session.data.user.id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      }
+    }
+    fetchSession()
+  }, [])
+
+  // Get user permissions
+  const { hasPermission } = useUserPermissions(userId)
 
   const queriesPath = useMemo(() => {
     const params = new URLSearchParams()
@@ -155,6 +176,7 @@ export default function UserInquiriesPage() {
     })
   }
 
+  // Build actions array based on permissions
   const actions: ActionMenuItem<TableUserQuery>[] = [
     {
       label: "View Details",
@@ -162,13 +184,17 @@ export default function UserInquiriesPage() {
         router.push(`/admin/user-inquiries/${row.id}` as never)
       },
     },
-    {
+  ]
+
+  // Add Delete action only if user has permission
+  if (hasPermission("user_inquiries.delete")) {
+    actions.push({
       label: "Delete",
       onClick: (row) => {
         handleDeleteClick(row)
       },
-    },
-  ]
+    })
+  }
 
   return (
     <div className="w-full">

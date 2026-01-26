@@ -1,3 +1,5 @@
+"use client"
+
 import { Typography } from "@/components/ui/typography"
 import { Inquiries } from "./_components/inquiries"
 import { SessionHistoryTable } from "./_components/session-history"

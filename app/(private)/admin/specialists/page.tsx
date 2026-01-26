@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useFetch } from "@/hooks/use-fetch"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 
 type ApprovedDoctor = {
   id: string
@@ -198,6 +200,25 @@ export default function SpecialistsPage() {
   const [activeTab, setActiveTab] = useState("registered")
   const [filterValues, setFilterValues] = useState<Record<string, string>>({})
   const router = useRouter()
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user?.id) {
+          setUserId(session.data.user.id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      }
+    }
+    fetchSession()
+  }, [])
+
+  // Get user permissions
+  const { hasPermission } = useUserPermissions(userId)
 
   // Fetch approved doctors for Registered tab
   const approvedDoctorsPath = useMemo(() => {
@@ -360,12 +381,14 @@ export default function SpecialistsPage() {
             filterValues={filterValues}
             onFilterChange={handleFilterChange}
             customButton={
-              <Button
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => router.push("/admin/specialists/add")}
-              >
-                Add Specialist
-              </Button>
+              hasPermission("specialists.add") ? (
+                <Button
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={() => router.push("/admin/specialists/add")}
+                >
+                  Add Specialist
+                </Button>
+              ) : undefined
             }
             isLoading={isLoadingApproved}
             pagination={

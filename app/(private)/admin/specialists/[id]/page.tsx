@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Ban, CheckCircle, Unlock } from "lucide-react"
 import Image from "next/image"
 import { useParams } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Loader } from "@/components/loader"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -18,11 +18,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Typography } from "@/components/ui/typography"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 
 type ApprovedDoctor = {
   id: string
@@ -86,6 +87,25 @@ export default function DoctorInfo() {
   const doctorId = params.id as string
   const [blockDialogOpen, setBlockDialogOpen] = useState(false)
   const [banReason, setBanReason] = useState("")
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user?.id) {
+          setUserId(session.data.user.id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      }
+    }
+    fetchSession()
+  }, [])
+
+  // Get user permissions
+  const { hasPermission } = useUserPermissions(userId)
 
   // Fetch all approved doctors to find the specific one
   const {
@@ -174,7 +194,7 @@ export default function DoctorInfo() {
         <Typography variant="h5" className="font-bold text-foreground">
           Specialist Details
         </Typography>
-        {doctor && (
+        {doctor && hasPermission("specialists.block_unblock") && (
           <div className="flex gap-2">
             {doctor.user.banned ? (
               <Button

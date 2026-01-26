@@ -3,13 +3,13 @@
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import {
   type ActionMenuItem,
   type Column,
   DataTable,
   type FilterConfig,
 } from "@/components/ui/data-table"
-import { Badge } from "@/components/ui/badge"
 import { useFetch } from "@/hooks/use-fetch"
 
 type Appointment = {

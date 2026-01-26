@@ -3,7 +3,7 @@
 import { BadgeCheck, ClipboardList } from "lucide-react"
 import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Loader } from "@/components/loader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Typography } from "@/components/ui/typography"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 import ContactInfo from "./_components/contact-info"
 import ProfessionalDocuments from "./_components/documents"
 import EducationInfo from "./_components/education-info"
@@ -82,6 +84,25 @@ export default function DoctorDetails() {
   const doctorId = params.id as string
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState("")
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user?.id) {
+          setUserId(session.data.user.id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      }
+    }
+    fetchSession()
+  }, [])
+
+  // Get user permissions
+  const { hasPermission } = useUserPermissions(userId)
 
   // Fetch all doctor requests to find the specific one
   const { data: doctorRequestsData, isLoading } =
@@ -206,30 +227,32 @@ export default function DoctorDetails() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row lg:flex-row gap-2 w-full sm:w-auto">
-                <Button
-                  className="w-full sm:w-auto"
-                  onClick={handleApprove}
-                  disabled={isApproving || isRejecting}
-                >
-                  {isApproving ? (
-                    <>
-                      <Loader size="sm" color="white" className="mr-2" />
-                      Approving...
-                    </>
-                  ) : (
-                    "Accept Registration"
-                  )}
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="w-full sm:w-auto bg-background border border-destructive text-destructive hover:bg-destructive/10"
-                  onClick={() => setRejectDialogOpen(true)}
-                  disabled={isApproving || isRejecting}
-                >
-                  Reject Request
-                </Button>
-              </div>
+              {hasPermission("specialists.accept_reject") && (
+                <div className="flex flex-col sm:flex-row lg:flex-row gap-2 w-full sm:w-auto">
+                  <Button
+                    className="w-full sm:w-auto"
+                    onClick={handleApprove}
+                    disabled={isApproving || isRejecting}
+                  >
+                    {isApproving ? (
+                      <>
+                        <Loader size="sm" color="white" className="mr-2" />
+                        Approving...
+                      </>
+                    ) : (
+                      "Accept Registration"
+                    )}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="w-full sm:w-auto bg-background border border-destructive text-destructive hover:bg-destructive/10"
+                    onClick={() => setRejectDialogOpen(true)}
+                    disabled={isApproving || isRejecting}
+                  >
+                    Reject Request
+                  </Button>
+                </div>
+              )}
             </div>
             <Tabs defaultValue="contact" className="w-full">
               <TabsList className="flex flex-wrap gap-2">

@@ -3,7 +3,7 @@
 import { format } from "date-fns"
 import { Edit, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   type ActionMenuItem,
@@ -21,6 +21,8 @@ import {
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
 import useToast from "@/hooks/use-toast"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 
 type Enterprise = {
   id: string
@@ -67,11 +69,30 @@ type DeleteEnterpriseRequest = {
 
 export default function EnterprisesPage() {
   const router = useRouter()
-  const { toastSuccess, toastError } = useToast()
+  const { toastError } = useToast()
   const [currentPage, setCurrentPage] = useState(1)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [enterpriseToDelete, setEnterpriseToDelete] =
     useState<Enterprise | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  // Fetch user session
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const session = await auth.getSession()
+        if (session.data?.user?.id) {
+          setUserId(session.data.user.id)
+        }
+      } catch (error) {
+        console.error("Failed to fetch session:", error)
+      }
+    }
+    fetchSession()
+  }, [])
+
+  // Get user permissions
+  const { hasPermission } = useUserPermissions(userId)
 
   const { data, isLoading, error, refetch } = useFetch<EnterpriseResponse>({
     path: `/api/enterprises?page=${currentPage}&limit=10`,
@@ -118,22 +139,28 @@ export default function EnterprisesPage() {
     })
   }
 
-  const actions: ActionMenuItem<Enterprise>[] = [
-    {
+  // Build actions array based on permissions
+  const actions: ActionMenuItem<Enterprise>[] = []
+
+  if (hasPermission("enterprise.update")) {
+    actions.push({
       label: "Edit",
       icon: <Edit className="h-4 w-4" />,
       onClick: (row) => {
         router.push(`/admin/enterprises/${row.id}/edit`)
       },
-    },
-    {
+    })
+  }
+
+  if (hasPermission("enterprise.delete")) {
+    actions.push({
       label: "Delete",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: (row) => {
         handleDelete(row)
       },
-    },
-  ]
+    })
+  }
 
   return (
     <div className="w-full">
@@ -148,12 +175,14 @@ export default function EnterprisesPage() {
         onRetry={() => refetch()}
         title="Enterprises"
         customButton={
-          <Button
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => router.push("/admin/enterprises/add")}
-          >
-            Add Enterprise
-          </Button>
+          hasPermission("enterprise.add") ? (
+            <Button
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => router.push("/admin/enterprises/add")}
+            >
+              Add Enterprise
+            </Button>
+          ) : undefined
         }
         pagination={{
           currentPage,
