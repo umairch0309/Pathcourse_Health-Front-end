@@ -41,8 +41,12 @@ type UnreadCountResponse = {
 
 export default function NotificationsDropdown({
   className = "",
+  userId,
+  userRole,
 }: {
   className?: string
+  userId: string
+  userRole?: string | null
 }) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -141,7 +145,7 @@ export default function NotificationsDropdown({
         className="relative cursor-pointer"
         onClick={() => setDropdownOpen((prev) => !prev)}
       >
-        <Bell className="w-6 h-6 text-foreground" />
+        <Bell className="w-6 h-6 mt-1 text-foreground" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-destructive text-background text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount > 99 ? "99+" : unreadCount}

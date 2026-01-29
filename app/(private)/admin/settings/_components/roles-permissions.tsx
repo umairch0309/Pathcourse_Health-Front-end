@@ -284,29 +284,42 @@ export default function RolesPermissions() {
 
                 <Typography className="font-bold mt-6">Permissions</Typography>
 
-                {Object.entries(permissionGroups).map(([group, slugs]) => (
-                  <div key={group}>
-                    <Typography className="font-medium my-2">
-                      {group}
-                    </Typography>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      {permissions
-                        .filter((p) => Array.from(slugs).includes(p.slug))
-                        .map((p) => (
-                          <div key={p.id} className="flex gap-2">
-                            <Checkbox
-                              checked={selectedPermissions.has(p.id)}
-                              onCheckedChange={() =>
-                                togglePermission(p.id, setSelectedPermissions)
-                              }
-                            />
-                            <span className="text-sm">{p.name}</span>
-                          </div>
-                        ))}
+                {Object.entries(permissionGroups).map(([group, slugs]) => {
+                  let groupSlugs = Array.from(slugs);
+                  // Only add users.view to Users, sessions.view to Sessions
+                  if (group === "Users" && !groupSlugs.includes("users.view") && permissions.some((p) => p.slug === "users.view")) {
+                    groupSlugs.push("users.view");
+                  }
+                  if (group === "Sessions" && !groupSlugs.includes("sessions.view") && permissions.some((p) => p.slug === "sessions.view")) {
+                    groupSlugs.push("sessions.view");
+                  }
+                  // Remove notifications.view_by_permission from Notifications group
+                  if (group === "Notifications") {
+                    groupSlugs = groupSlugs.filter(slug => slug !== "notifications.view_by_permission");
+                  }
+                  return (
+                    <div key={group}>
+                      <Typography className="font-medium my-2">
+                        {group}
+                      </Typography>
+                      <div className="grid grid-cols-2 gap-3">
+                        {permissions
+                          .filter((p) => groupSlugs.includes(p.slug))
+                          .map((p) => (
+                            <div key={p.id} className="flex gap-2">
+                              <Checkbox
+                                checked={selectedPermissions.has(p.id)}
+                                onCheckedChange={() =>
+                                  togglePermission(p.id, setSelectedPermissions)
+                                }
+                              />
+                              <span className="text-sm">{p.name}</span>
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 <DialogFooter className="mt-6">
                   <Button
@@ -332,29 +345,42 @@ export default function RolesPermissions() {
             <DialogTitle>Manage Permissions – {selectedRole?.name}</DialogTitle>
           </DialogHeader>
 
-          {Object.entries(permissionGroups).map(([group, slugs]) => (
-            <div key={group}>
-              <Typography className="font-medium my-2 text-foreground">
-                {group}
-              </Typography>
-
-              <div className="grid grid-cols-2 gap-3">
-                {permissions
-                  .filter((p) => Array.from(slugs).includes(p.slug))
-                  .map((p) => (
-                    <div key={p.id} className="flex gap-2">
-                      <Checkbox
-                        checked={managePermissions.has(p.id)}
-                        onCheckedChange={() =>
-                          togglePermission(p.id, setManagePermissions)
-                        }
-                      />
-                      <span className="text-sm">{p.name}</span>
-                    </div>
-                  ))}
+          {Object.entries(permissionGroups).map(([group, slugs]) => {
+            let groupSlugs = Array.from(slugs);
+            // Only add users.view to Users, sessions.view to Sessions
+            if (group === "Users" && !groupSlugs.includes("users.view") && permissions.some((p) => p.slug === "users.view")) {
+              groupSlugs.push("users.view");
+            }
+            if (group === "Sessions" && !groupSlugs.includes("sessions.view") && permissions.some((p) => p.slug === "sessions.view")) {
+              groupSlugs.push("sessions.view");
+            }
+            // Remove notifications.view_by_permission from Notifications group
+            if (group === "Notifications") {
+              groupSlugs = groupSlugs.filter(slug => slug !== "notifications.view_by_permission");
+            }
+            return (
+              <div key={group}>
+                <Typography className="font-medium my-2 text-foreground">
+                  {group}
+                </Typography>
+                <div className="grid grid-cols-2 gap-3">
+                  {permissions
+                    .filter((p) => groupSlugs.includes(p.slug))
+                    .map((p) => (
+                      <div key={p.id} className="flex gap-2">
+                        <Checkbox
+                          checked={managePermissions.has(p.id)}
+                          onCheckedChange={() =>
+                            togglePermission(p.id, setManagePermissions)
+                          }
+                        />
+                        <span className="text-sm">{p.name}</span>
+                      </div>
+                    ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <DialogFooter className="mt-6">
             <Button

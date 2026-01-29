@@ -15,7 +15,7 @@ import {
 import FormModified from "@/components/ui/form-modified"
 import { Typography } from "@/components/ui/typography"
 import useApi from "@/hooks/use-api"
-import auth from "@/lib/auth"
+import { useFetch } from "@/hooks/use-fetch"
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -33,39 +33,22 @@ type UpdateProfileRequest = {
 export default function ProfileSettings() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [user, setUser] = useState<{
-    id?: string
-    name?: string | null
-    email?: string | null
-    image?: string | null
-    role?: string | null
-  } | null>(null)
-  const [isLoadingSession, setIsLoadingSession] = useState(true)
   const [isEditOpen, setIsEditOpen] = useState(false)
 
   const underlineInputClass =
     "flex h-9 w-full rounded-none border-0 border-b border-border bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:outline-0 focus:border-primary"
 
-  // Fetch user session
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const session = await auth.getSession()
-        if (session.data?.user) {
-          setUser(session.data.user)
-        }
-      } catch (error) {
-        console.error("Failed to fetch session:", error)
-      } finally {
-        setIsLoadingSession(false)
-      }
-    }
-    fetchSession()
-  }, [])
+  // Fetch admin profile
+  const { data: profileData, isLoading: isProfileLoading, refetch: refetchProfile } = useFetch<any>({
+    path: "/api/admin/profile",
+    queryKey: ["admin-profile"]
+  });
+  const user = profileData;
+  const isLoadingSession = isProfileLoading;
 
   const initials = (user?.name || "Admin")
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2)
@@ -106,15 +89,8 @@ export default function ProfileSettings() {
       data: requestData,
       onSuccess: async () => {
         setIsEditOpen(false)
-        // Refresh session to get updated user data
-        try {
-          const session = await auth.getSession()
-          if (session.data?.user) {
-            setUser(session.data.user)
-          }
-        } catch (error) {
-          console.error("Failed to refresh session:", error)
-        }
+        // Refresh profile to get updated user data
+        refetchProfile();
       },
       onError: (error) => {
         console.error("Failed to update profile:", error)
@@ -131,83 +107,95 @@ export default function ProfileSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 lg:space-y-8">
-          <div className="flex justify-center lg:justify-start">
-            <div className="relative">
-              <Avatar className="size-24 lg:size-30">
-                <AvatarImage
-                  src={
-                    previewUrl ??
-                    user?.image ??
-                    "/avatar.svg?height=96&width=96"
-                  }
-                  alt="Profile photo"
-                />
-                <AvatarFallback>{initials}</AvatarFallback>
-              </Avatar>
-              <Button
-                size="sm"
-                variant="default"
-                className="absolute -bottom-1 -right-1 size-10 rounded-full p-0 border-2 border-background"
-                onClick={handlePickImage}
-              >
-                <Camera className="h-5 w-5 text-foreground" />
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleFileChange}
-              />
+          {isLoadingSession ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader />
             </div>
-          </div>
+          ) : user ? (
+            <>
+              <div className="flex justify-center lg:justify-start">
+                <div className="relative">
+                  <Avatar className="size-24 lg:size-30">
+                    <AvatarImage
+                      src={
+                        previewUrl ??
+                        user.image ??
+                        "/avatar.svg?height=96&width=96"
+                      }
+                      alt="Profile photo"
+                    />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="absolute -bottom-1 -right-1 size-10 rounded-full p-0 border-2 border-background"
+                    onClick={handlePickImage}
+                  >
+                    <Camera className="h-5 w-5 text-foreground" />
+                  </Button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </div>
 
-          <div>
-            <div className="mb-4 lg:mb-6 font-semibold text-foreground">
-              General Info
-            </div>
-
-            <div className="block lg:hidden space-y-4">
               <div>
-                <div className="text-foreground mb-2">Name</div>
-                <div className="text-muted-foreground border-b pb-2">
-                  {user?.name || "—"}
+                <div className="mb-4 lg:mb-6 font-semibold text-foreground">
+                  General Info
                 </div>
-              </div>
-              <div>
-                <div className="text-foreground mb-2">Email</div>
-                <div className="text-muted-foreground border-b pb-2">
-                  {user?.email || "—"}
-                </div>
-              </div>
-            </div>
 
-            <div className="hidden lg:grid grid-cols-2">
-              <div className="space-y-6">
-                <div className="text-foreground border-b p-2 font-medium text-sm">
-                  Name
+                <div className="block lg:hidden space-y-4">
+                  <div>
+                    <div className="text-foreground mb-2">Name</div>
+                    <div className="text-muted-foreground border-b pb-2">
+                      {user.name || "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-foreground mb-2">Email</div>
+                    <div className="text-muted-foreground border-b pb-2">
+                      {user.email || "—"}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-foreground border-b p-2 font-medium text-sm">
-                  Email
-                </div>
-              </div>
-              <div className="space-y-6">
-                <div className="border-b p-2 text-sm">{user?.name || "—"}</div>
-                <div className="border-b p-2 text-sm">{user?.email || "—"}</div>
-              </div>
-            </div>
-          </div>
 
-          <div className="flex justify-center lg:justify-end pt-4">
-            <Button
-              className="w-full lg:w-auto"
-              onClick={() => setIsEditOpen(true)}
-              disabled={isLoadingSession}
-            >
-              Edit Profile
-            </Button>
-          </div>
+                <div className="hidden lg:grid grid-cols-2">
+                  <div className="space-y-6">
+                    <div className="text-foreground border-b p-2 font-medium text-sm">
+                      Name
+                    </div>
+                    <div className="text-foreground border-b p-2 font-medium text-sm">
+                      Email
+                    </div>
+                  </div>
+                  <div className="space-y-6">
+                    <div className="border-b p-2 text-sm">{user.name || "—"}</div>
+                    <div className="border-b p-2 text-sm">{user.email || "—"}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-center lg:justify-end pt-4">
+                <Button
+                  className="w-full lg:w-auto"
+                  onClick={() => setIsEditOpen(true)}
+                  disabled={isLoadingSession}
+                >
+                  Edit Profile
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-center items-center py-12">
+              <Typography variant="h6">Profile not found.</Typography>
+            </div>
+          )}
         </CardContent>
       </Card>
 

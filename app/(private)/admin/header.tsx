@@ -10,11 +10,13 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import useToast from "@/hooks/use-toast"
 import auth from "@/lib/auth"
 import NotificationsDropdown from "./notification-dropdown"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
 
 type AuthUser = {
   id?: string
   name?: string | null
   email?: string | null
+  role?: string | null
 }
 
 export default function Header() {
@@ -69,6 +71,12 @@ export default function Header() {
     }
   }
 
+  // Get permissions for current user (team member)
+  const userId = user?.id || null;
+  const userRole = user?.role || null;
+  const { permissions } = useUserPermissions(userId, userRole);
+  const canViewAllNotifications = permissions.includes("notifications.view_all") || permissions.includes("*");
+
   return (
     <header className="w-full flex justify-between items-center px-4 py-2 bg-background border-b shadow-sm h-[60px] shrink-0 fixed top-0 left-0 right-0 z-50">
       <div className="flex items-center gap-3">
@@ -85,7 +93,9 @@ export default function Header() {
       </div>
       <div className="flex items-center gap-4 relative" ref={dropdownRef}>
         <Search className="w-6 h-6 text-foreground cursor-pointer" />
-        <NotificationsDropdown />
+        {canViewAllNotifications && userId && (
+          <NotificationsDropdown userId={userId} userRole={userRole} />
+        )}
 
         <div className="relative">
           <User

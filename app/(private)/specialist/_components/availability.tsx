@@ -35,7 +35,7 @@ export default function Availability() {
   const [isToggling, setIsToggling] = useState(false)
   const isPageVisibleRef = useRef(true) // Track page visibility
 
-  // Fetch current doctor data
+  
   const {
     data: doctorData,
     isLoading,
@@ -47,7 +47,7 @@ export default function Availability() {
 
   const isAvailable = doctorData?.isAvailable ?? false
 
-  // Toggle availability API
+  
   const { onRequest: toggleAvailability } = useApi<Record<string, never>>({
     key: "toggle-availability",
     showSuccessToast: true,
@@ -55,12 +55,12 @@ export default function Availability() {
     method: "post",
   })
 
-  // Generate a unique connection ID
+  
   const generateConnectionId = useCallback(() => {
     return `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }, [])
 
-  // Stop heartbeat
+  
   const stopHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current)
@@ -69,7 +69,7 @@ export default function Availability() {
     connectionIdRef.current = null
   }, [])
 
-  // Send heartbeat to backend
+  
   const sendHeartbeat = useCallback(async () => {
     if (!isAvailable) return
 
@@ -94,33 +94,25 @@ export default function Availability() {
       console.log(`Heartbeat sent at ${new Date().toISOString()}`)
     } catch (error) {
       console.error("Heartbeat failed:", error)
-      // Stop heartbeat on failure
       stopHeartbeat()
-      // Notify parent that availability should be set to false by refetching
-      // The backend should have already set isAvailable to false
       refetch()
     }
   }, [isAvailable, generateConnectionId, stopHeartbeat, refetch])
 
-  // Start heartbeat when available - MORE AGGRESSIVE TIMING
+  
   const startHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
       return // Already running
     }
 
-    // Send initial heartbeat immediately
     sendHeartbeat()
-
-    // CRITICAL FIX: Send heartbeats every 5 seconds instead of 10
-    // This ensures we always beat the 40-second stale threshold even with delays
     heartbeatIntervalRef.current = setInterval(() => {
       sendHeartbeat()
-    }, 5000) // Changed from 10000 to 5000 (5 seconds)
-
+    }, 5000)
     console.log("Heartbeat started - sending every 5 seconds")
   }, [sendHeartbeat])
 
-  // Handle availability toggle
+  
   const handleToggle = (checked: boolean) => {
     setIsToggling(true)
     toggleAvailability({
@@ -128,9 +120,7 @@ export default function Availability() {
       data: {} as Record<string, never>,
       onSuccess: () => {
         setIsToggling(false)
-        // Refetch doctor data to sync UI with server state
         refetch()
-        // Start heartbeat if becoming available
         if (checked) {
           startHeartbeat()
         } else {
@@ -143,7 +133,7 @@ export default function Availability() {
     })
   }
 
-  // Start heartbeat when component mounts and doctor is available
+  
   useEffect(() => {
     if (isAvailable && !isLoading) {
       startHeartbeat()
@@ -156,23 +146,18 @@ export default function Availability() {
     }
   }, [isAvailable, isLoading, startHeartbeat, stopHeartbeat])
 
-  // IMPROVED: Handle page visibility changes
+  
   useEffect(() => {
     const handleVisibilityChange = () => {
       isPageVisibleRef.current = !document.hidden
 
       if (document.hidden) {
         console.log("Page hidden - heartbeat continues in background")
-        // CRITICAL: Keep heartbeat running even when page is hidden
-        // The browser may throttle setInterval, but it will still run
-        // Our 5-second interval gives us plenty of buffer
       } else {
         console.log("Page visible - ensuring heartbeat is active")
-        // Page is visible again, ensure heartbeat is running if available
         if (isAvailable && !isLoading && !heartbeatIntervalRef.current) {
           startHeartbeat()
         }
-        // Send immediate heartbeat when page becomes visible to sync quickly
         if (isAvailable && !isLoading) {
           sendHeartbeat()
         }
@@ -186,11 +171,9 @@ export default function Availability() {
     }
   }, [isAvailable, isLoading, startHeartbeat, sendHeartbeat])
 
-  // Handle page unload - DON'T send disconnect, let timeout handle it
+  
   useEffect(() => {
     const handleBeforeUnload = () => {
-      // Just stop the heartbeat
-      // Don't send disconnect - backend will handle it via timeout
       stopHeartbeat()
     }
 
