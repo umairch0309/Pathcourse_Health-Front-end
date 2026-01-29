@@ -47,6 +47,16 @@ export type FilterConfig = {
   key: string
   options: FilterOption[]
   placeholder?: string
+  /**
+   * Optional custom predicate for non-string / non-direct-key filters
+   * (e.g. ranges, nested values, enums).
+   */
+  filterFn?: (row: any, value: string) => boolean
+  /**
+   * Mark non-filter dropdowns (like "Sort by") so DataTable doesn't
+   * treat their values as row filters.
+   */
+  type?: "filter" | "sort"
 }
 
 export type ActionMenuItem<T = unknown> = {
@@ -81,7 +91,7 @@ export type DataTableProps<T> = {
   onRetry?: () => void
 }
 
-export function DataTable<T extends Record<string, unknown>>({
+export function DataTable<T extends object>({
   data,
   columns,
   filters = [],
@@ -126,7 +136,7 @@ export function DataTable<T extends Record<string, unknown>>({
             const value = col.accessor(row)
             return String(value).toLowerCase()
           }
-          return String(row[col.key] || "").toLowerCase()
+          return String((row as any)?.[col.key] || "").toLowerCase()
         })
         .join(" ")
       if (!searchableText.includes(searchQuery.toLowerCase())) {
@@ -134,13 +144,20 @@ export function DataTable<T extends Record<string, unknown>>({
       }
     }
 
-    // Custom filters
-    for (const [key, value] of Object.entries(filterValues)) {
-      if (value && value !== "all") {
-        const rowValue = String(row[key] || "").toLowerCase()
-        if (!rowValue.includes(value.toLowerCase())) {
-          return false
-        }
+    // Custom filters (only apply filters that are configured)
+    for (const filter of filters) {
+      if (filter.type === "sort") continue
+      const value = filterValues[filter.key]
+      if (!value || value === "all") continue
+
+      if (filter.filterFn) {
+        if (!filter.filterFn(row, value)) return false
+        continue
+      }
+
+      const rowValue = String((row as any)?.[filter.key] ?? "").toLowerCase()
+      if (!rowValue.includes(value.toLowerCase())) {
+        return false
       }
     }
 
@@ -160,7 +177,7 @@ export function DataTable<T extends Record<string, unknown>>({
       return column.accessor(row)
     }
 
-    return row[column.key]
+    return (row as any)?.[column.key]
   }
 
   return (
@@ -200,29 +217,33 @@ export function DataTable<T extends Record<string, unknown>>({
           <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
             {!hideFilters && filters.length > 0 && (
               <>
-                {filters.map((filter) => (
-                  <Select
-                    key={filter.key}
-                    value={filterValues[filter.key] || undefined}
-                    onValueChange={(value) =>
-                      handleFilterChange(filter.key, value)
-                    }
-                  >
-                    <SelectTrigger className="w-full lg:w-[160px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
-                      <SelectValue
-                        placeholder={filter.placeholder || filter.label}
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All</SelectItem>
-                      {filter.options.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ))}
+                {filters.map((filter) => {
+                  const selectedValue = filterValues[filter.key]
+                  const selectedOption = filter.options.find(
+                    (opt) => opt.value === selectedValue
+                  )
+
+                  return (
+                    <Select
+                      key={filter.key}
+                      value={selectedValue || undefined}
+                      onValueChange={(value) =>
+                        handleFilterChange(filter.key, value)
+                      }
+                    >
+                      <SelectTrigger className="w-full lg:w-[160px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
+                        <SelectValue placeholder={filter.placeholder || filter.label} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filter.options.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
+                })}
               </>
             )}
             {/* Custom Button on Mobile (when no title prop) */}
@@ -346,17 +367,32 @@ export function DataTable<T extends Record<string, unknown>>({
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            {actions.map((action, actionIndex) => (
-                              <DropdownMenuItem
-                                key={`${action.label}-${actionIndex}`}
-                                onClick={() => action.onClick(row, index)}
-                              >
-                                {action.icon && (
-                                  <span className="mr-2">{action.icon}</span>
-                                )}
-                                {action.label}
-                              </DropdownMenuItem>
-                            ))}
+                            {actions.map((action, actionIndex) => {
+                              // Filter Block/Unblock actions based on banned status
+                              const isBanRelatedAction =
+                                action.label === "Block" || action.label === "Unblock"
+                              if (isBanRelatedAction) {
+                                const rowBanned = (row as any).banned
+                                if (action.label === "Block" && rowBanned) {
+                                  return null // Hide Block if user is already banned
+                                }
+                                if (action.label === "Unblock" && !rowBanned) {
+                                  return null // Hide Unblock if user is not banned
+                                }
+                              }
+
+                              return (
+                                <DropdownMenuItem
+                                  key={`${action.label}-${actionIndex}`}
+                                  onClick={() => action.onClick(row, index)}
+                                >
+                                  {action.icon && (
+                                    <span className="mr-2">{action.icon}</span>
+                                  )}
+                                  {action.label}
+                                </DropdownMenuItem>
+                              )
+                            })}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

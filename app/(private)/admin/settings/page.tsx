@@ -3,26 +3,27 @@
 import { ArrowLeft, Shield } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Typography } from "@/components/ui/typography"
-import { cn } from "@/lib/utils"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs-modified"
+import { Typography } from "@/components/ui/typography"
+import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
+import { cn } from "@/lib/utils"
 import { ChangePassword } from "./_components/change-password"
 import ProfileSettings from "./_components/profile-settings"
 import RolesPermissions from "./_components/roles-permissions"
-import { useUserPermissions } from "@/hooks/use-user-permissions"
-import auth from "@/lib/auth"
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile")
   const [showTabContent, setShowTabContent] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
-  const { permissions } = useUserPermissions(userId)
+  const { permissions } = useUserPermissions(userId, userRole)
 
   // Check if user is main admin (has "*" permission)
   const isMainAdmin = permissions.includes("*")
@@ -34,6 +35,7 @@ export default function SettingsPage() {
         const session = await auth.getSession()
         if (session.data?.user?.id) {
           setUserId(session.data.user.id)
+          setUserRole(session.data.user.role || null)
         }
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -106,7 +108,6 @@ export default function SettingsPage() {
                   className="w-full justify-start data-[state=active]:border-b data-[state=active]:border-muted-foreground"
                   onClick={() => handleTabClick("roles")}
                 >
-                  <Shield className="h-4 w-4 mr-2" />
                   Roles and Permissions
                 </TabsTrigger>
               )}

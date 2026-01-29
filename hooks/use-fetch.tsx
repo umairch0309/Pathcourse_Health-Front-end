@@ -17,7 +17,7 @@ type IUseFetch<T> = {
   config?: Omit<UseQueryOptions<T, Error>, "queryKey" | "queryFn">
 }
 
-export function useFetch<T>({ path, queryKey, ...config }: IUseFetch<T>) {
+export function useFetch<T>({ path, queryKey, config }: IUseFetch<T>) {
   const auth = { token: "" }
   if (!queryKey) {
     throw new Error("queryKey is required")
@@ -57,7 +57,7 @@ export function useFetch<T>({ path, queryKey, ...config }: IUseFetch<T>) {
     queryKey,
     queryFn: fetchData,
     refetchOnWindowFocus: false,
-    ...config,
+    ...(config ?? {}),
   })
 
   return query

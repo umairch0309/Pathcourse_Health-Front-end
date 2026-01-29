@@ -44,3 +44,53 @@ export const PERMISSION_GROUPS = {
 
 export type PermissionSlug = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
 
+function titleCaseFromSlugPrefix(prefix: string) {
+  return prefix
+    .replace(/[_-]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/**
+ * Build groups for UI.
+ *
+ * - Uses `PERMISSION_GROUPS` for known/core groups (in that order)
+ * - Auto-adds any ungrouped permissions into dynamic groups based on slug prefix
+ *   e.g. `notifications.view_all` -> "Notifications"
+ */
+export function buildPermissionGroups(permissionSlugs: string[]) {
+  const allSlugs = Array.from(new Set(permissionSlugs))
+  const available = new Set(allSlugs)
+  const grouped = new Set<string>()
+
+  const result: Record<string, string[]> = {}
+
+  // Known groups first (preserve insertion order)
+  for (const [groupName, groupSlugs] of Object.entries(PERMISSION_GROUPS)) {
+    const slugs = (Array.from(groupSlugs) as string[]).filter((s) =>
+      available.has(s)
+    )
+    if (slugs.length > 0) {
+      result[groupName] = slugs
+      slugs.forEach((s) => grouped.add(s))
+    }
+  }
+
+  // Dynamic groups for any new/unknown permissions
+  const dynamic: Record<string, string[]> = {}
+  for (const slug of allSlugs) {
+    if (grouped.has(slug)) continue
+    const prefix = slug.split(".")[0] || "other"
+    const groupName = titleCaseFromSlugPrefix(prefix)
+    if (!dynamic[groupName]) dynamic[groupName] = []
+    dynamic[groupName].push(slug)
+  }
+
+  for (const [groupName, slugs] of Object.entries(dynamic).sort((a, b) =>
+    a[0].localeCompare(b[0])
+  )) {
+    result[groupName] = slugs.sort((a, b) => a.localeCompare(b))
+  }
+
+  return result
+}
+

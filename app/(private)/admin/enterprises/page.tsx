@@ -9,6 +9,7 @@ import {
   type ActionMenuItem,
   type Column,
   DataTable,
+  type FilterConfig,
 } from "@/components/ui/data-table"
 import {
   Dialog,
@@ -63,6 +64,41 @@ const columns: Column<Enterprise>[] = [
   },
 ]
 
+const filters: FilterConfig[] = [
+  {
+    label: "Sort by",
+    key: "sort",
+    type: "sort",
+    options: [
+      { label: "Date (Newest)", value: "date-newest" },
+      { label: "Date (Oldest)", value: "date-oldest" },
+      { label: "Name (A-Z)", value: "name-asc" },
+      { label: "Name (Z-A)", value: "name-desc" },
+    ],
+  },
+  {
+    label: "Sessions/Month",
+    key: "sessions",
+    filterFn: (row, value) => {
+      // row is Enterprise
+      const sessions = Number((row as Enterprise).sessionsPerMonth ?? 0)
+      if (value === "all") return true
+      if (value === "0-10") return sessions >= 0 && sessions <= 10
+      if (value === "11-50") return sessions >= 11 && sessions <= 50
+      if (value === "51-100") return sessions >= 51 && sessions <= 100
+      if (value === "100+") return sessions > 100
+      return true
+    },
+    options: [
+      { label: "All", value: "all" },
+      { label: "0-10", value: "0-10" },
+      { label: "11-50", value: "11-50" },
+      { label: "51-100", value: "51-100" },
+      { label: "100+", value: "100+" },
+    ],
+  },
+]
+
 type DeleteEnterpriseRequest = {
   id: string
 }
@@ -75,6 +111,10 @@ export default function EnterprisesPage() {
   const [enterpriseToDelete, setEnterpriseToDelete] =
     useState<Enterprise | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({
+    sort: "date-newest",
+    sessions: "all",
+  })
 
   // Fetch user session
   useEffect(() => {
@@ -107,7 +147,41 @@ export default function EnterprisesPage() {
       method: "delete",
     })
 
-  const enterprises = data?.enterprises || []
+  const filteredEnterprises = (data?.enterprises || [])
+    .filter((enterprise) => {
+      if (filterValues.sessions !== "all") {
+        const sessions = enterprise.sessionsPerMonth
+        const range = filterValues.sessions
+
+        if (range === "0-10" && sessions > 10) return false
+        if (range === "11-50" && (sessions < 11 || sessions > 50)) return false
+        if (range === "51-100" && (sessions < 51 || sessions > 100))
+          return false
+        if (range === "100+" && sessions <= 100) return false
+      }
+
+      return true
+    })
+    .sort((a, b) => {
+      const sort = filterValues.sort
+
+      if (sort === "date-newest") {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }
+      if (sort === "date-oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      }
+      if (sort === "name-asc") {
+        return a.name.localeCompare(b.name)
+      }
+      if (sort === "name-desc") {
+        return b.name.localeCompare(a.name)
+      }
+
+      return 0
+    })
+
+  const enterprises = filteredEnterprises
   const totalPages = data?.pagination?.totalPages || 1
 
   const handleDelete = (enterprise: Enterprise) => {
@@ -162,11 +236,22 @@ export default function EnterprisesPage() {
     })
   }
 
+  const handleFilterChange = (key: string, value: string) => {
+    setFilterValues((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
+    setCurrentPage(1) // Reset to first page when filter changes
+  }
+
   return (
     <div className="w-full">
       <DataTable
         data={enterprises}
         columns={columns}
+        filters={filters}
+        filterValues={filterValues}
+        onFilterChange={handleFilterChange}
         actions={actions}
         searchPlaceholder="Search enterprises..."
         showAllButton={false}

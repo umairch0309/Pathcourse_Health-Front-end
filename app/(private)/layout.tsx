@@ -120,7 +120,8 @@ export default async function ProtectedLayout({
     const isDoctorRoute = pathname.startsWith("/specialist")
     const isPatientRoute = pathname.startsWith("/patient")
 
-    if (isAdminRoute && user.role !== "admin") {
+    // Allow both main admins and team admins to access admin routes
+    if (isAdminRoute && user.role !== "admin" && user.role !== "team_admin") {
       console.log(
         `Non-admin user accessing admin route, redirecting to appropriate dashboard`
       )
@@ -129,7 +130,9 @@ export default async function ProtectedLayout({
           ? "/specialist"
           : user.role === "patient"
             ? "/patient"
-            : "/"
+            : user.role === "admin" || user.role === "team_admin"
+              ? "/admin"
+              : "/"
       redirect(userDashboard)
     }
 
@@ -138,7 +141,7 @@ export default async function ProtectedLayout({
         `Non-doctor user accessing doctor route, redirecting to appropriate dashboard`
       )
       const userDashboard =
-        user.role === "admin"
+        user.role === "admin" || user.role === "team_admin"
           ? "/admin"
           : user.role === "patient"
             ? "/patient"
@@ -151,7 +154,7 @@ export default async function ProtectedLayout({
         `Non-patient user accessing patient route, redirecting to appropriate dashboard`
       )
       const userDashboard =
-        user.role === "admin"
+        user.role === "admin" || user.role === "team_admin"
           ? "/admin"
           : user.role === "doctor"
             ? "/specialist"

@@ -85,6 +85,7 @@ export default function DoctorDetails() {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [rejectReason, setRejectReason] = useState("")
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   // Fetch user session
   useEffect(() => {
@@ -93,6 +94,7 @@ export default function DoctorDetails() {
         const session = await auth.getSession()
         if (session.data?.user?.id) {
           setUserId(session.data.user.id)
+          setUserRole(session.data.user.role || null)
         }
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -102,7 +104,7 @@ export default function DoctorDetails() {
   }, [])
 
   // Get user permissions
-  const { hasPermission } = useUserPermissions(userId)
+  const { hasPermission } = useUserPermissions(userId, userRole)
 
   // Fetch all doctor requests to find the specific one
   const { data: doctorRequestsData, isLoading } =

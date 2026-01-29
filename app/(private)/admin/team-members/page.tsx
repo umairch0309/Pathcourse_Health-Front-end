@@ -1,9 +1,11 @@
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: <explanation> */
 "use client"
 
 import { format } from "date-fns"
-import { Edit, Plus, Trash2, User } from "lucide-react"
+import { Check, Edit, Loader2, Plus, Trash2, User } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,9 +21,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useFetch } from "@/hooks/use-fetch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import useApi from "@/hooks/use-api"
+import { useFetch } from "@/hooks/use-fetch"
 import useToast from "@/hooks/use-toast"
+
+/* ================= TYPES ================= */
 
 interface Permission {
   id: string
@@ -33,7 +44,6 @@ interface Role {
   id: string
   name: string
   description: string | null
-  permissions: Permission[]
 }
 
 interface TeamMember {
@@ -44,17 +54,20 @@ interface TeamMember {
     name: string
     email: string
     image: string | null
-    role: string | null
-    createdAt: string
   }
   role: Role
   createdAt: string
-  updatedAt: string
 }
 
 interface TeamMembersResponse {
   teamMembers: TeamMember[]
 }
+
+interface RolesResponse {
+  roles: Role[]
+}
+
+/* ================= TABLE ================= */
 
 const columns: Column<TeamMember>[] = [
   {
@@ -63,7 +76,7 @@ const columns: Column<TeamMember>[] = [
     render: (row) => (
       <div className="flex items-center gap-3">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={row.user.image || undefined} alt={row.user.name} />
+          <AvatarImage src={row.user.image || undefined} />
           <AvatarFallback>
             <User className="h-4 w-4" />
           </AvatarFallback>
@@ -81,130 +94,203 @@ const columns: Column<TeamMember>[] = [
     render: (row) => row.role.name,
   },
   {
-    key: "permissions",
-    header: "Permissions",
-    render: (row) => `${row.role.permissions.length} permission(s)`,
-  },
-  {
     key: "createdAt",
     header: "Added On",
     render: (row) => format(new Date(row.createdAt), "MMM dd, yyyy"),
   },
 ]
 
-type DeleteTeamMemberRequest = {
-  userId: string
-}
+/* ================= PAGE ================= */
 
 export default function TeamMembersPage() {
   const router = useRouter()
-  const { toastSuccess, toastError } = useToast()
+  const { toastError } = useToast()
+
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [changeRoleOpen, setChangeRoleOpen] = useState(false)
+
   const [memberToDelete, setMemberToDelete] = useState<TeamMember | null>(null)
+  const [memberToEdit, setMemberToEdit] = useState<TeamMember | null>(null)
+  const [selectedRoleId, setSelectedRoleId] = useState("")
 
-  const { data, isLoading, error, refetch } =
-    useFetch<TeamMembersResponse>({
-      path: "/api/admin/team-members",
-      queryKey: ["admin-team-members"],
-    })
+  const { data, isLoading, error, refetch } = useFetch<TeamMembersResponse>({
+    path: "/api/admin/team-members",
+    queryKey: ["admin-team-members"],
+  })
 
-  const { onRequest: deleteTeamMember, isPending: isDeleting } =
-    useApi<DeleteTeamMemberRequest>({
-      key: "delete-team-member",
-      showSuccessToast: true,
-      showErrorToast: true,
-      method: "delete",
-    })
+  const { data: rolesData } = useFetch<RolesResponse>({
+    path: "/api/admin/roles",
+    queryKey: ["admin-roles"],
+  })
 
-  const teamMembers = data?.teamMembers || []
+  const { onRequest: deleteTeamMember, isPending: isDeleting } = useApi({
+    key: "delete-team-member",
+    method: "delete",
+    showSuccessToast: true,
+    showErrorToast: true,
+  })
 
-  const handleDelete = (member: TeamMember) => {
-    setMemberToDelete(member)
-    setDeleteDialogOpen(true)
-  }
+  const { onRequest: updateRole, isPending: isSavingRole } = useApi<{
+    roleId: string
+  }>({
+    key: "update-team-member-role",
+    method: "patch",
+    showSuccessToast: true,
+    showErrorToast: true,
+  })
 
-  const confirmDelete = () => {
-    if (!memberToDelete) return
-
-    deleteTeamMember({
-      data: {} as DeleteTeamMemberRequest,
-      path: `/api/admin/team-members/${memberToDelete.userId}`,
-      onSuccess: () => {
-        setDeleteDialogOpen(false)
-        setMemberToDelete(null)
-        refetch()
-      },
-      onError: (error: unknown) => {
-        const axiosError = error as {
-          response?: { status?: number; data?: { message?: string } }
-        }
-        if (axiosError?.response?.status === 404) {
-          toastError("Team member not found")
-        } else {
-          toastError("Failed to remove team member. Please try again.")
-        }
-      },
-    })
-  }
+  useEffect(() => {
+    if (memberToEdit) {
+      setSelectedRoleId(memberToEdit.role.id)
+    }
+  }, [memberToEdit])
 
   const actions: ActionMenuItem<TeamMember>[] = [
     {
       label: "Change Role",
       icon: <Edit className="h-4 w-4" />,
       onClick: (row) => {
-        router.push(`/admin/team-members/${row.userId}/role`)
+        setMemberToEdit(row)
+        setChangeRoleOpen(true)
       },
     },
     {
       label: "Remove",
       icon: <Trash2 className="h-4 w-4" />,
       onClick: (row) => {
-        handleDelete(row)
+        setMemberToDelete(row)
+        setDeleteDialogOpen(true)
       },
     },
   ]
 
+  const handleRoleUpdate = () => {
+    if (!memberToEdit || !selectedRoleId) {
+      toastError("Please select a role")
+      return
+    }
+
+    updateRole({
+      path: `/api/admin/team-members/${memberToEdit.userId}/role`,
+      data: { roleId: selectedRoleId },
+      onSuccess: () => {
+        setChangeRoleOpen(false)
+        setMemberToEdit(null)
+        refetch()
+      },
+    })
+  }
+
+  const confirmDelete = () => {
+    if (!memberToDelete) return
+
+    deleteTeamMember({
+      path: `/api/admin/team-members/${memberToDelete.userId}`,
+      data: "" as string,
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        setMemberToDelete(null)
+        refetch()
+      },
+    })
+  }
+
   return (
     <div className="w-full">
       <DataTable
-        data={teamMembers}
+        title="Team Members"
+        data={data?.teamMembers || []}
         columns={columns}
         actions={actions}
-        searchPlaceholder="Search team members..."
-        showAllButton={false}
         isLoading={isLoading}
         error={error}
-        onRetry={() => refetch()}
-        title="Team Members"
+        onRetry={refetch}
+        showAllButton={false}
+        searchPlaceholder="Search team members..."
         customButton={
-          <Button
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => router.push("/admin/team-members/add")}
-          >
+          <Button onClick={() => router.push("/admin/team-members/add")}>
             <Plus className="h-4 w-4 mr-2" />
             Add Team Member
           </Button>
         }
       />
 
+      {/* ================= CHANGE ROLE MODAL ================= */}
+      <Dialog open={changeRoleOpen} onOpenChange={setChangeRoleOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Role</DialogTitle>
+            <DialogDescription>
+              Update role for{" "}
+              <span className="font-medium">{memberToEdit?.user.name}</span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Current Role</p>
+              <p className="text-sm">{memberToEdit?.role.name}</p>
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-2 block">
+                Select New Role
+              </label>
+              <Select value={selectedRoleId} onValueChange={setSelectedRoleId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {rolesData?.roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                      {role.description && (
+                        <span className="ml-2 text-muted-foreground">
+                          - {role.description}
+                        </span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setChangeRoleOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleRoleUpdate} disabled={isSavingRole}>
+              {isSavingRole ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Update Role
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= DELETE MODAL ================= */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Remove Team Member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to remove "{memberToDelete?.user.name}" from
-              the team? This will remove their admin access and permissions, but
-              their user account will remain.
+              Are you sure you want to remove{" "}
+              <strong>{memberToDelete?.user.name}</strong>?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false)
-                setMemberToDelete(null)
-              }}
-              disabled={isDeleting}
+              onClick={() => setDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
@@ -221,4 +307,3 @@ export default function TeamMembersPage() {
     </div>
   )
 }
-

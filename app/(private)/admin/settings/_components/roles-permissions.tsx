@@ -1,13 +1,10 @@
 "use client"
 
 import { format } from "date-fns"
-import { Edit, Plus, Settings, Trash2 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Plus, Settings, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { z } from "zod"
-import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   type ActionMenuItem,
@@ -27,7 +24,9 @@ import { Typography } from "@/components/ui/typography"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
 import useToast from "@/hooks/use-toast"
-import { PERMISSION_GROUPS } from "@/lib/permissions"
+import { buildPermissionGroups } from "@/lib/permissions"
+
+/* ===================== TYPES ===================== */
 
 interface Permission {
   id: string
@@ -53,40 +52,19 @@ interface PermissionsResponse {
   permissions: Permission[]
 }
 
+/* ===================== SCHEMA ===================== */
+
 const roleSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .max(200, "Name must be at most 200 characters"),
-  description: z
-    .string()
-    .max(500, "Description must be at most 500 characters")
-    .optional()
-    .or(z.literal("")),
+  name: z.string().min(1).max(200),
+  description: z.string().max(500).optional().or(z.literal("")),
 })
 
 type RoleFormData = z.infer<typeof roleSchema>
 
-type CreateRoleRequest = {
-  name: string
-  description?: string
-  permissionIds?: string[]
-}
-
-type DeleteRoleRequest = {
-  id: string
-}
+/* ===================== COLUMNS ===================== */
 
 const columns: Column<Role>[] = [
-  {
-    key: "name",
-    header: "Name",
-  },
-  {
-    key: "description",
-    header: "Description",
-    render: (row) => row.description || "—",
-  },
+  { key: "name", header: "Name" },
   {
     key: "permissions",
     header: "Permissions",
@@ -99,15 +77,26 @@ const columns: Column<Role>[] = [
   },
 ]
 
+/* ===================== COMPONENT ===================== */
+
 export default function RolesPermissions() {
-  const router = useRouter()
   const { toastError } = useToast()
-  const [addRoleDialogOpen, setAddRoleDialogOpen] = useState(false)
+
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [manageDialogOpen, setManageDialogOpen] = useState(false)
+
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null)
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+
   const [selectedPermissions, setSelectedPermissions] = useState<Set<string>>(
     new Set()
   )
+  const [managePermissions, setManagePermissions] = useState<Set<string>>(
+    new Set()
+  )
+
+  /* ===================== FETCH ===================== */
 
   const { data, isLoading, error, refetch } = useFetch<RolesResponse>({
     path: "/api/admin/roles",
@@ -119,413 +108,294 @@ export default function RolesPermissions() {
     queryKey: ["admin-permissions"],
   })
 
-  const { onRequest: createRole, isPending: isCreating } =
-    useApi<CreateRoleRequest>({
-      key: "create-role",
-      showSuccessToast: true,
-      showErrorToast: true,
-      method: "post",
-    })
+  const permissions = permissionsData?.permissions || []
+  const roles = data?.roles || []
+  const permissionGroups = buildPermissionGroups(permissions.map((p) => p.slug))
 
-  const { onRequest: assignPermissions } = useApi<{
-    permissionIds: string[]
-  }>({
-    key: "assign-permissions",
-    showSuccessToast: false,
-    showErrorToast: true,
+  /* ===================== API ===================== */
+
+  const { onRequest: createRole, isPending: isCreating } = useApi<any>({
+    key: "create-role",
     method: "post",
+    showSuccessToast: true,
+    showErrorToast: true,
   })
 
-  const { onRequest: deleteRole, isPending: isDeleting } =
-    useApi<DeleteRoleRequest>({
-      key: "delete-role",
+  const { onRequest: assignPermissions, isPending: isSavingPermissions } =
+    useApi<any>({
+      key: "assign-permissions",
+      method: "post",
       showSuccessToast: true,
       showErrorToast: true,
-      method: "delete",
     })
 
-  const roles = data?.roles || []
-  const permissions = permissionsData?.permissions || []
+  const { onRequest: deleteRole, isPending: isDeleting } = useApi<any>({
+    key: "delete-role",
+    method: "delete",
+    showSuccessToast: true,
+    showErrorToast: true,
+  })
 
-  const handleDelete = (role: Role) => {
-    setRoleToDelete(role)
-    setDeleteDialogOpen(true)
-  }
+  /* ===================== HELPERS ===================== */
 
-  const confirmDelete = () => {
-    if (!roleToDelete) return
+  const togglePermission = (
+    permissionId: string,
+    setFn: React.Dispatch<React.SetStateAction<Set<string>>>
+  ) => {
+    const clicked = permissions.find((p) => p.id === permissionId)
 
-    deleteRole({
-      data: {} as DeleteRoleRequest,
-      path: `/api/admin/roles/${roleToDelete.id}`,
-      onSuccess: () => {
-        setDeleteDialogOpen(false)
-        setRoleToDelete(null)
-        refetch()
-      },
-      onError: (error: unknown) => {
-        const axiosError = error as {
-          response?: { status?: number; data?: { message?: string } }
-        }
-        if (axiosError?.response?.status === 400) {
-          toastError(
-            axiosError.response.data?.message ||
-              "Cannot delete role that is assigned to team members"
-          )
-        } else {
-          toastError("Failed to delete role. Please try again.")
-        }
-      },
-    })
-  }
+    setFn((prev) => {
+      const next = new Set(prev)
 
-  const handlePermissionToggle = (permissionId: string) => {
-    setSelectedPermissions((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(permissionId)) {
-        newSet.delete(permissionId)
-      } else {
-        newSet.add(permissionId)
+      if (next.has(permissionId)) {
+        next.delete(permissionId)
+        return next
       }
-      return newSet
-    })
-  }
 
-  const handleSelectAll = (groupPermissions: string[]) => {
-    if (!permissions) return
+      next.add(permissionId)
 
-    const groupPermissionIds = permissions
-      .filter((p) => groupPermissions.includes(p.slug))
-      .map((p) => p.id)
+      if (!clicked) return next
 
-    const allSelected = groupPermissionIds.every((id) =>
-      selectedPermissions.has(id)
-    )
+      const prefix = clicked.slug.split(".")[0]
+      const viewSlug = `${prefix}.view`
 
-    setSelectedPermissions((prev) => {
-      const newSet = new Set(prev)
-      if (allSelected) {
-        groupPermissionIds.forEach((id) => {
-          newSet.delete(id)
-        })
-      } else {
-        groupPermissionIds.forEach((id) => {
-          newSet.add(id)
-        })
+      if (clicked.slug !== viewSlug) {
+        const viewPermission = permissions.find((p) => p.slug === viewSlug)
+        if (viewPermission) next.add(viewPermission.id)
       }
-      return newSet
+
+      return next
     })
   }
 
-  const handleSubmit = async (data: RoleFormData) => {
-    const permissionIds = Array.from(selectedPermissions)
-
-    // First, try to create role with permissions
-    createRole({
-      data: {
-        name: data.name,
-        description: data.description?.trim() || undefined,
-        permissionIds,
-      },
-      path: "/api/admin/roles",
-      onSuccess: (response: unknown) => {
-        const roleId =
-          (response as { data?: { id?: string }; id?: string })?.data?.id ||
-          (response as { id?: string })?.id
-
-        // If permissions were provided and role was created, assign permissions
-        if (permissionIds.length > 0 && roleId) {
-          assignPermissions({
-            data: { permissionIds },
-            path: `/api/admin/roles/${roleId}/permissions`,
-            onSuccess: () => {
-              setAddRoleDialogOpen(false)
-              setSelectedPermissions(new Set())
-              refetch()
-            },
-            onError: () => {
-              // If permission assignment fails, still close dialog and refresh
-              // The role was created, permissions can be assigned later
-              setAddRoleDialogOpen(false)
-              setSelectedPermissions(new Set())
-              refetch()
-            },
-          })
-        } else {
-          // No permissions to assign, just close and refresh
-          setAddRoleDialogOpen(false)
-          setSelectedPermissions(new Set())
-          refetch()
-        }
-      },
-      onError: (error: unknown) => {
-        // If creation fails because permissionIds is not supported,
-        // try creating without permissions first, then assign
-        const axiosError = error as {
-          response?: { status?: number }
-        }
-        if (
-          axiosError?.response?.status === 400 ||
-          axiosError?.response?.status === 422
-        ) {
-          createRole({
-            data: {
-              name: data.name,
-              description: data.description?.trim() || undefined,
-              permissionIds: undefined,
-            },
-            path: "/api/admin/roles",
-            onSuccess: (response: unknown) => {
-              const roleId =
-                (response as { data?: { id?: string }; id?: string })?.data
-                  ?.id || (response as { id?: string })?.id
-              if (permissionIds.length > 0 && roleId) {
-                assignPermissions({
-                  data: { permissionIds },
-                  path: `/api/admin/roles/${roleId}/permissions`,
-                  onSuccess: () => {
-                    setAddRoleDialogOpen(false)
-                    setSelectedPermissions(new Set())
-                    refetch()
-                  },
-                })
-              } else {
-                setAddRoleDialogOpen(false)
-                setSelectedPermissions(new Set())
-                refetch()
-              }
-            },
-          })
-        }
-      },
-    })
-  }
-
-  const handleOpenAddDialog = () => {
-    setSelectedPermissions(new Set())
-    setAddRoleDialogOpen(true)
-  }
+  /* ===================== ACTIONS ===================== */
 
   const actions: ActionMenuItem<Role>[] = [
     {
       label: "Manage Permissions",
       icon: <Settings className="h-4 w-4" />,
-      onClick: (row) => {
-        router.push(`/admin/roles/${row.id}/permissions`)
-      },
-    },
-    {
-      label: "Edit",
-      icon: <Edit className="h-4 w-4" />,
-      onClick: (row) => {
-        router.push(`/admin/roles/${row.id}/edit`)
+      onClick: (role) => {
+        setSelectedRole(role)
+        setManagePermissions(new Set(role.permissions.map((p) => p.id)))
+        setManageDialogOpen(true)
       },
     },
     {
       label: "Delete",
       icon: <Trash2 className="h-4 w-4" />,
-      onClick: (row) => {
-        handleDelete(row)
+      onClick: (role) => {
+        setRoleToDelete(role)
+        setDeleteDialogOpen(true)
       },
     },
   ]
 
+  /* ===================== SUBMIT ===================== */
+
+  const handleCreateRole = (data: RoleFormData) => {
+    createRole({
+      path: "/api/admin/roles",
+      data: {
+        name: data.name,
+        description: data.description || undefined,
+        permissionIds: Array.from(selectedPermissions),
+      },
+      onSuccess: () => {
+        setAddDialogOpen(false)
+        setSelectedPermissions(new Set())
+        refetch()
+      },
+    })
+  }
+
+  const handleDelete = () => {
+    if (!roleToDelete) return
+
+    deleteRole({
+      path: `/api/admin/roles/${roleToDelete.id}`,
+      data: {},
+      onSuccess: () => {
+        setDeleteDialogOpen(false)
+        setRoleToDelete(null)
+        refetch()
+      },
+      onError: () => {
+        toastError("Cannot delete role assigned to team members")
+      },
+    })
+  }
+
+  const handleSavePermissions = () => {
+    if (!selectedRole) return
+
+    assignPermissions({
+      path: `/api/admin/roles/${selectedRole.id}/permissions`,
+      data: {
+        permissionIds: Array.from(managePermissions),
+      },
+      onSuccess: () => {
+        setManageDialogOpen(false)
+        setSelectedRole(null)
+        refetch()
+      },
+    })
+  }
+
+  /* ===================== RENDER ===================== */
+
   return (
     <div className="w-full">
       <DataTable
-        data={roles as unknown as Record<string, unknown>[]}
-        columns={columns as unknown as Column<Record<string, unknown>>[]}
-        actions={
-          actions as unknown as ActionMenuItem<Record<string, unknown>>[]
-        }
-        searchPlaceholder="Search roles..."
-        showAllButton={false}
+        title="Roles and Permissions"
+        data={roles}
+        columns={columns}
+        actions={actions}
         isLoading={isLoading}
         error={error}
-        onRetry={() => refetch()}
-        title="Roles and Permissions"
+        onRetry={refetch}
+        showAllButton={false}
         customButton={
-          <Button
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={handleOpenAddDialog}
-          >
+          <Button onClick={() => setAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Add Role
           </Button>
         }
       />
 
-      {/* Add Role Dialog */}
-      <Dialog open={addRoleDialogOpen} onOpenChange={setAddRoleDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      {/* ================= ADD ROLE ================= */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Role</DialogTitle>
             <DialogDescription>
-              Create a new role and assign permissions to it.
+              Create a role and assign permissions
             </DialogDescription>
           </DialogHeader>
 
           <FormModified
             schema={roleSchema}
-            onSubmit={handleSubmit}
+            onSubmit={handleCreateRole}
             disabled={isCreating}
-            defaultValues={{
-              name: "",
-              description: "",
-            }}
+            defaultValues={{ name: "", description: "" }}
           >
             {({ components }) => (
-              <div className="space-y-6">
-                <div>
-                  <components.Input
-                    name="name"
-                    label="Role Name"
-                    placeholder="Enter role name..."
-                    labelClassName="text-xs text-muted-foreground mb-2"
-                  />
-                </div>
+              <>
+                <components.Input name="name" label="Role Name" />
 
-                <div>
-                  <Typography
-                    variant="p"
-                    className="font-bold text-foreground mb-4"
-                  >
-                    Permissions
-                  </Typography>
+                <Typography className="font-bold mt-6">Permissions</Typography>
 
-                  <div className="space-y-4">
-                    {Object.entries(PERMISSION_GROUPS).map(
-                      ([groupName, groupSlugs]) => {
-                        const groupSlugsArray = Array.from(
-                          groupSlugs
-                        ) as string[]
-                        const groupPermissions = permissions.filter((p) =>
-                          groupSlugsArray.includes(p.slug)
-                        )
-                        const groupPermissionIds = groupPermissions.map(
-                          (p) => p.id
-                        )
-                        const allSelected = groupPermissionIds.every((id) =>
-                          selectedPermissions.has(id)
-                        )
+                {Object.entries(permissionGroups).map(([group, slugs]) => (
+                  <div key={group}>
+                    <Typography className="font-medium my-2">
+                      {group}
+                    </Typography>
 
-                        return (
-                          <Card key={groupName}>
-                            <CardHeader>
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-base">
-                                  {groupName}
-                                </CardTitle>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleSelectAll(groupSlugsArray)
-                                  }
-                                >
-                                  {allSelected ? "Deselect All" : "Select All"}
-                                </Button>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                {groupPermissions.map((permission) => (
-                                  <div
-                                    key={permission.id}
-                                    className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50"
-                                  >
-                                    <Checkbox
-                                      id={permission.id}
-                                      checked={selectedPermissions.has(
-                                        permission.id
-                                      )}
-                                      onCheckedChange={() =>
-                                        handlePermissionToggle(permission.id)
-                                      }
-                                      className="mt-1"
-                                    />
-                                    <div className="flex-1">
-                                      <label
-                                        htmlFor={permission.id}
-                                        className="text-sm font-medium cursor-pointer"
-                                      >
-                                        {permission.name}
-                                      </label>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        )
-                      }
-                    )}
+                    <div className="grid grid-cols-2 gap-3">
+                      {permissions
+                        .filter((p) => Array.from(slugs).includes(p.slug))
+                        .map((p) => (
+                          <div key={p.id} className="flex gap-2">
+                            <Checkbox
+                              checked={selectedPermissions.has(p.id)}
+                              onCheckedChange={() =>
+                                togglePermission(p.id, setSelectedPermissions)
+                              }
+                            />
+                            <span className="text-sm">{p.name}</span>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                </div>
+                ))}
 
-                <DialogFooter>
+                <DialogFooter className="mt-6">
                   <Button
-                    type="button"
                     variant="outline"
-                    onClick={() => {
-                      setAddRoleDialogOpen(false)
-                      setSelectedPermissions(new Set())
-                    }}
-                    disabled={isCreating}
+                    onClick={() => setAddDialogOpen(false)}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isCreating}>
-                    {isCreating ? (
-                      <>
-                        <Loader
-                          size="sm"
-                          variant="default"
-                          color="white"
-                          className="mr-2"
-                        />
-                        Creating...
-                      </>
-                    ) : (
-                      "Create Role"
-                    )}
+                  <Button type="submit">
+                    {isCreating ? "Creating..." : "Create"}
                   </Button>
                 </DialogFooter>
-              </div>
+              </>
             )}
           </FormModified>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Role Dialog */}
+      {/* ================= MANAGE PERMISSIONS ================= */}
+      <Dialog open={manageDialogOpen} onOpenChange={setManageDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Permissions – {selectedRole?.name}</DialogTitle>
+          </DialogHeader>
+
+          {Object.entries(permissionGroups).map(([group, slugs]) => (
+            <div key={group}>
+              <Typography className="font-medium my-2 text-foreground">
+                {group}
+              </Typography>
+
+              <div className="grid grid-cols-2 gap-3">
+                {permissions
+                  .filter((p) => Array.from(slugs).includes(p.slug))
+                  .map((p) => (
+                    <div key={p.id} className="flex gap-2">
+                      <Checkbox
+                        checked={managePermissions.has(p.id)}
+                        onCheckedChange={() =>
+                          togglePermission(p.id, setManagePermissions)
+                        }
+                      />
+                      <span className="text-sm">{p.name}</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          ))}
+
+          <DialogFooter className="mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setManageDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSavePermissions}
+              disabled={isSavingPermissions}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ================= DELETE ================= */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Role</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{roleToDelete?.name}"? This
-              action cannot be undone. You cannot delete a role that is assigned
-              to team members.
+              Are you sure you want to delete <b>{roleToDelete?.name}</b>?
             </DialogDescription>
           </DialogHeader>
+
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => {
-                setDeleteDialogOpen(false)
-                setRoleToDelete(null)
-              }}
-              disabled={isDeleting}
+              onClick={() => setDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
-              onClick={confirmDelete}
+              onClick={handleDelete}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

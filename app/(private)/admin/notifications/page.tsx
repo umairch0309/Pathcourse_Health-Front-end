@@ -2,7 +2,6 @@
 
 import { useQueryClient } from "@tanstack/react-query"
 import { format, isToday, isYesterday, parseISO } from "date-fns"
-import { Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
 import EmptyCard from "@/components/empty-card"
@@ -74,13 +73,6 @@ export default function NotificationsPage() {
     method: "post",
   })
 
-  const { onRequest: deleteNotification, isPending: isDeleting } = useApi({
-    key: "delete-notification",
-    showSuccessToast: true,
-    showErrorToast: true,
-    method: "delete",
-  })
-
   const handleMarkAllAsRead = () => {
     markAllAsRead({
       path: "/api/notifications/mark-all-read",
@@ -99,20 +91,6 @@ export default function NotificationsPage() {
     markAsRead({
       path: "/api/notifications/mark-read",
       data: { notificationId },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["notifications"] })
-        queryClient.invalidateQueries({
-          queryKey: ["notifications-unread-count"],
-        })
-        refetch()
-      },
-    })
-  }
-
-  const handleDelete = (notificationId: string) => {
-    deleteNotification({
-      path: `/api/notifications/${notificationId}`,
-      data: {} as never,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["notifications"] })
         queryClient.invalidateQueries({
@@ -216,22 +194,10 @@ export default function NotificationsPage() {
             {format(parseISO(notification.createdAt), "h:mm a")}
           </div>
         </button>
-        <div className="flex items-center gap-2">
+        <div className="p-4">
           {!notification.isRead && (
             <div className="w-2 h-2 rounded-full bg-primary" />
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleDelete(notification.id)
-            }}
-            disabled={isDeleting}
-          >
-            <Trash2 className="h-4 w-4 text-muted-foreground" />
-          </Button>
         </div>
       </div>
     )

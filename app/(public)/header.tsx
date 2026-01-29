@@ -13,7 +13,7 @@ type AuthUser = {
   id?: string
   name?: string | null
   email?: string | null
-  role?: "admin" | "doctor" | "patient"
+  role?: "admin" | "doctor" | "patient" | "team_admin" | "team_member"
 }
 
 export default function Header() {
@@ -80,6 +80,7 @@ export default function Header() {
   const getDashboardPath = (role?: string) => {
     switch (role) {
       case "admin":
+      case "team_admin":
         return "/admin"
       case "doctor":
         return "/specialist"

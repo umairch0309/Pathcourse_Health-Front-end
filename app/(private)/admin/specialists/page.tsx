@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   type ActionMenuItem,
@@ -88,6 +89,8 @@ type Specialist = {
   contactNo: string
   specialistIn: string
   addedOn: string
+  createdAt: string
+  banned: boolean
 }
 
 type DoctorRequest = {
@@ -180,12 +183,37 @@ const columns: Column<Specialist>[] = [
     key: "addedOn",
     header: "Added on",
   },
+  {
+    key: "banned",
+    header: "Status",
+    render: (row) =>
+      row.banned ? (
+        <Badge className="bg-red-100 text-red-800">Blocked</Badge>
+      ) : (
+        <Badge className="bg-green-100 text-green-800">Active</Badge>
+      ),
+  },
 ]
 
 const filters: FilterConfig[] = [
   {
+    label: "Status",
+    key: "bannedStatus",
+    options: [
+      { label: "Active", value: "active" },
+      { label: "Blocked", value: "blocked" },
+    ],
+    filterFn: (row, value) => {
+      const banned = Boolean((row as Specialist).banned)
+      if (value === "active") return banned === false
+      if (value === "blocked") return banned === true
+      return true
+    },
+  },
+  {
     label: "Sort by",
     key: "sort",
+    type: "sort",
     options: [
       { label: "Date (Newest)", value: "date-newest" },
       { label: "Date (Oldest)", value: "date-oldest" },
@@ -201,6 +229,7 @@ export default function SpecialistsPage() {
   const [filterValues, setFilterValues] = useState<Record<string, string>>({})
   const router = useRouter()
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   // Fetch user session
   useEffect(() => {
@@ -209,6 +238,7 @@ export default function SpecialistsPage() {
         const session = await auth.getSession()
         if (session.data?.user?.id) {
           setUserId(session.data.user.id)
+          setUserRole(session.data.user.role || null)
         }
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -218,7 +248,7 @@ export default function SpecialistsPage() {
   }, [])
 
   // Get user permissions
-  const { hasPermission } = useUserPermissions(userId)
+  const { hasPermission } = useUserPermissions(userId, userRole)
 
   // Fetch approved doctors for Registered tab
   const approvedDoctorsPath = useMemo(() => {
@@ -256,12 +286,13 @@ export default function SpecialistsPage() {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilterValues((prev) => ({ ...prev, [key]: value }))
+    setCurrentPage(1)
   }
 
   // Transform approved doctors to table format
   const transformedApprovedDoctors = useMemo(() => {
     if (!approvedDoctorsData?.doctors) return []
-    return approvedDoctorsData.doctors.map((doctor) => ({
+    const rows = approvedDoctorsData.doctors.map((doctor) => ({
       id: doctor.id,
       specialist: {
         name: doctor.user.name,
@@ -275,13 +306,31 @@ export default function SpecialistsPage() {
         day: "numeric",
         year: "numeric",
       }),
+      createdAt: doctor.createdAt,
+      banned: Boolean(doctor.user.banned),
     }))
-  }, [approvedDoctorsData])
+
+    const sort = filterValues.sort
+    if (!sort) return rows
+    return [...rows].sort((a, b) => {
+      if (sort === "date-newest") {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }
+      if (sort === "date-oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      }
+      if (sort === "name-asc")
+        return a.specialist.name.localeCompare(b.specialist.name)
+      if (sort === "name-desc")
+        return b.specialist.name.localeCompare(a.specialist.name)
+      return 0
+    })
+  }, [approvedDoctorsData, filterValues.sort])
 
   // Transform doctor requests to table format
   const transformedDoctorRequests = useMemo(() => {
     if (!doctorRequestsData?.doctors) return []
-    return doctorRequestsData.doctors.map((doctor) => ({
+    const rows = doctorRequestsData.doctors.map((doctor) => ({
       id: doctor.id,
       specialist: {
         name: doctor.user.name,
@@ -295,8 +344,26 @@ export default function SpecialistsPage() {
         day: "numeric",
         year: "numeric",
       }),
+      createdAt: doctor.createdAt,
+      banned: false,
     }))
-  }, [doctorRequestsData])
+
+    const sort = filterValues.sort
+    if (!sort) return rows
+    return [...rows].sort((a, b) => {
+      if (sort === "date-newest") {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      }
+      if (sort === "date-oldest") {
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      }
+      if (sort === "name-asc")
+        return a.specialist.name.localeCompare(b.specialist.name)
+      if (sort === "name-desc")
+        return b.specialist.name.localeCompare(a.specialist.name)
+      return 0
+    })
+  }, [doctorRequestsData, filterValues.sort])
 
   const registeredActions: ActionMenuItem<Specialist>[] = [
     {

@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Typography } from "@/components/ui/typography"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
-import { PERMISSION_GROUPS } from "@/lib/permissions"
+import { buildPermissionGroups } from "@/lib/permissions"
 
 interface Permission {
   id: string
@@ -168,100 +168,102 @@ export default function RolePermissionsPage() {
   }
 
   const permissions = permissionsData.permissions
+  const permissionGroups = buildPermissionGroups(permissions.map((p) => p.slug))
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-4">
-        <Typography variant="h5" className="font-bold text-foreground">
-          Manage Permissions - {roleData.name}
-        </Typography>
-        <Button variant="outline" onClick={() => router.back()}>
-          Back
-        </Button>
-      </div>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <Typography variant="h5" className="font-bold text-foreground">
+            Manage Permissions - {roleData.name}
+          </Typography>
+        </div>
 
-      <div className="bg-background p-6 rounded-md space-y-6">
-        {Object.entries(PERMISSION_GROUPS).map(([groupName, groupSlugs]) => {
-          const groupSlugsArray = Array.from(groupSlugs) as string[]
-          const groupPermissions = permissions.filter((p) =>
-            groupSlugsArray.includes(p.slug)
-          )
-          const groupPermissionIds = groupPermissions.map((p) => p.id)
-          const allSelected = groupPermissionIds.every((id) =>
-            selectedPermissions.has(id)
-          )
+        <div className="bg-background p-3 sm:p-6 rounded-md space-y-6">
+          {Object.entries(permissionGroups).map(([groupName, groupSlugs]) => {
+            const groupSlugsArray = Array.from(groupSlugs) as string[]
+            const groupPermissions = permissions.filter((p) =>
+              groupSlugsArray.includes(p.slug)
+            )
+            const groupPermissionIds = groupPermissions.map((p) => p.id)
+            const allSelected = groupPermissionIds.every((id) =>
+              selectedPermissions.has(id)
+            )
 
-          return (
-            <Card key={groupName}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{groupName}</CardTitle>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleSelectAll(groupSlugsArray)}
-                  >
-                    {allSelected ? "Deselect All" : "Select All"}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {groupPermissions.map((permission) => (
-                    <div
-                      key={permission.id}
-                      className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50"
+            return (
+              <Card key={groupName}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{groupName}</CardTitle>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSelectAll(groupSlugsArray)}
                     >
-                      <Checkbox
-                        id={permission.id}
-                        checked={selectedPermissions.has(permission.id)}
-                        onCheckedChange={() =>
-                          handlePermissionToggle(permission.id)
-                        }
-                        className="mt-1"
-                      />
-                      <div className="flex-1">
-                        <label
-                          htmlFor={permission.id}
-                          className="text-sm font-medium cursor-pointer"
-                        >
-                          {permission.name}
-                        </label>
-                        {permission.description && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {permission.description}
+                      {allSelected ? "Deselect All" : "Select All"}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {groupPermissions.map((permission) => (
+                      <div
+                        key={permission.id}
+                        className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50"
+                      >
+                        <Checkbox
+                          id={permission.id}
+                          checked={selectedPermissions.has(permission.id)}
+                          onCheckedChange={() =>
+                            handlePermissionToggle(permission.id)
+                          }
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <label
+                            htmlFor={permission.id}
+                            className="text-sm font-medium cursor-pointer"
+                          >
+                            {permission.name}
+                          </label>
+                          {permission.description && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {permission.description}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground/70 mt-1 font-mono">
+                            {permission.slug}
                           </p>
-                        )}
-                        <p className="text-xs text-muted-foreground/70 mt-1 font-mono">
-                          {permission.slug}
-                        </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
 
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={() => router.back()}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Save Permissions
-              </>
-            )}
-          </Button>
+          <div className="sticky bottom-0 bg-background pt-4 border-t">
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={() => router.back()}>
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Save Permissions
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -20,9 +20,16 @@ export default function AdminLayout({
   const router = useRouter()
   const hideSidebar = pathname === "/admin/update-profile"
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
-  const { hasPermission, loading: isLoadingPermissions } =
-    useUserPermissions(userId)
+  const { hasPermission: checkPermission, loading: isLoadingPermissions } =
+    useUserPermissions(
+      userRole === "team_admin" || userRole === "team member" ? userId : null
+    )
+  const isMainAdmin = userRole === "admin"
+  const canViewDashboard = isMainAdmin
+    ? true
+    : checkPermission("dashboard.view")
 
   // Fetch user session
   useEffect(() => {
@@ -31,6 +38,7 @@ export default function AdminLayout({
         const session = await auth.getSession()
         if (session.data?.user?.id) {
           setUserId(session.data.user.id)
+          setUserRole(session.data.user.role || null)
         }
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -49,12 +57,14 @@ export default function AdminLayout({
 
     // Only redirect if user is on /admin (dashboard) and doesn't have permission
     if (pathname === "/admin" || pathname === "/admin/") {
-      if (!hasPermission("dashboard.view")) {
+      if (!canViewDashboard) {
         // Find the first menu item the user has permission for
         // Skip dashboard since we already know they don't have access
         const firstAvailablePage = adminMenuItems
           .filter((item) => item.href !== "/admin")
-          .find((item) => hasPermission(item.permission))
+          .find((item) =>
+            isMainAdmin ? true : checkPermission(item.permission)
+          )
 
         if (firstAvailablePage) {
           // @ts-expect-error - href is a valid admin route
@@ -62,7 +72,15 @@ export default function AdminLayout({
         }
       }
     }
-  }, [isLoadingUser, isLoadingPermissions, hasPermission, router, pathname])
+  }, [
+    isLoadingUser,
+    isLoadingPermissions,
+    canViewDashboard,
+    isMainAdmin,
+    checkPermission,
+    router,
+    pathname,
+  ])
 
   // Show loading while checking permissions and redirecting
   if (isLoadingUser || isLoadingPermissions) {
@@ -74,10 +92,7 @@ export default function AdminLayout({
   }
 
   // Show loading if user is on dashboard but doesn't have permission (redirecting)
-  if (
-    (pathname === "/admin" || pathname === "/admin/") &&
-    !hasPermission("dashboard.view")
-  ) {
+  if ((pathname === "/admin" || pathname === "/admin/") && !canViewDashboard) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader size="lg" variant="spinner" />

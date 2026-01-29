@@ -12,6 +12,7 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
+import { Loader } from "@/components/loader"
 import {
   Sidebar,
   SidebarContent,
@@ -113,7 +114,9 @@ export function AdminSidebar() {
     loading: isLoadingPermissions,
     error: permissionsError,
     permissions,
-  } = useUserPermissions(userId)
+  } = useUserPermissions(
+    userRole === "team_admin" || userRole === "team member" ? userId : null
+  )
 
   // Close mobile sidebar when pathname changes
   useEffect(() => {
@@ -150,9 +153,9 @@ export function AdminSidebar() {
       return true
     }
 
-    // If user is team member but has no team member record, show nothing
+    // If user is team admin but has no team member record, show nothing
     // (they need to be added as a team member first)
-    if (userRole === "team member" && hasNoPermissions && is404Error) {
+    if (userRole === "team_admin" && hasNoPermissions && is404Error) {
       return false
     }
 
@@ -165,14 +168,16 @@ export function AdminSidebar() {
     return userRole === "admin"
   })
 
-  // Check if team member has no record
+  // Check if team admin has no record
   const errorStatus = permissionsError as
     | { response?: { status?: number } }
     | undefined
   const is404Error = errorStatus?.response?.status === 404
   const hasNoPermissions = permissions?.length === 0
   const isTeamMemberWithoutRecord =
-    userRole === "team member" && hasNoPermissions && is404Error
+    (userRole === "team_admin" || userRole === "team member") &&
+    hasNoPermissions &&
+    is404Error
 
   return (
     <Sidebar variant="floating">
@@ -197,11 +202,9 @@ export function AdminSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {visibleMenuItems.length === 0 ? (
-                  <SidebarMenuItem>
-                    <div className="p-4 text-sm text-muted-foreground">
-                      No menu items available
-                    </div>
-                  </SidebarMenuItem>
+                  <div className="p-4 flex items-center justify-center h-50">
+                    <Loader size="lg" />
+                  </div>
                 ) : (
                   visibleMenuItems.map((item) => {
                     const Icon = item.icon

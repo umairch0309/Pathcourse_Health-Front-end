@@ -50,6 +50,7 @@ type TableUserQuery = {
   organizationEmail: string
   message: string
   sentOn: string
+  createdAt: string
 }
 
 const columns: Column<TableUserQuery>[] = [
@@ -82,6 +83,7 @@ const filters: FilterConfig[] = [
   {
     label: "Sort by",
     key: "sort",
+    type: "sort",
     options: [
       { label: "Date (Newest)", value: "date-newest" },
       { label: "Date (Oldest)", value: "date-oldest" },
@@ -91,6 +93,9 @@ const filters: FilterConfig[] = [
 
 export default function UserInquiriesPage() {
   const [currentPage, setCurrentPage] = useState(1)
+  const [filterValues, setFilterValues] = useState<Record<string, string>>({
+    sort: "date-newest",
+  })
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedInquiry, setSelectedInquiry] = useState<TableUserQuery | null>(
     null
@@ -98,6 +103,7 @@ export default function UserInquiriesPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [userId, setUserId] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
 
   // Fetch user session
   useEffect(() => {
@@ -106,6 +112,7 @@ export default function UserInquiriesPage() {
         const session = await auth.getSession()
         if (session.data?.user?.id) {
           setUserId(session.data.user.id)
+          setUserRole(session.data.user.role || null)
         }
       } catch (error) {
         console.error("Failed to fetch session:", error)
@@ -115,7 +122,7 @@ export default function UserInquiriesPage() {
   }, [])
 
   // Get user permissions
-  const { hasPermission } = useUserPermissions(userId)
+  const { hasPermission } = useUserPermissions(userId, userRole)
 
   const queriesPath = useMemo(() => {
     const params = new URLSearchParams()
@@ -142,7 +149,7 @@ export default function UserInquiriesPage() {
 
   const transformedQueries = useMemo(() => {
     if (!queriesData?.userQueries) return []
-    return queriesData.userQueries.map((query) => ({
+    const rows = queriesData.userQueries.map((query) => ({
       id: query.id,
       user: query.user?.name || query.name || "-",
       organizationName: query.organizationName || "-",
@@ -153,8 +160,24 @@ export default function UserInquiriesPage() {
         day: "numeric",
         year: "numeric",
       }),
+      createdAt: query.createdAt,
     }))
-  }, [queriesData])
+
+    const sort = filterValues.sort
+    if (!sort) return rows
+    return [...rows].sort((a, b) => {
+      const aTime = new Date(a.createdAt).getTime()
+      const bTime = new Date(b.createdAt).getTime()
+      if (sort === "date-newest") return bTime - aTime
+      if (sort === "date-oldest") return aTime - bTime
+      return 0
+    })
+  }, [queriesData, filterValues.sort])
+
+  const handleFilterChange = (key: string, value: string) => {
+    setFilterValues((prev) => ({ ...prev, [key]: value }))
+    setCurrentPage(1)
+  }
 
   const handleDeleteClick = (row: TableUserQuery) => {
     setSelectedInquiry(row)
@@ -206,6 +229,8 @@ export default function UserInquiriesPage() {
         data={transformedQueries}
         columns={columns}
         filters={filters}
+        filterValues={filterValues}
+        onFilterChange={handleFilterChange}
         actions={actions}
         searchPlaceholder="Search"
         showAllButton={false}
