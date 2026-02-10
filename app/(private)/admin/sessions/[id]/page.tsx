@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation"
 import { Loader } from "@/components/loader"
-import { Typography } from "@/components/ui/typography"
 import { Card, CardContent } from "@/components/ui/card"
+import { Typography } from "@/components/ui/typography"
 import { useFetch } from "@/hooks/use-fetch"
 import { DetailsTabs } from "./_components/tabs"
 

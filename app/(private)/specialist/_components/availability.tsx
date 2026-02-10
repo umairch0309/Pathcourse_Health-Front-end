@@ -35,7 +35,6 @@ export default function Availability() {
   const [isToggling, setIsToggling] = useState(false)
   const isPageVisibleRef = useRef(true) // Track page visibility
 
-  
   const {
     data: doctorData,
     isLoading,
@@ -47,7 +46,6 @@ export default function Availability() {
 
   const isAvailable = doctorData?.isAvailable ?? false
 
-  
   const { onRequest: toggleAvailability } = useApi<Record<string, never>>({
     key: "toggle-availability",
     showSuccessToast: true,
@@ -55,12 +53,10 @@ export default function Availability() {
     method: "post",
   })
 
-  
   const generateConnectionId = useCallback(() => {
     return `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }, [])
 
-  
   const stopHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
       clearInterval(heartbeatIntervalRef.current)
@@ -69,7 +65,6 @@ export default function Availability() {
     connectionIdRef.current = null
   }, [])
 
-  
   const sendHeartbeat = useCallback(async () => {
     if (!isAvailable) return
 
@@ -99,7 +94,6 @@ export default function Availability() {
     }
   }, [isAvailable, generateConnectionId, stopHeartbeat, refetch])
 
-  
   const startHeartbeat = useCallback(() => {
     if (heartbeatIntervalRef.current) {
       return // Already running
@@ -112,7 +106,6 @@ export default function Availability() {
     console.log("Heartbeat started - sending every 5 seconds")
   }, [sendHeartbeat])
 
-  
   const handleToggle = (checked: boolean) => {
     setIsToggling(true)
     toggleAvailability({
@@ -133,7 +126,6 @@ export default function Availability() {
     })
   }
 
-  
   useEffect(() => {
     if (isAvailable && !isLoading) {
       startHeartbeat()
@@ -146,7 +138,6 @@ export default function Availability() {
     }
   }, [isAvailable, isLoading, startHeartbeat, stopHeartbeat])
 
-  
   useEffect(() => {
     const handleVisibilityChange = () => {
       isPageVisibleRef.current = !document.hidden
@@ -171,7 +162,6 @@ export default function Availability() {
     }
   }, [isAvailable, isLoading, startHeartbeat, sendHeartbeat])
 
-  
   useEffect(() => {
     const handleBeforeUnload = () => {
       stopHeartbeat()

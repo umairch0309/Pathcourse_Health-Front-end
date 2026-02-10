@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import type { ReactNode } from "react"
+import EnterpriseAccessModal from "../(public)/enterprise-access-modal"
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -15,6 +16,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative flex flex-col h-screen">
+      <EnterpriseAccessModal />
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-50">
         <Link href="/" className="cursor-pointer">
           <Image

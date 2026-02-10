@@ -285,17 +285,27 @@ export default function RolesPermissions() {
                 <Typography className="font-bold mt-6">Permissions</Typography>
 
                 {Object.entries(permissionGroups).map(([group, slugs]) => {
-                  let groupSlugs = Array.from(slugs);
+                  let groupSlugs = Array.from(slugs)
                   // Only add users.view to Users, sessions.view to Sessions
-                  if (group === "Users" && !groupSlugs.includes("users.view") && permissions.some((p) => p.slug === "users.view")) {
-                    groupSlugs.push("users.view");
+                  if (
+                    group === "Users" &&
+                    !groupSlugs.includes("users.view") &&
+                    permissions.some((p) => p.slug === "users.view")
+                  ) {
+                    groupSlugs.push("users.view")
                   }
-                  if (group === "Sessions" && !groupSlugs.includes("sessions.view") && permissions.some((p) => p.slug === "sessions.view")) {
-                    groupSlugs.push("sessions.view");
+                  if (
+                    group === "Sessions" &&
+                    !groupSlugs.includes("sessions.view") &&
+                    permissions.some((p) => p.slug === "sessions.view")
+                  ) {
+                    groupSlugs.push("sessions.view")
                   }
                   // Remove notifications.view_by_permission from Notifications group
                   if (group === "Notifications") {
-                    groupSlugs = groupSlugs.filter(slug => slug !== "notifications.view_by_permission");
+                    groupSlugs = groupSlugs.filter(
+                      (slug) => slug !== "notifications.view_by_permission"
+                    )
                   }
                   return (
                     <div key={group}>
@@ -318,7 +328,7 @@ export default function RolesPermissions() {
                           ))}
                       </div>
                     </div>
-                  );
+                  )
                 })}
 
                 <DialogFooter className="mt-6">
@@ -346,17 +356,27 @@ export default function RolesPermissions() {
           </DialogHeader>
 
           {Object.entries(permissionGroups).map(([group, slugs]) => {
-            let groupSlugs = Array.from(slugs);
+            let groupSlugs = Array.from(slugs)
             // Only add users.view to Users, sessions.view to Sessions
-            if (group === "Users" && !groupSlugs.includes("users.view") && permissions.some((p) => p.slug === "users.view")) {
-              groupSlugs.push("users.view");
+            if (
+              group === "Users" &&
+              !groupSlugs.includes("users.view") &&
+              permissions.some((p) => p.slug === "users.view")
+            ) {
+              groupSlugs.push("users.view")
             }
-            if (group === "Sessions" && !groupSlugs.includes("sessions.view") && permissions.some((p) => p.slug === "sessions.view")) {
-              groupSlugs.push("sessions.view");
+            if (
+              group === "Sessions" &&
+              !groupSlugs.includes("sessions.view") &&
+              permissions.some((p) => p.slug === "sessions.view")
+            ) {
+              groupSlugs.push("sessions.view")
             }
             // Remove notifications.view_by_permission from Notifications group
             if (group === "Notifications") {
-              groupSlugs = groupSlugs.filter(slug => slug !== "notifications.view_by_permission");
+              groupSlugs = groupSlugs.filter(
+                (slug) => slug !== "notifications.view_by_permission"
+              )
             }
             return (
               <div key={group}>
@@ -379,7 +399,7 @@ export default function RolesPermissions() {
                     ))}
                 </div>
               </div>
-            );
+            )
           })}
 
           <DialogFooter className="mt-6">

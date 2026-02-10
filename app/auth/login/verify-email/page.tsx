@@ -1,14 +1,14 @@
 "use client"
 
-import { Suspense, useCallback, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense, useCallback, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { Typography } from "@/components/ui/typography"
-import { Button } from "@/components/ui/button"
 
 function VerifyEmailContent() {
   const router = useRouter()

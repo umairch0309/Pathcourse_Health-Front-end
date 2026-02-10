@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import auth from "@/lib/auth"
 import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 
 interface PermissionWrapperProps {
   children: (hasPermission: boolean) => React.ReactNode
@@ -41,4 +41,3 @@ export function PermissionWrapper({
 
   return <>{children(hasPermission(requiredPermission))}</>
 }
-

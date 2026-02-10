@@ -1,10 +1,10 @@
 "use client"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import { useState } from "react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Typography } from "@/components/ui/typography"
 import { reviews } from "@/app/data/reviews"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Typography } from "@/components/ui/typography"
 
 export default function ReviewsSection() {
   const [currentIndex, setCurrentIndex] = useState(0)

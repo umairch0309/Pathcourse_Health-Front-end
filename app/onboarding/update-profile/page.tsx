@@ -3,8 +3,9 @@
 import { LogOut, User } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
 import {
   Stepper,
   StepperIndicator,
@@ -16,7 +17,6 @@ import {
   useStepper,
 } from "@/components/ui/stepper"
 import { Typography } from "@/components/ui/typography"
-import { Button } from "@/components/ui/button"
 import auth from "@/lib/auth"
 import ContactInfo from "./_components/contact-info"
 import EducationalInfo from "./_components/education-info"

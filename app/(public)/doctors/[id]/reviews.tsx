@@ -3,8 +3,8 @@
 import { ArrowLeft, ArrowRight, Star } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { testimonials } from "@/app/data/testimonials"
+import { Button } from "@/components/ui/button"
 
 const ITEMS_PER_SLIDE = 5
 

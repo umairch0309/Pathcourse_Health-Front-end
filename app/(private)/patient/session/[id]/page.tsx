@@ -1,10 +1,10 @@
 "use client"
 
 import { useParams, useSearchParams } from "next/navigation"
-import { Typography } from "@/components/ui/typography"
-import { DetailsTabs } from "./_components/tabs"
-import { useFetch } from "@/hooks/use-fetch"
 import { Loader } from "@/components/loader"
+import { Typography } from "@/components/ui/typography"
+import { useFetch } from "@/hooks/use-fetch"
+import { DetailsTabs } from "./_components/tabs"
 
 export type AppointmentData = {
   id: string

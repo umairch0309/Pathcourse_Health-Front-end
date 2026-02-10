@@ -1,7 +1,8 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
 import { CountrySelect } from "@/components/country-select"
+import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
 import FormModified from "@/components/ui/form-modified"
 import {
@@ -12,10 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Typography } from "@/components/ui/typography"
-import ConsentModal from "./consent-modal"
-import auth from "@/lib/auth"
 import { useFetch } from "@/hooks/use-fetch"
-import { Loader } from "@/components/loader"
+import auth from "@/lib/auth"
+import ConsentModal from "./consent-modal"
 
 // Form schema
 const personalInfoSchema = z

@@ -4,8 +4,9 @@ import { Check, Eye, EyeOff, Info, X } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { z } from "zod"
+import { getEnterpriseCode } from "@/app/(public)/enterprise-access-modal"
 import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -98,6 +99,15 @@ export default function PatientSignupPage() {
   const [password, setPassword] = useState("")
   const [showPasswordRequirements, setShowPasswordRequirements] =
     useState(false)
+  const [storedEnterpriseCode, setStoredEnterpriseCode] = useState<string>("")
+
+  useEffect(() => {
+    // Get enterprise code from session storage
+    const code = getEnterpriseCode()
+    if (code) {
+      setStoredEnterpriseCode(code)
+    }
+  }, [])
 
   const { onRequest, isPending: loading } = useApi<PatientSignupRequest>({
     key: "patient-signup",
@@ -202,9 +212,10 @@ export default function PatientSignupPage() {
               email: "",
               password: "",
               confirm_password: "",
-              enterpriseCode: "",
+              enterpriseCode: storedEnterpriseCode,
               agree: false,
             }}
+            key={storedEnterpriseCode} // Force re-render when enterprise code is loaded
           >
             {({ components }) => (
               <div className="space-y-5 sm:space-y-6">

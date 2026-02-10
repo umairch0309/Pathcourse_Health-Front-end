@@ -1,6 +1,6 @@
 "use client"
-import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
+import { Suspense, useEffect, useState } from "react"
 import Header from "../header"
 import AvailableSpecialists from "./_components/available-specialists"
 import PersonalInformation from "./_components/personal-information"

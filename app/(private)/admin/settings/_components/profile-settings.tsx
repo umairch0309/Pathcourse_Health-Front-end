@@ -1,6 +1,6 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
 import { Camera } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 import z from "zod"
 import { Loader } from "@/components/loader"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -39,12 +39,16 @@ export default function ProfileSettings() {
     "flex h-9 w-full rounded-none border-0 border-b border-border bg-transparent px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 focus-visible:outline-0 focus:border-primary"
 
   // Fetch admin profile
-  const { data: profileData, isLoading: isProfileLoading, refetch: refetchProfile } = useFetch<any>({
+  const {
+    data: profileData,
+    isLoading: isProfileLoading,
+    refetch: refetchProfile,
+  } = useFetch<any>({
     path: "/api/admin/profile",
-    queryKey: ["admin-profile"]
-  });
-  const user = profileData;
-  const isLoadingSession = isProfileLoading;
+    queryKey: ["admin-profile"],
+  })
+  const user = profileData
+  const isLoadingSession = isProfileLoading
 
   const initials = (user?.name || "Admin")
     .split(" ")
@@ -90,7 +94,7 @@ export default function ProfileSettings() {
       onSuccess: async () => {
         setIsEditOpen(false)
         // Refresh profile to get updated user data
-        refetchProfile();
+        refetchProfile()
       },
       onError: (error) => {
         console.error("Failed to update profile:", error)
@@ -175,8 +179,12 @@ export default function ProfileSettings() {
                     </div>
                   </div>
                   <div className="space-y-6">
-                    <div className="border-b p-2 text-sm">{user.name || "—"}</div>
-                    <div className="border-b p-2 text-sm">{user.email || "—"}</div>
+                    <div className="border-b p-2 text-sm">
+                      {user.name || "—"}
+                    </div>
+                    <div className="border-b p-2 text-sm">
+                      {user.email || "—"}
+                    </div>
                   </div>
                 </div>
               </div>

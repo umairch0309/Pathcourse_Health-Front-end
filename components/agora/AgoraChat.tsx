@@ -361,11 +361,7 @@ type AgoraChatProps = {
   role: "doctor" | "patient"
 }
 
-export function AgoraChat({
-  appointmentId,
-  userId,
-  role,
-}: AgoraChatProps) {
+export function AgoraChat({ appointmentId, userId, role }: AgoraChatProps) {
   const [value, setValue] = useState("")
   const [filePreview, setFilePreview] = useState<{
     file: File
@@ -757,4 +753,3 @@ export function AgoraChat({
     </div>
   )
 }
-

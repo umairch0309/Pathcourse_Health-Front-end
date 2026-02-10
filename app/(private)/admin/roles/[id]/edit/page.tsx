@@ -7,8 +7,8 @@ import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
 import FormModified from "@/components/ui/form-modified"
 import { Typography } from "@/components/ui/typography"
-import { useFetch } from "@/hooks/use-fetch"
 import useApi from "@/hooks/use-api"
+import { useFetch } from "@/hooks/use-fetch"
 
 const roleSchema = z.object({
   name: z
@@ -187,4 +187,3 @@ export default function EditRolePage() {
     </div>
   )
 }
-

@@ -3,18 +3,18 @@
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Typography } from "@/components/ui/typography"
-import { cn } from "@/lib/utils"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs-modified"
+import { Typography } from "@/components/ui/typography"
+import { cn } from "@/lib/utils"
 import { ChangePassword } from "./_components/change-password"
-import ProfileSettings from "./_components/profile-settings"
 import ManageAccount from "./_components/manage-account"
 import PrivacySettings from "./_components/privacy-settings"
+import ProfileSettings from "./_components/profile-settings"
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("profile")

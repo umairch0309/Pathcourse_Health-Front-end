@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { format } from "date-fns"
+import { useRouter } from "next/navigation"
+import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
-  DataTable,
-  type Column,
-  type FilterConfig,
   type ActionMenuItem,
+  type Column,
+  DataTable,
+  type FilterConfig,
 } from "@/components/ui/data-table"
-import { ViewServiceDetailsModal } from "./_components/view-service-details-modal"
-import { useRouter } from "next/navigation"
 import { useFetch } from "@/hooks/use-fetch"
-import { format } from "date-fns"
+import { ViewServiceDetailsModal } from "./_components/view-service-details-modal"
 
 type ServicePricing = {
   id: string

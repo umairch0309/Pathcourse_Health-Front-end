@@ -1,27 +1,23 @@
 "use client"
 
-import { format } from "date-fns"
+import { format, subYears } from "date-fns"
 import { Calendar1 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useState } from "react"
 import { z } from "zod"
-import { cn } from "@/lib/utils"
+import { CountryCodeSelect } from "@/components/country-code-select"
+import { Loader } from "@/components/loader"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import FormModified from "@/components/ui/form-modified"
+import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Typography } from "@/components/ui/typography"
-import { Label } from "@/components/ui/label"
-import { Loader } from "@/components/loader"
-import useApi from "@/hooks/use-api"
-import { CountryCodeSelect } from "@/components/country-code-select"
-import { subYears } from "date-fns"
 import {
   Select,
   SelectContent,
@@ -29,6 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Typography } from "@/components/ui/typography"
+import useApi from "@/hooks/use-api"
+import { cn } from "@/lib/utils"
 
 const patientInfoSchema = z.object({
   date_of_birth: z

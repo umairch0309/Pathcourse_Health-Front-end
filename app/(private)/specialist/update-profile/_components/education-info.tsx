@@ -1,7 +1,9 @@
 "use client"
 
-import { format, addYears, parse } from "date-fns"
+import { addYears, format, parse } from "date-fns"
 import { Calendar1, Plus, Trash2 } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -17,8 +19,6 @@ import {
 import { useStepper } from "@/components/ui/stepper"
 import { Typography } from "@/components/ui/typography"
 import { cn } from "@/lib/utils"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
 
 const educationSchema = z.object({
   education: z

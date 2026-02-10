@@ -1,7 +1,7 @@
-import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
-import { Typography } from "@/components/ui/typography"
 import Image from "next/image"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Typography } from "@/components/ui/typography"
 
 function QA({ q, a }: { q: string; a: string }) {
   return (

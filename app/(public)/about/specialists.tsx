@@ -1,9 +1,9 @@
 import Image from "next/image"
 import Link from "next/link"
+import { doctors } from "@/app/data/doctors"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Typography } from "@/components/ui/typography"
-import { doctors } from "@/app/data/doctors"
 
 export default function Specialists() {
   const topDoctors = doctors.slice(0, 3)

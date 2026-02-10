@@ -1,23 +1,23 @@
 "use client"
 
+import { format } from "date-fns"
+import { Calendar1 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import FormModified from "@/components/ui/form-modified"
 import { Input } from "@/components/ui/input"
-import { useStepper } from "@/components/ui/stepper"
-import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Typography } from "@/components/ui/typography"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { Calendar1 } from "lucide-react"
-import { useState } from "react"
+import { useStepper } from "@/components/ui/stepper"
+import { Typography } from "@/components/ui/typography"
 
 // Schema
 const contactInfoSchema = z.object({

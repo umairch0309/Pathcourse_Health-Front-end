@@ -2,6 +2,9 @@
 
 import { MoreVertical, StarIcon } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
+import { reviews } from "@/app/data/review-dashboard"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -9,15 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { reviews } from "@/app/data/review-dashboard"
-import Link from "next/link"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
 
 export function Reviews() {
   return (

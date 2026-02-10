@@ -3,11 +3,11 @@
 import { LogOut, Search, User } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import NotificationsDropdown from "@/app/(private)/patient/notification-dropdown"
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import NotificationsDropdown from "@/app/(private)/patient/notification-dropdown"
-import { useRouter } from "next/navigation"
 import auth from "@/lib/auth"
 
 export default function Header() {

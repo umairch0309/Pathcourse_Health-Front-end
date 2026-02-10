@@ -1,22 +1,22 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
 import { Star } from "lucide-react"
-import {
-  DataTable,
-  type Column,
-  type FilterConfig,
-  type ActionMenuItem,
-} from "@/components/ui/data-table"
+import Image from "next/image"
+import { useState } from "react"
 import { ratings } from "@/app/data/ratings-reviews-table"
+import { Button } from "@/components/ui/button"
+import {
+  type ActionMenuItem,
+  type Column,
+  DataTable,
+  type FilterConfig,
+} from "@/components/ui/data-table"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 
 type Rating = (typeof ratings)[0]
 

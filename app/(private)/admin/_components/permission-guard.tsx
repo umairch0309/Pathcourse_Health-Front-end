@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { Loader } from "@/components/loader"
 import { Typography } from "@/components/ui/typography"
-import auth from "@/lib/auth"
 import { useUserPermissions } from "@/hooks/use-user-permissions"
+import auth from "@/lib/auth"
 
 interface PermissionGuardProps {
   children: React.ReactNode
@@ -61,8 +61,8 @@ export function PermissionGuard({
             Access Denied
           </Typography>
           <Typography variant="p" className="text-muted-foreground">
-            You do not have permission to access this page. Required
-            permission: {requiredPermission}
+            You do not have permission to access this page. Required permission:{" "}
+            {requiredPermission}
           </Typography>
         </div>
       </div>
@@ -71,4 +71,3 @@ export function PermissionGuard({
 
   return <>{children}</>
 }
-

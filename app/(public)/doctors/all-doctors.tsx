@@ -5,8 +5,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Suspense, useMemo, useState } from "react"
-import { Typography } from "@/components/ui/typography"
 import { doctors } from "@/app/data/doctors"
+import { Typography } from "@/components/ui/typography"
 
 function AllDoctorsContent() {
   const searchParams = useSearchParams()

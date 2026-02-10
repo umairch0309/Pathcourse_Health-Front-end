@@ -173,9 +173,9 @@ export default function RolesPage() {
           <DialogHeader>
             <DialogTitle>Delete Role</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{roleToDelete?.name}"? This action
-              cannot be undone. You cannot delete a role that is assigned to
-              team members.
+              Are you sure you want to delete "{roleToDelete?.name}"? This
+              action cannot be undone. You cannot delete a role that is assigned
+              to team members.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -202,4 +202,3 @@ export default function RolesPage() {
     </div>
   )
 }
-

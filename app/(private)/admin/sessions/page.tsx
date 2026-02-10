@@ -21,7 +21,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Select,
   SelectContent,
@@ -29,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import useApi from "@/hooks/use-api"
 import { useFetch } from "@/hooks/use-fetch"
 import { useUserPermissions } from "@/hooks/use-user-permissions"
@@ -230,7 +230,9 @@ export default function SessionsPage() {
     sort: "date-newest",
   })
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false)
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
+    null
+  )
   const [userId, setUserId] = useState<string | null>(null)
   const [userRole, setUserRole] = useState<string | null>(null)
   const [activePageNum, setActivePageNum] = useState(1)
@@ -255,7 +257,10 @@ export default function SessionsPage() {
   }, [])
 
   // Get user permissions
-  const { hasPermission, loading: permissionsLoading } = useUserPermissions(userId, userRole)
+  const { hasPermission, loading: permissionsLoading } = useUserPermissions(
+    userId,
+    userRole
+  )
 
   const activeAppointmentsPath = useMemo(() => {
     const params = new URLSearchParams()
@@ -281,18 +286,21 @@ export default function SessionsPage() {
     return `/api/admin/appointments?${params.toString()}`
   }, [archivedPageNum, filterValues])
 
-  const { data: activeAppointmentsData, isLoading: isLoadingActive } = useFetch<AppointmentsResponse>({
-    path: activeAppointmentsPath,
-    queryKey: ["admin-appointments-active", activePageNum, filterValues],
-  })
+  const { data: activeAppointmentsData, isLoading: isLoadingActive } =
+    useFetch<AppointmentsResponse>({
+      path: activeAppointmentsPath,
+      queryKey: ["admin-appointments-active", activePageNum, filterValues],
+    })
 
-  const { data: archivedAppointmentsData, isLoading: isLoadingArchived } = useFetch<AppointmentsResponse>({
-    path: archivedAppointmentsPath,
-    queryKey: ["admin-appointments-archived", archivedPageNum, filterValues],
-  })
+  const { data: archivedAppointmentsData, isLoading: isLoadingArchived } =
+    useFetch<AppointmentsResponse>({
+      path: archivedAppointmentsPath,
+      queryKey: ["admin-appointments-archived", archivedPageNum, filterValues],
+    })
 
   // Select the appropriate data based on active tab
-  const appointmentsData = activeTab === "active" ? activeAppointmentsData : archivedAppointmentsData
+  const appointmentsData =
+    activeTab === "active" ? activeAppointmentsData : archivedAppointmentsData
   const isLoading = activeTab === "active" ? isLoadingActive : isLoadingArchived
 
   // Archive API
@@ -307,45 +315,44 @@ export default function SessionsPage() {
 
   const transformedAppointments = useMemo(() => {
     if (!appointmentsData?.appointments) return []
-    const rows = appointmentsData.appointments
-      .map((appointment) => {
-        const scheduledDate = appointment.scheduledAt
-          ? new Date(appointment.scheduledAt)
-          : new Date(appointment.createdAt)
+    const rows = appointmentsData.appointments.map((appointment) => {
+      const scheduledDate = appointment.scheduledAt
+        ? new Date(appointment.scheduledAt)
+        : new Date(appointment.createdAt)
 
-        const dateStr = scheduledDate.toLocaleDateString("en-US", {
-          weekday: "long",
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        })
-
-        const timeStr = appointment.scheduledAt
-          ? scheduledDate.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })
-          : "Not scheduled"
-
-        return {
-          id: appointment.id,
-          user: {
-            name: appointment.patient.name,
-            image: appointment.patient.image,
-          },
-          doctor: {
-            name: appointment.doctor.name,
-            image: appointment.doctor.image,
-          },
-          date: dateStr,
-          time: timeStr,
-          status: appointment.status,
-          issue: appointment.issue,
-          isArchived: appointment.isArchived || false,
-          sortDate: appointment.scheduledAt || appointment.createdAt,
-        }
+      const dateStr = scheduledDate.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
       })
+
+      const timeStr = appointment.scheduledAt
+        ? scheduledDate.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
+        : "Not scheduled"
+
+      return {
+        id: appointment.id,
+        user: {
+          name: appointment.patient.name,
+          image: appointment.patient.image,
+        },
+        doctor: {
+          name: appointment.doctor.name,
+          image: appointment.doctor.image,
+        },
+        date: dateStr,
+        time: timeStr,
+        status: appointment.status,
+        issue: appointment.issue,
+        isArchived: appointment.isArchived || false,
+        sortDate: appointment.scheduledAt || appointment.createdAt,
+      }
+    })
 
     const sort = filterValues.sort
     if (!sort) return rows
@@ -367,13 +374,13 @@ export default function SessionsPage() {
         setArchiveDialogOpen(false)
         setSelectedSessionId(null)
         // Invalidate both active and archived queries
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ["admin-appointments-active"],
-          exact: false 
+          exact: false,
         })
-        queryClient.invalidateQueries({ 
+        queryClient.invalidateQueries({
           queryKey: ["admin-appointments-archived"],
-          exact: false 
+          exact: false,
         })
       },
     })
@@ -389,7 +396,11 @@ export default function SessionsPage() {
   ]
 
   // Add archive action only for active sessions (but only show after permissions load)
-  if (activeTab === "active" && !permissionsLoading && hasPermission("sessions.archive")) {
+  if (
+    activeTab === "active" &&
+    !permissionsLoading &&
+    hasPermission("sessions.archive")
+  ) {
     actions.push({
       label: "Archive",
       onClick: (row) => {
@@ -420,7 +431,11 @@ export default function SessionsPage() {
         Sessions
       </h2>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <TabsList className="space-x-4">
             <TabsTrigger
@@ -449,9 +464,7 @@ export default function SessionsPage() {
                   }
                 >
                   <SelectTrigger className="w-full sm:w-[140px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
-                    <SelectValue
-                      placeholder={filter.placeholder}
-                    />
+                    <SelectValue placeholder={filter.placeholder} />
                   </SelectTrigger>
                   <SelectContent>
                     {filter.options.map((option) => (
@@ -527,9 +540,8 @@ export default function SessionsPage() {
           <DialogHeader>
             <DialogTitle>Archive Session</DialogTitle>
             <DialogDescription>
-              Are you sure you want to archive this session? It will be moved
-              to the archived sessions tab and no longer appear in active
-              sessions.
+              Are you sure you want to archive this session? It will be moved to
+              the archived sessions tab and no longer appear in active sessions.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -45,9 +45,7 @@ export const PERMISSION_GROUPS = {
 export type PermissionSlug = (typeof PERMISSIONS)[keyof typeof PERMISSIONS]
 
 function titleCaseFromSlugPrefix(prefix: string) {
-  return prefix
-    .replace(/[_-]+/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+  return prefix.replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 /**
@@ -93,4 +91,3 @@ export function buildPermissionGroups(permissionSlugs: string[]) {
 
   return result
 }
-

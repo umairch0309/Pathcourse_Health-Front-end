@@ -36,7 +36,10 @@ interface TeamMember {
 // API returns team member directly, not nested
 type TeamMemberResponse = TeamMember
 
-export function useUserPermissions(userId: string | null, userRole?: string | null) {
+export function useUserPermissions(
+  userId: string | null,
+  userRole?: string | null
+) {
   const [permissions, setPermissions] = useState<string[]>([])
   const [role, setRole] = useState<Role | null>(null)
   const [loading, setLoading] = useState<boolean>(!!userId)
@@ -51,13 +54,19 @@ export function useUserPermissions(userId: string | null, userRole?: string | nu
     error: fetchError,
   } = useFetch<TeamMemberResponse>({
     path:
-      userId && typeof userId === "string" && userId.trim().length > 0 && !isMainAdmin
+      userId &&
+      typeof userId === "string" &&
+      userId.trim().length > 0 &&
+      !isMainAdmin
         ? `/api/admin/team-members/${userId}`
         : "/api/admin/team-members/placeholder",
     queryKey: ["user-permissions", userId],
     config: {
       enabled:
-        !!userId && typeof userId === "string" && userId.trim().length > 0 && !isMainAdmin,
+        !!userId &&
+        typeof userId === "string" &&
+        userId.trim().length > 0 &&
+        !isMainAdmin,
       refetchOnWindowFocus: false,
       retry: false,
       refetchInterval: false, // Disable automatic refetching
@@ -75,7 +84,12 @@ export function useUserPermissions(userId: string | null, userRole?: string | nu
     if (isMainAdmin) {
       console.log("Main admin detected, granting all permissions")
       setPermissions(["*"])
-      setRole({ id: "admin", name: "Admin", description: null, permissions: [] })
+      setRole({
+        id: "admin",
+        name: "Admin",
+        description: null,
+        permissions: [],
+      })
       setError(null)
       setLoading(false)
       return

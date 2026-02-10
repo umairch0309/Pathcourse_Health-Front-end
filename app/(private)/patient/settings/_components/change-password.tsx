@@ -3,8 +3,8 @@ import { useState } from "react"
 import z from "zod"
 import { Button } from "@/components/ui/button"
 import FormModified from "@/components/ui/form-modified"
-import { Typography } from "@/components/ui/typography"
 import { Input } from "@/components/ui/input"
+import { Typography } from "@/components/ui/typography"
 
 const changePasswordSchema = z
   .object({

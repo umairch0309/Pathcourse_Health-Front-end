@@ -1,6 +1,6 @@
-import type React from "react"
 import { format } from "date-fns"
 import { Calendar, Clock, FileText, HeartPulse } from "lucide-react"
+import type React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { AppointmentData } from "../page"
 

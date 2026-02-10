@@ -232,7 +232,9 @@ export function DataTable<T extends object>({
                       }
                     >
                       <SelectTrigger className="w-full lg:w-[160px] data-[placeholder]:text-foreground [&_*[data-slot=select-value]]:font-semibold">
-                        <SelectValue placeholder={filter.placeholder || filter.label} />
+                        <SelectValue
+                          placeholder={filter.placeholder || filter.label}
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {filter.options.map((option) => (
@@ -370,7 +372,8 @@ export function DataTable<T extends object>({
                             {actions.map((action, actionIndex) => {
                               // Filter Block/Unblock actions based on banned status
                               const isBanRelatedAction =
-                                action.label === "Block" || action.label === "Unblock"
+                                action.label === "Block" ||
+                                action.label === "Unblock"
                               if (isBanRelatedAction) {
                                 const rowBanned = (row as any).banned
                                 if (action.label === "Block" && rowBanned) {

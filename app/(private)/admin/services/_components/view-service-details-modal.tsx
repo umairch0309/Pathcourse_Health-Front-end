@@ -1,5 +1,7 @@
 "use client"
 
+import { format } from "date-fns"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,8 +12,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { format } from "date-fns"
 
 type ServicePricing = {
   id: string
